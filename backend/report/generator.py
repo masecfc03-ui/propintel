@@ -146,13 +146,25 @@ def generate_html(data: dict) -> str:
         listing_rows += _row("Price Reduction", "Reduced " + amt, "red")
 
     # Parcel rows
-    delinq_txt = "⚠ DELINQUENT — verify with DCAD" if delinquent else "Current — No Delinquency"
+    delinq_txt = "⚠ DELINQUENT — verify with county" if delinquent else "Current — No Delinquency"
     delinq_cls = "red" if delinquent else "green"
+    absentee = parcel.get("absentee_owner", False)
+    out_of_state = parcel.get("out_of_state_owner", False)
+    parcel_source = str(parcel.get("source") or "County Appraisal District")
+
+    # Build owner badges
+    owner_badges = ""
+    if absentee:
+        owner_badges += ' <span style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);padding:1px 7px;border-radius:4px;font-size:0.65rem;font-weight:700;margin-left:6px">ABSENTEE</span>'
+    if out_of_state:
+        owner_badges += ' <span style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.25);padding:1px 7px;border-radius:4px;font-size:0.65rem;font-weight:700;margin-left:6px">OUT-OF-STATE</span>'
+
     parcel_rows = _row("APN / Account", apn)
-    parcel_rows += _row("Owner of Record", owner)
+    parcel_rows += _row("Owner of Record", owner + owner_badges)
     parcel_rows += _row("Owner Mailing", owner_mail)
-    parcel_rows += _row("Legal Description", legal_desc)
+    parcel_rows += _row("Source", parcel_source)
     parcel_rows += _row("Year Built", year_built)
+    parcel_rows += _row("Building SF", str(parcel.get("building_sf") or bldg_sf or "N/A") + " SF")
     parcel_rows += _row("Assessed — Land", assessed_land)
     parcel_rows += _row("Assessed — Improvement", assessed_imp)
     parcel_rows += _row("Total Assessed Value", assessed_total)

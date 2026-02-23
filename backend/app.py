@@ -22,7 +22,7 @@ load_dotenv()
 
 from pipeline import run as run_pipeline
 from report.generator import generate_html, generate_pdf
-from orders import create_order, update_order, get_order_by_stripe, list_orders, stats as order_stats
+from orders import create_order, update_order, get_order_by_stripe, list_orders, list_leads, create_lead, stats as order_stats
 from mailer import send_report
 
 app = Flask(__name__)
@@ -80,11 +80,20 @@ def analyze():
     input_str = (body.get("input") or "").strip()
     tier = body.get("tier", "starter").lower()
     fmt = body.get("format", "json").lower()
+    email = (body.get("email") or "").strip().lower()
 
     if not input_str:
         return jsonify({"error": "Missing 'input' field"}), 400
     if tier not in ("starter", "pro"):
         return jsonify({"error": "tier must be 'starter' or 'pro'"}), 400
+
+    # Capture lead email (non-blocking)
+    if email and "@" in email:
+        try:
+            ip = request.headers.get("X-Forwarded-For", request.remote_addr or "")
+            create_lead(email=email, address=input_str, tier=tier, ip=ip)
+        except Exception:
+            pass  # Never block the report for a lead capture failure
 
     try:
         report_data = run_pipeline(input_str, tier)
@@ -258,6 +267,14 @@ def get_orders():
         return jsonify({"error": "Unauthorized"}), 401
     orders = list_orders(limit=200)
     return jsonify({"orders": orders, "count": len(orders)})
+
+
+@app.route("/api/leads", methods=["GET"])
+def get_leads():
+    if not _check_admin():
+        return jsonify({"error": "Unauthorized"}), 401
+    leads = list_leads(limit=500)
+    return jsonify({"leads": leads, "count": len(leads)})
 
 
 @app.route("/api/stats", methods=["GET"])
