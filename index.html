@@ -814,16 +814,17 @@
 </footer>
 
 <script>
-const API_URL = "https://feels-interim-tractor-luxury.trycloudflare.com";
+const API_URL = "https://propintel-htij.onrender.com";
 
 function getSelectedTier() {
   // Default pro — user can pick on pricing section
   return window._selectedTier || "starter";
 }
 
-async function runAnalysis(inputVal, tier) {
+async function runAnalysis(inputVal) {
   if (!inputVal || inputVal.trim().length < 5) return;
   const overlay = document.getElementById("analysis-overlay");
+  const teaser = document.getElementById("teaser-overlay");
   overlay.style.display = "flex";
   overlay.querySelector(".ol-status").textContent = "Geocoding address...";
 
@@ -831,19 +832,35 @@ async function runAnalysis(inputVal, tier) {
     const resp = await fetch(API_URL + "/api/analyze", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({input: inputVal.trim(), tier: tier, format: "html"})
+      body: JSON.stringify({input: inputVal.trim(), tier: "starter", format: "json"})
     });
 
-    overlay.querySelector(".ol-status").textContent = "Generating report...";
-
+    overlay.querySelector(".ol-status").textContent = "Pulling public records...";
     if (!resp.ok) throw new Error("API error " + resp.status);
-    const html = await resp.text();
-
-    // Open report in new window
-    const win = window.open("", "_blank");
-    win.document.write(html);
-    win.document.close();
+    const data = await resp.json();
     overlay.style.display = "none";
+
+    // Store address for post-payment report generation
+    const addr = inputVal.trim();
+    localStorage.setItem("propintel_address", addr);
+
+    // Build teaser
+    const geo = data.geo || {};
+    const flood = data.flood || {};
+    const demo = data.demographics || {};
+    const flags = data.flags || [];
+
+    document.getElementById("teaser-address").textContent = geo.matched_address || addr;
+    document.getElementById("teaser-fema").textContent = flood.zone ? "Zone " + flood.zone + " — " + (flood.zone === "X" ? "✅ Minimal Risk" : "⚠️ Flood Risk") : "—";
+    document.getElementById("teaser-pop").textContent = demo.population ? demo.population.toLocaleString() + " residents | MHI " + (demo.median_household_income_fmt || "$—") : "—";
+    document.getElementById("teaser-flags").textContent = flags.length + " flags identified";
+
+    // Wire buy buttons with address param
+    const enc = encodeURIComponent(addr);
+    document.getElementById("teaser-starter-btn").href = "https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00?client_reference_id=" + enc;
+    document.getElementById("teaser-pro-btn").href = "https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01?client_reference_id=" + enc;
+
+    teaser.style.display = "flex";
 
   } catch(e) {
     overlay.querySelector(".ol-status").textContent = "Error: " + e.message;
@@ -854,13 +871,13 @@ async function runAnalysis(inputVal, tier) {
 document.querySelectorAll(".input-btn, .cta-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     const inp = btn.closest(".input-group, .cta-input-row")?.querySelector("input");
-    if (inp) runAnalysis(inp.value, getSelectedTier());
+    if (inp) runAnalysis(inp.value);
   });
 });
 
 document.querySelectorAll("input").forEach(inp => {
   inp.addEventListener("keydown", e => {
-    if (e.key === "Enter") runAnalysis(inp.value, getSelectedTier());
+    if (e.key === "Enter") runAnalysis(inp.value);
   });
 });
 
@@ -886,6 +903,52 @@ document.querySelectorAll(".p-btn").forEach(btn => {
   <div class="ol-status" style="color:#94a3b8;font-size:0.9rem">Pulling public records...</div>
   <div style="margin-top:24px;color:#64748b;font-size:0.78rem">Geocoding · FEMA · Census · County Records</div>
 </div>
+
+<!-- TEASER OVERLAY -->
+<div id="teaser-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,26,26,0.95);
+  backdrop-filter:blur(16px);z-index:998;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+  <div style="max-width:520px;width:100%;background:#242424;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px;text-align:left">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+      <span style="font-size:1.4rem">🔍</span>
+      <div>
+        <div style="font-size:0.72rem;color:#3b82f6;font-weight:700;text-transform:uppercase;letter-spacing:1px">Property Found</div>
+        <div id="teaser-address" style="font-size:0.95rem;font-weight:700;color:#fff;margin-top:2px"></div>
+      </div>
+      <button onclick="document.getElementById('teaser-overlay').style.display='none'"
+        style="margin-left:auto;background:none;border:none;color:#666;font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+      <div style="background:#2e2e2e;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#a0a0a0;font-size:0.82rem">FEMA Flood Zone</span>
+        <span id="teaser-fema" style="color:#fff;font-size:0.82rem;font-weight:600"></span>
+      </div>
+      <div style="background:#2e2e2e;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#a0a0a0;font-size:0.82rem">Demographics (ZIP)</span>
+        <span id="teaser-pop" style="color:#fff;font-size:0.82rem;font-weight:600"></span>
+      </div>
+      <div style="background:#2e2e2e;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:#a0a0a0;font-size:0.82rem">Analysis</span>
+        <span id="teaser-flags" style="color:#f59e0b;font-size:0.82rem;font-weight:600"></span>
+      </div>
+      <div style="background:#1e3a5f;border:1px solid rgba(59,130,246,0.3);border-radius:10px;padding:12px 16px;color:#93c5fd;font-size:0.82rem;text-align:center">
+        🔒 Full report: owner data, deed history, parcel records, zoning, traffic counts, permit history &amp; more
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <a id="teaser-pro-btn" href="#" target="_blank"
+        style="background:#3b82f6;color:#fff;border-radius:50px;padding:14px 24px;text-align:center;font-weight:700;font-size:0.95rem;text-decoration:none;display:block">
+        Get Full Intel Report — $29.99 →
+      </a>
+      <a id="teaser-starter-btn" href="#" target="_blank"
+        style="background:transparent;color:#a0a0a0;border:1px solid rgba(255,255,255,0.12);border-radius:50px;padding:12px 24px;text-align:center;font-weight:600;font-size:0.85rem;text-decoration:none;display:block">
+        Public Record Only — $9.99
+      </a>
+    </div>
+  </div>
+</div>
+
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </body>
 </html>
