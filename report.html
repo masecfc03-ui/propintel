@@ -626,6 +626,24 @@
       </div>
     </div>
 
+    <!-- Financial Estimates -->
+    <div class="section-card" id="fin-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">💰 Financial Estimates</div>
+        <div class="sec-src">Based on county data · DFW market rates</div>
+      </div>
+      <div class="sec-body" id="fin-body"></div>
+    </div>
+
+    <!-- Owner Entity Intelligence -->
+    <div class="section-card" id="entity-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">🏢 Owner Entity Intelligence</div>
+        <div class="sec-src">Texas Secretary of State</div>
+      </div>
+      <div class="sec-body" id="entity-body"></div>
+    </div>
+
     <!-- Research Tools -->
     <div class="section-card" id="comps-section" style="display:none">
       <div class="sec-head">
@@ -1195,6 +1213,71 @@
           <div class="nbhd-card-label">${c.label}</div>
           ${c.pct !== null ? `<div class="nbhd-card-bar"><div class="nbhd-card-fill" style="width:${c.pct}%;background:${c.color}"></div></div>` : ''}
         </div>`).join('');
+    }
+
+    // ── FINANCIAL ESTIMATES ──
+    const fin = data.financials || {};
+    if (fin.available) {
+      document.getElementById('fin-section').style.display = '';
+      const finCards = [
+        { icon: '🏛️', val: '$' + Number(fin.est_annual_tax).toLocaleString(), sub: '$' + Number(fin.est_monthly_tax).toLocaleString() + '/mo', label: 'Est. Annual Tax' },
+        { icon: '📊', val: fin.tax_rate_pct + '%', sub: 'Dallas County avg', label: 'Effective Tax Rate' },
+      ];
+      if (fin.cash_flow) {
+        finCards.push({ icon: '🏢', val: fin.rent_per_sf_range + '/SF/yr', sub: fin.rent_use_label, label: 'Market Rent Range' });
+        finCards.push({ icon: '💵', val: fin.gsi_range, sub: 'Gross annual est.', label: 'Gross Income (GSI)' });
+        finCards.push({ icon: '📈', val: fin.noi_range, sub: '65% expense ratio', label: 'Net Oper. Income (NOI)' });
+        if (fin.implied_cap_rate) finCards.push({ icon: '🎯', val: fin.implied_cap_rate + '%', sub: 'At market mid-value', label: 'Implied Cap Rate' });
+      }
+      document.getElementById('fin-body').innerHTML = `
+        <div class="profile-grid" style="margin-bottom:12px">
+          ${finCards.map(c => `<div class="profile-tile">
+            <div style="font-size:1.1rem;margin-bottom:4px">${c.icon}</div>
+            <div class="profile-tile-val" style="font-size:0.95rem">${c.val}</div>
+            <div style="font-size:0.68rem;color:var(--text3);margin-top:2px">${c.sub}</div>
+            <div class="profile-tile-label" style="margin-top:3px">${c.label}</div>
+          </div>`).join('')}
+        </div>
+        <div style="font-size:0.72rem;color:var(--text3);line-height:1.5">
+          ⚠️ All figures are estimates for planning purposes only. ${fin.cash_flow ? fin.cash_flow_note + ' ' : ''}${fin.tax_note}
+        </div>`;
+    }
+
+    // ── OWNER ENTITY INTELLIGENCE ──
+    const ent = data.owner_entity || {};
+    if (!ent.is_individual && !ent.error && ent.entity_name) {
+      document.getElementById('entity-section').style.display = '';
+      const sosUrl = ent.manual_url || 'https://www.sos.state.tx.us/corp/businesssearch.shtml';
+      const statusColor = ent.status && ent.status.toLowerCase().includes('active') ? 'var(--green)' : 'var(--amber)';
+      document.getElementById('entity-body').innerHTML = `
+        <div class="profile-grid" style="margin-bottom:14px">
+          <div class="profile-tile">
+            <div class="profile-tile-val" style="font-size:0.9rem">${ent.entity_name || 'N/A'}</div>
+            <div class="profile-tile-label">Registered Entity</div>
+          </div>
+          <div class="profile-tile">
+            <div class="profile-tile-val" style="color:${statusColor}">${ent.status || 'Unknown'}</div>
+            <div class="profile-tile-label">TX SOS Status</div>
+          </div>
+          <div class="profile-tile">
+            <div class="profile-tile-val">${ent.formation_date || 'N/A'}</div>
+            <div class="profile-tile-label">Formation Date</div>
+          </div>
+          <div class="profile-tile">
+            <div class="profile-tile-val" style="font-size:0.85rem">${ent.registered_agent || 'N/A'}</div>
+            <div class="profile-tile-label">Registered Agent</div>
+          </div>
+        </div>
+        ${ent.status && ent.status.toLowerCase().includes('forfeit') ?
+          `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:0.82rem;color:#dc2626;margin-bottom:10px">
+            ⚠️ Entity status is forfeited or dissolved. Owner may be unreachable or property held in a defunct entity — high leverage signal.
+          </div>` : ''}
+        ${row('Entity Name', ent.entity_name || 'N/A')}
+        ${row('TX SOS Status', ent.status || 'Unknown', ent.status && ent.status.toLowerCase().includes('active') ? 'green' : 'amber')}
+        ${ent.formation_date ? row('Formation Date', ent.formation_date) : ''}
+        ${ent.registered_agent ? row('Registered Agent', ent.registered_agent) : ''}
+        ${row('TX SOS Record', `<a href="${sosUrl}" target="_blank" style="color:var(--accent)">View full filing →</a>`)}
+        <p style="font-size:0.72rem;color:var(--text3);margin-top:10px">Entity data from Texas Secretary of State public records. Verify current status directly with TX SOS.</p>`;
     }
 
     // ── RESEARCH TOOLS (comp links) ──

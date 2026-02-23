@@ -10,7 +10,7 @@ from scrapers.fema import get_flood_zone
 from scrapers.census import get_demographics
 from scrapers.dcad import search_by_address as dcad_by_address
 from scrapers.regrid import search_by_point as regrid_by_point, search_by_address as regrid_by_address, search_nearby as regrid_nearby
-from scrapers.txsos import search_by_address as txsos_address
+from scrapers.txsos import search_by_address as txsos_address, search_entity as txsos_entity
 from scrapers.listing import parse_listing, is_address, detect_source
 from scrapers.datazapp import parse_owner_name
 from scrapers import pdl as pdl_skip
@@ -135,8 +135,24 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["businesses"] = results.get("txsos", [])
     report["nearby"] = [p for p in (results.get("nearby") or []) if p and not p.get("error")]
 
+    # ── Owner entity intelligence (all tiers — public TX SOS data) ────────────
+    owner_name = parcel_data.get("owner_name", "")
+    if owner_name:
+        _, _, is_entity = parse_owner_name(owner_name)
+        if is_entity:
+            try:
+                entity_data = txsos_entity(owner_name)
+                report["owner_entity"] = entity_data
+            except Exception as e:
+                report["owner_entity"] = {"error": str(e), "entity_name": owner_name}
+        else:
+            report["owner_entity"] = {"is_individual": True, "entity_name": owner_name}
+
     # ── Market value estimate (assessed-based range, all tiers) ───────────────
     report["market_estimate"] = _estimate_market_value(parcel_data)
+
+    # ── Financial estimates (tax, cash flow, cap rate — all tiers) ───────────
+    report["financials"] = _estimate_financials(parcel_data, report["market_estimate"])
 
     # ── Permit portal link ────────────────────────────────────────────────────
     city_name = (geo.get("city") or "").strip().upper()
@@ -297,6 +313,84 @@ def _estimate_market_value(parcel: dict) -> dict:
         "note": "Assessed value is the county tax value, typically below market. "
                 "This range is a data-driven estimate only.",
     }
+
+
+def _estimate_financials(parcel: dict, market_est: dict) -> dict:
+    """
+    Estimate annual property tax, potential cash flow, and holding cost.
+    All estimates — clearly labeled. Based on DFW average rates.
+    """
+    assessed = parcel.get("assessed_total")
+    if not assessed or assessed <= 0:
+        return {"available": False}
+
+    use_desc = (parcel.get("use_description") or "").upper()
+    building_sf = None
+    try:
+        building_sf = float(parcel.get("building_sf") or 0)
+    except Exception:
+        pass
+
+    # TX property tax rates (effective combined rate, DFW average 2025)
+    is_commercial = any(w in use_desc for w in ("COMMERCIAL", "OFFICE", "RETAIL", "INDUSTRIAL", "WAREHOUSE", "MULTI"))
+    is_residential = not is_commercial
+
+    tax_rate = 0.0195 if is_commercial else 0.0225   # ~2.25% residential, ~1.95% commercial in Dallas County
+    est_annual_tax = round(assessed * tax_rate)
+    est_monthly_tax = round(est_annual_tax / 12)
+
+    result = {
+        "available": True,
+        "est_annual_tax": est_annual_tax,
+        "est_monthly_tax": est_monthly_tax,
+        "tax_rate_pct": round(tax_rate * 100, 2),
+        "tax_note": "Estimate based on Dallas County effective rate. Actual varies by tax district.",
+    }
+
+    # Cash flow potential (commercial only, if we have building SF)
+    if is_commercial and building_sf and building_sf > 0:
+        # DFW commercial rental rates 2025 (low / mid / high per SF/year)
+        if any(w in use_desc for w in ("INDUSTRIAL", "WAREHOUSE", "DISTRIBUTION")):
+            rent_low, rent_mid, rent_high = 6.0, 8.5, 11.0
+            use_label = "Industrial/Warehouse"
+        elif any(w in use_desc for w in ("RETAIL", "STRIP", "SHOPPING")):
+            rent_low, rent_mid, rent_high = 14.0, 20.0, 28.0
+            use_label = "Retail"
+        elif any(w in use_desc for w in ("OFFICE",)):
+            rent_low, rent_mid, rent_high = 16.0, 22.0, 30.0
+            use_label = "Office"
+        else:
+            rent_low, rent_mid, rent_high = 12.0, 18.0, 25.0
+            use_label = "Commercial"
+
+        gsi_low  = round(building_sf * rent_low)
+        gsi_mid  = round(building_sf * rent_mid)
+        gsi_high = round(building_sf * rent_high)
+        # NOI after ~35% expenses (tax + insurance + maintenance + vacancy)
+        noi_low  = round(gsi_low  * 0.65)
+        noi_mid  = round(gsi_mid  * 0.65)
+        noi_high = round(gsi_high * 0.65)
+
+        def fmtd(v): return "${:,.0f}".format(v)
+
+        result.update({
+            "cash_flow": True,
+            "rent_per_sf_range": "${:.0f} – ${:.0f}".format(rent_low, rent_high),
+            "gsi_range": "{} – {}".format(fmtd(gsi_low), fmtd(gsi_high)),
+            "noi_range": "{} – {}".format(fmtd(noi_low), fmtd(noi_high)),
+            "rent_use_label": use_label,
+            "building_sf": int(building_sf),
+            "cash_flow_note": "DFW market rent estimate. 65% expense ratio applied. Verify with current lease comps.",
+        })
+
+        # Cap rate implied by market estimate
+        if market_est.get("available"):
+            mkt_mid = (market_est["market_low"] + market_est["market_high"]) / 2
+            if mkt_mid > 0:
+                implied_cap = round(noi_mid / mkt_mid * 100, 2)
+                result["implied_cap_rate"] = implied_cap
+
+    return result
 
 
 def _merge_parcel(regrid: dict, dcad: dict, address: str) -> dict:
