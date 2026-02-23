@@ -313,6 +313,35 @@
     .disc-title { font-size: 0.68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
     .disclaimer p { font-size: 0.75rem; color: var(--text3); line-height: 1.6; }
 
+    /* ── BRANDING HEADER ── */
+    .brand-header {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 28px;
+      margin-bottom: 14px; box-shadow: var(--shadow-sm);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .brand-left { display: flex; align-items: center; gap: 14px; }
+    .brand-logo {
+      max-height: 40px; max-width: 120px;
+      border-radius: 6px; object-fit: contain;
+    }
+    .brand-logo-placeholder {
+      width: 40px; height: 40px; border-radius: 8px;
+      background: var(--accent); color: white;
+      font-size: 1rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-company { font-size: 1rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+    .brand-agent { font-size: 0.8rem; color: var(--text2); margin-top: 1px; }
+    .brand-right { text-align: right; }
+    .brand-contact { font-size: 0.8rem; color: var(--text2); line-height: 1.7; }
+    .brand-contact a { color: var(--accent); text-decoration: none; }
+    .brand-prepared {
+      font-size: 0.68rem; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 700px) {
       .topbar { padding: 0 16px; }
@@ -372,6 +401,21 @@
   </div>
 
   <div class="report">
+
+    <!-- Brand Header (shown when white-label branding is set) -->
+    <div class="brand-header" id="brand-header" style="display:none">
+      <div class="brand-left">
+        <div id="brand-logo-wrap"></div>
+        <div>
+          <div class="brand-prepared">Prepared by</div>
+          <div class="brand-company" id="brand-company"></div>
+          <div class="brand-agent" id="brand-agent"></div>
+        </div>
+      </div>
+      <div class="brand-right">
+        <div class="brand-contact" id="brand-contact"></div>
+      </div>
+    </div>
 
     <!-- Report Header -->
     <div class="report-header" id="rpt-header">
@@ -513,6 +557,36 @@
   function stepActive(id) {
     const el = document.getElementById(id);
     if (el) el.classList.add('active');
+  }
+
+  function renderBranding() {
+    try {
+      const b = JSON.parse(localStorage.getItem('propintel_brand') || 'null');
+      if (!b || (!b.company && !b.name)) return;
+
+      document.getElementById('brand-header').style.display = '';
+      document.getElementById('brand-company').textContent = b.company || b.name;
+      document.getElementById('brand-agent').textContent = b.name && b.company ? b.name : '';
+
+      // Logo
+      const logoWrap = document.getElementById('brand-logo-wrap');
+      if (b.logo) {
+        logoWrap.innerHTML = `<img src="${b.logo}" class="brand-logo" alt="${b.company}" onerror="this.style.display='none'" />`;
+      } else {
+        const initials = (b.company || b.name).substring(0, 2).toUpperCase();
+        logoWrap.innerHTML = `<div class="brand-logo-placeholder">${initials}</div>`;
+      }
+
+      // Contact
+      const parts = [];
+      if (b.phone) parts.push(b.phone);
+      if (b.email) parts.push(`<a href="mailto:${b.email}">${b.email}</a>`);
+      document.getElementById('brand-contact').innerHTML = parts.join('<br />');
+
+      // Override topbar logo text to show company name
+      document.querySelector('.topbar-logo').innerHTML =
+        `<div class="logo-icon">🔍</div>${b.company || b.name} <span style="color:var(--text3);font-weight:400;font-size:0.75rem;margin-left:6px">via PropIntel</span>`;
+    } catch(e) {}
   }
 
   function renderReport(data) {
@@ -740,6 +814,9 @@
           </div>`;
       }
     }
+
+    // Branding
+    renderBranding();
 
     // Show report
     document.getElementById('loading').style.display = 'none';
