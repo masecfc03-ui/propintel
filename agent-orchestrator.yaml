@@ -1,0 +1,52 @@
+# PropIntel — Agent Orchestrator Config
+# Drop this in the repo root after `ao init`
+# Run: ao start
+
+port: 3000
+dataDir: ~/.agent-orchestrator
+worktreeDir: ~/.worktrees
+
+defaults:
+  runtime: tmux
+  agent: claude-code
+  workspace: worktree
+  notifiers: [webhook]
+
+projects:
+  propintel:
+    repo: masecfc03-ui/propintel
+    path: /Users/masonmathis/.openclaw/workspace/deallens
+    defaultBranch: main
+    agentRulesFile: .agent-rules.md
+
+reactions:
+  ci-failed:
+    auto: true
+    action: send-to-agent
+    retries: 3
+    escalateAfter: 3  # ping Tim after 3 failed self-corrections
+
+  changes-requested:
+    auto: true
+    action: send-to-agent
+    escalateAfter: 30m
+
+  approved-and-green:
+    auto: false   # Mason approves via Telegram → Tim merges
+    action: notify
+
+  agent-stuck:
+    threshold: 15m
+    action: notify
+    priority: urgent
+
+notifiers:
+  webhook:
+    plugin: webhook
+    url: http://localhost:3001/ao-webhook  # Tim's listener → Telegram to Mason
+
+notificationRouting:
+  urgent:  [webhook]   # agent stuck, needs human input, errored
+  action:  [webhook]   # PR ready to merge
+  warning: [webhook]   # auto-fix failed after retries
+  info:    [webhook]   # summary, all done

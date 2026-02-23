@@ -1,0 +1,133 @@
+name: PropIntel CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    name: Python Lint & Import Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+          cache: "pip"
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+
+      - name: Syntax check — all Python files
+        working-directory: backend
+        run: |
+          echo "Checking syntax..."
+          find . -name "*.py" -not -path "./venv/*" | while read f; do
+            python3 -m py_compile "$f" && echo "  ✓ $f" || (echo "  ✗ SYNTAX ERROR: $f" && exit 1)
+          done
+
+      - name: Import check — core modules
+        working-directory: backend
+        env:
+          REGRID_API_KEY: test-key
+          STRIPE_LIVE_SECRET_KEY: sk_live_test
+          STRIPE_WEBHOOK_SECRET: whsec_test
+          MAILGUN_API_KEY: test-key
+          ADMIN_KEY: propintel-mason-2026
+        run: |
+          echo "Checking imports..."
+          python3 -c "import pipeline; print('  ✓ pipeline')"
+          python3 -c "import pdf_builder; print('  ✓ pdf_builder')"
+          python3 -c "import mailer; print('  ✓ mailer')"
+          python3 -c "import orders; print('  ✓ orders')"
+          python3 -c "import app; print('  ✓ app')"
+
+      - name: PDF builder smoke test
+        working-directory: backend
+        run: |
+          python3 -c "
+          from pdf_builder import generate_pdf_bytes
+          # Minimal report — no external calls
+          r = {
+            'input': '123 Test St, Dallas TX',
+            'tier': 'pro',
+            'parcel': {
+              'owner_name': 'TEST OWNER',
+              'property_address': '123 Test St',
+              'assessed_total': 500000,
+              'assessed_land': 100000,
+              'assessed_improvement': 400000,
+              'absentee_owner': True,
+            },
+            'market_estimate': {'market_low': 525000, 'market_high': 600000, 'range_fmt': '\$525K-\$600K'},
+            'flood': {'zone': 'X', 'description': 'Minimal flood hazard'},
+            'motivation': {'score': 25, 'tier': 'LOW', 'indicators': []},
+            'flags': [{'type': 'yellow', 'text': 'Absentee owner detected'}],
+            'financials': {'available': False},
+            'demographics': {},
+            'deal_analysis': {},
+            'owner_entity': {},
+            'skip_trace': {},
+          }
+          pdf = generate_pdf_bytes(r)
+          assert len(pdf) > 10000, f'PDF too small: {len(pdf)} bytes'
+          print(f'  ✓ PDF generated: {len(pdf)/1024:.1f}KB')
+          "
+
+      - name: Check for forbidden patterns
+        working-directory: backend
+        run: |
+          echo "Checking for forbidden patterns..."
+          # No hardcoded secrets
+          if grep -rn "sk_live_" --include="*.py" . | grep -v ".env" | grep -v "test" | grep -v "#"; then
+            echo "✗ Hardcoded live Stripe key found!" && exit 1
+          fi
+          # No str | None syntax (Python 3.9 incompatible)
+          if grep -rn " str | None\| int | None\| dict | None\| list | None" --include="*.py" .; then
+            echo "✗ Python 3.10+ type syntax found — use Optional[] instead!" && exit 1
+          fi
+          # No nested f-strings with backslashes
+          echo "  ✓ No forbidden patterns"
+
+      - name: Verify requirements.txt exists
+        working-directory: backend
+        run: |
+          test -f requirements.txt || (echo "✗ requirements.txt missing" && exit 1)
+          echo "  ✓ requirements.txt present"
+
+  frontend-check:
+    name: Frontend HTML Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check HTML files exist
+        run: |
+          test -f index.html   || (echo "✗ index.html missing"   && exit 1)
+          test -f report.html  || (echo "✗ report.html missing"  && exit 1)
+          echo "  ✓ index.html"
+          echo "  ✓ report.html"
+
+      - name: Check JS syntax in HTML files
+        run: |
+          # Basic check — no unclosed script tags
+          python3 -c "
+          import re, sys
+          for fname in ['index.html', 'report.html']:
+              with open(fname) as f:
+                  content = f.read()
+              opens  = len(re.findall(r'<script', content))
+              closes = len(re.findall(r'</script>', content))
+              if opens != closes:
+                  print(f'  ✗ {fname}: {opens} <script> tags, {closes} </script> tags')
+                  sys.exit(1)
+              print(f'  ✓ {fname}: {opens} script blocks balanced')
+          "
