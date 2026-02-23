@@ -172,6 +172,7 @@ def test_email():
             "sent": result.get("success"),
             "method": result.get("method"),
             "pdf_attached": result.get("pdf_attached", False),
+            "pdf_error": result.get("pdf_error"),
             "error": result.get("error"),
             "address": address,
             "email": email,

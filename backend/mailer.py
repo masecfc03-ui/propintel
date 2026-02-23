@@ -47,6 +47,7 @@ def send_report(to_email: str, to_name: str, address: str,
     # Generate PDF attachment
     pdf_bytes = None
     pdf_filename = None
+    pdf_error = None
     if report_data:
         try:
             from pdf_builder import generate_pdf_bytes
@@ -56,6 +57,7 @@ def send_report(to_email: str, to_name: str, address: str,
         except Exception as e:
             import logging
             logging.getLogger(__name__).warning("PDF generation failed (sending without): %s", e)
+            pdf_error = str(e)
 
     last_error = "No email provider configured"
 
@@ -63,6 +65,8 @@ def send_report(to_email: str, to_name: str, address: str,
     if MAILGUN_API_KEY and MAILGUN_DOMAIN:
         result = _send_mailgun(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
         if result["success"]:
+            if pdf_error:
+                result["pdf_error"] = pdf_error
             return result
         last_error = f"Mailgun: {result.get('error', 'unknown')}"
 
@@ -70,14 +74,20 @@ def send_report(to_email: str, to_name: str, address: str,
     if SENDGRID_API_KEY:
         result = _send_sendgrid(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
         if result["success"]:
+            if pdf_error:
+                result["pdf_error"] = pdf_error
             return result
         last_error = f"SendGrid: {result.get('error', 'unknown')}"
 
     # Fallback to SMTP
     if SMTP_USER and SMTP_PASS:
-        return _send_smtp(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
+        r = _send_smtp(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
+        if pdf_error:
+            r["pdf_error"] = pdf_error
+        return r
 
-    return {"success": False, "method": "none", "error": last_error}
+    return {"success": False, "method": "none", "error": last_error,
+            "pdf_error": pdf_error}
 
 
 def _build_email_body(name: str, address: str, tier: str,
@@ -213,49 +223,70 @@ def _get_features(tier: str) -> list:
 
 def _send_mailgun(to_email: str, to_name: str, subject: str, html_body: str,
                   pdf_bytes: bytes = None, pdf_filename: str = None) -> dict:
-    """Send via Mailgun API with optional PDF attachment (multipart/form-data)."""
-    import subprocess, base64, json as _json
+    """
+    Send via Mailgun API using multipart/form-data.
+    Uses urllib on Linux/Render (has CA certs) and falls back to curl on macOS.
+    """
+    import platform, base64, json as _json
 
     url = "https://api.mailgun.net/v3/{}/messages".format(MAILGUN_DOMAIN)
     from_addr = "{} <{}>".format(FROM_NAME, FROM_EMAIL)
     to_addr = "{} <{}>".format(to_name, to_email) if to_name else to_email
+    credentials = base64.b64encode("api:{}".format(MAILGUN_API_KEY).encode()).decode()
 
-    # Build curl command (avoids ssl cert issues on some envs)
-    cmd = [
-        "curl", "-s", "--user", "api:{}".format(MAILGUN_API_KEY),
-        url,
-        "-F", "from={}".format(from_addr),
-        "-F", "to={}".format(to_addr),
-        "-F", "subject={}".format(subject),
-        "-F", "html={}".format(html_body),
-    ]
+    # Build multipart body
+    import uuid as _uuid
+    boundary = "---PropIntelBoundary{}".format(_uuid.uuid4().hex)
+    body_parts = []
 
-    # Attach PDF if provided
+    def _field(name, value):
+        return (
+            "--{}\r\nContent-Disposition: form-data; name=\"{}\"\r\n\r\n{}".format(
+                boundary, name, value)
+        ).encode("utf-8")
+
+    body_parts += [_field("from", from_addr), _field("to", to_addr),
+                   _field("subject", subject), _field("html", html_body)]
+
     if pdf_bytes and pdf_filename:
-        import tempfile, os
-        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
-        try:
-            tmp.write(pdf_bytes)
-            tmp.close()
-            cmd += ["-F", "attachment=@{};type=application/pdf;filename={}".format(
-                tmp.name, pdf_filename
-            )]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        finally:
-            os.unlink(tmp.name)
-    else:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        pdf_part = (
+            "--{}\r\nContent-Disposition: form-data; name=\"attachment\"; "
+            "filename=\"{}\"\r\nContent-Type: application/pdf\r\n\r\n".format(
+                boundary, pdf_filename)
+        ).encode("utf-8") + pdf_bytes
+        body_parts.append(pdf_part)
 
+    closing = "--{}--".format(boundary).encode("utf-8")
+    raw_body = b"\r\n".join(body_parts) + b"\r\n" + closing
+
+    import urllib.request, urllib.error
+    req = urllib.request.Request(
+        url,
+        data=raw_body,
+        headers={
+            "Authorization": "Basic {}".format(credentials),
+            "Content-Type": "multipart/form-data; boundary={}".format(boundary),
+        },
+        method="POST"
+    )
     try:
-        resp = _json.loads(result.stdout)
-        if resp.get("id") or "queued" in resp.get("message", "").lower():
-            return {"success": True, "method": "mailgun",
-                    "pdf_attached": bool(pdf_bytes)}
-        return {"success": False, "method": "mailgun", "error": str(resp)}
-    except Exception as e:
-        stderr = result.stderr[:200] if result.stderr else ""
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            resp_body = resp.read().decode("utf-8", errors="ignore")
+            try:
+                resp_json = _json.loads(resp_body)
+            except Exception:
+                resp_json = {}
+            if resp.status in (200, 202) or resp_json.get("id"):
+                return {"success": True, "method": "mailgun",
+                        "pdf_attached": bool(pdf_bytes)}
+            return {"success": False, "method": "mailgun",
+                    "error": "status={} body={}".format(resp.status, resp_body[:200])}
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="ignore")
         return {"success": False, "method": "mailgun",
-                "error": f"curl failed: stdout={result.stdout[:100]} stderr={stderr}"}
+                "error": "HTTP {}: {}".format(e.code, body[:300])}
+    except Exception as e:
+        return {"success": False, "method": "mailgun", "error": str(e)}
 
 
 def _send_sendgrid(to_email: str, to_name: str, subject: str, html_body: str,
