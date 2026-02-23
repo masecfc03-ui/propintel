@@ -1,273 +1,388 @@
 """
-PropIntel PDF Report Builder — reportlab (zero system deps, works on Render free tier)
+PropIntel PDF Report Builder — reportlab (zero system deps, Render-compatible)
 
-Generates a clean, professional PDF from report data.
-Attached to delivery emails so customers have an offline copy.
+Uses ACTUAL pipeline key names (verified against live pipeline output).
+Sections: Header, Parcel, Valuation, Financials, Deal Analysis,
+          Motivation Score, Flags/Signals, Skip Trace, FEMA Flood,
+          Demographics, Disclaimer
 """
 
 import io
 import logging
 from datetime import datetime
 
-log = logging.getLogger(__name__)
-
-# reportlab imports
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
-    HRFlowable, KeepTogether
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
 )
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
 
-# ─── COLORS ────────────────────────────────────────────────────────────────
-BLUE      = colors.HexColor("#2563eb")
-DARK      = colors.HexColor("#0f172a")
-GRAY      = colors.HexColor("#64748b")
-LIGHT_BG  = colors.HexColor("#f8fafc")
-BORDER    = colors.HexColor("#e2e8f0")
-GREEN     = colors.HexColor("#16a34a")
-AMBER     = colors.HexColor("#d97706")
-RED_      = colors.HexColor("#dc2626")
-WHITE     = colors.white
+log = logging.getLogger(__name__)
 
+# ── PALETTE ──────────────────────────────────────────────────────────────────
+BLUE     = colors.HexColor("#2563eb")
+DARK     = colors.HexColor("#0f172a")
+GRAY     = colors.HexColor("#64748b")
+LIGHT_BG = colors.HexColor("#f8fafc")
+BORDER   = colors.HexColor("#e2e8f0")
+GREEN    = colors.HexColor("#16a34a")
+AMBER    = colors.HexColor("#d97706")
+RED_C    = colors.HexColor("#dc2626")
+GREEN_BG = colors.HexColor("#f0fdf4")
+AMBER_BG = colors.HexColor("#fffbeb")
+RED_BG   = colors.HexColor("#fef2f2")
+WHITE    = colors.white
 
-def _styles():
-    base = getSampleStyleSheet()
+W = 6.5 * inch   # usable page width
+
+# ── STYLES ───────────────────────────────────────────────────────────────────
+def _s():
     return {
-        "title": ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=20,
-                                textColor=DARK, spaceAfter=4, leading=24),
-        "subtitle": ParagraphStyle("subtitle", fontName="Helvetica", fontSize=11,
-                                   textColor=GRAY, spaceAfter=16),
-        "section": ParagraphStyle("section", fontName="Helvetica-Bold", fontSize=9,
-                                  textColor=BLUE, spaceBefore=16, spaceAfter=6,
-                                  textTransform="uppercase", letterSpacing=1),
-        "body": ParagraphStyle("body", fontName="Helvetica", fontSize=9,
-                               textColor=DARK, leading=14),
-        "label": ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=8,
-                                textColor=GRAY, leading=12),
-        "value": ParagraphStyle("value", fontName="Helvetica", fontSize=9,
-                                textColor=DARK, leading=12),
-        "footer": ParagraphStyle("footer", fontName="Helvetica", fontSize=7,
-                                 textColor=GRAY, alignment=TA_CENTER),
-        "badge": ParagraphStyle("badge", fontName="Helvetica-Bold", fontSize=8,
-                                textColor=WHITE, alignment=TA_CENTER),
-        "verdict": ParagraphStyle("verdict", fontName="Helvetica-Bold", fontSize=18,
-                                  textColor=GREEN, alignment=TA_CENTER, leading=22),
+        "title":   ParagraphStyle("title",   fontName="Helvetica-Bold", fontSize=22,
+                                  textColor=DARK, spaceAfter=4, leading=26),
+        "tagline": ParagraphStyle("tagline", fontName="Helvetica", fontSize=10,
+                                  textColor=GRAY, spaceAfter=14),
+        "addr":    ParagraphStyle("addr",    fontName="Helvetica-Bold", fontSize=13,
+                                  textColor=DARK, leading=16),
+        "section": ParagraphStyle("section", fontName="Helvetica-Bold", fontSize=8,
+                                  textColor=BLUE, spaceBefore=14, spaceAfter=5,
+                                  leading=10),
+        "label":   ParagraphStyle("label",   fontName="Helvetica-Bold", fontSize=8,
+                                  textColor=GRAY, leading=11),
+        "value":   ParagraphStyle("value",   fontName="Helvetica", fontSize=9,
+                                  textColor=DARK, leading=12),
+        "note":    ParagraphStyle("note",    fontName="Helvetica", fontSize=7,
+                                  textColor=GRAY, leading=10),
+        "flag_g":  ParagraphStyle("flag_g",  fontName="Helvetica", fontSize=8,
+                                  textColor=GREEN, leading=11),
+        "flag_y":  ParagraphStyle("flag_y",  fontName="Helvetica", fontSize=8,
+                                  textColor=AMBER, leading=11),
+        "flag_r":  ParagraphStyle("flag_r",  fontName="Helvetica", fontSize=8,
+                                  textColor=RED_C, leading=11),
+        "score":   ParagraphStyle("score",   fontName="Helvetica-Bold", fontSize=26,
+                                  textColor=DARK, alignment=TA_CENTER, leading=30),
+        "verdict": ParagraphStyle("verdict", fontName="Helvetica-Bold", fontSize=14,
+                                  textColor=GREEN, alignment=TA_CENTER, leading=18),
+        "footer":  ParagraphStyle("footer",  fontName="Helvetica", fontSize=7,
+                                  textColor=GRAY, alignment=TA_CENTER, leading=10),
     }
 
 
-def _row(label, value, style):
-    """Single data row for a table."""
-    return [
-        Paragraph(label, style["label"]),
-        Paragraph(str(value) if value else "—", style["value"]),
-    ]
+def _r(label, value, s, col_w=(2.0*inch, 4.5*inch)):
+    """Single key-value row."""
+    v = str(value) if value is not None else "—"
+    if v == "" or v == "None":
+        v = "—"
+    return [Paragraph(label, s["label"]), Paragraph(v, s["value"])]
 
 
-def _table(rows, col_widths=(2.2*inch, 4.3*inch)):
-    t = Table(rows, colWidths=col_widths)
+def _tbl(rows, col_w=(2.0*inch, 4.5*inch)):
+    """Styled 2-column data table, skips rows with '—' values."""
+    filtered = [r for r in rows if r[1].text != "—"]
+    if not filtered:
+        return None
+    t = Table(filtered, colWidths=col_w)
     t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), LIGHT_BG),
         ("ROWBACKGROUNDS", (0, 0), (-1, -1), [WHITE, LIGHT_BG]),
-        ("GRID", (0, 0), (-1, -1), 0.5, BORDER),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("GRID", (0, 0), (-1, -1), 0.4, BORDER),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 7),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 7),
+        ("TOPPADDING",   (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 5),
+        ("VALIGN",       (0, 0), (-1, -1), "TOP"),
     ]))
     return t
 
 
+def _section(label, s):
+    return Paragraph(label.upper(), s["section"])
+
+
+def _fmt_bool(v):
+    if v is True:  return "Yes"
+    if v is False: return "No"
+    return "—"
+
+
 def generate_pdf_bytes(report: dict) -> bytes:
     """
-    Generate a PDF from a PropIntel report dict.
-    Returns raw PDF bytes for email attachment or file save.
+    Generate a full PropIntel PDF from a pipeline report dict.
+    Returns raw PDF bytes.
     """
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
-        buf,
-        pagesize=letter,
-        rightMargin=0.75*inch,
-        leftMargin=0.75*inch,
-        topMargin=0.75*inch,
-        bottomMargin=0.75*inch,
+        buf, pagesize=letter,
+        rightMargin=0.75*inch, leftMargin=0.75*inch,
+        topMargin=0.75*inch,   bottomMargin=0.75*inch,
         title="PropIntel Report",
     )
 
-    s = _styles()
-    elements = []
+    s = _s()
+    e = []   # elements list
 
-    p = report.get("parcel", {}) or {}
-    m = report.get("market_estimate", {}) or {}
-    f = report.get("financials", {}) or {}
-    flood = report.get("flood", {}) or {}
-    demo = report.get("demographics", {}) or {}
-    inv = report.get("investment_summary", {}) or {}
-    entity = report.get("owner_entity", {}) or {}
-    skip = report.get("skip_trace", {}) or {}
+    # shortcuts — use actual pipeline key names
+    p    = report.get("parcel", {}) or {}
+    mkt  = report.get("market_estimate", {}) or {}
+    fin  = report.get("financials", {}) or {}
+    fld  = report.get("flood", {}) or {}
+    dem  = report.get("demographics", {}) or {}
+    mot  = report.get("motivation", {}) or {}
+    da   = report.get("deal_analysis", {}) or {}
+    ent  = report.get("owner_entity", {}) or {}
+    sk   = report.get("skip_trace", {}) or {}
+    flgs = report.get("flags", []) or []
     tier = report.get("tier", "starter")
-    address = p.get("address") or report.get("input", "Unknown address")
-    generated = report.get("generated_at", datetime.utcnow().isoformat())[:10]
+    addr = p.get("property_address") or report.get("input", "Unknown")
+    gen  = (report.get("generated_at") or datetime.utcnow().isoformat())[:10]
 
-    # ── HEADER ──────────────────────────────────────────────────────────────
-    elements.append(Paragraph("PropIntel", s["title"]))
-    elements.append(Paragraph(
-        f"{'Full Intel' if tier == 'pro' else 'Public Record'} Report  ·  Generated {generated}",
-        s["subtitle"]
+    # ── HEADER ───────────────────────────────────────────────────────────────
+    e.append(Paragraph("PropIntel", s["title"]))
+    e.append(Paragraph(
+        f"{'Full Intel' if tier == 'pro' else 'Public Record'} Report  ·  {gen}",
+        s["tagline"]
     ))
-    elements.append(HRFlowable(width="100%", thickness=1, color=BLUE, spaceAfter=12))
+    e.append(HRFlowable(width=W, thickness=1.5, color=BLUE, spaceAfter=10))
 
-    # Property address banner
-    addr_table = Table(
-        [[Paragraph(address, ParagraphStyle("addr", fontName="Helvetica-Bold",
-                                            fontSize=13, textColor=DARK, leading=16))]],
-        colWidths=[6.5*inch]
-    )
-    addr_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), LIGHT_BG),
-        ("GRID", (0, 0), (-1, -1), 0.5, BORDER),
-        ("LEFTPADDING", (0, 0), (-1, -1), 12),
-        ("TOPPADDING", (0, 0), (-1, -1), 10),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
-        ("ROUNDEDCORNERS", [4]),
+    # Address banner
+    ab = Table([[Paragraph(addr + ("  |  " + p.get("county","").title() + " County" if p.get("county") else ""), s["addr"])]],
+               colWidths=[W])
+    ab.setStyle(TableStyle([
+        ("BACKGROUND",    (0,0),(-1,-1), LIGHT_BG),
+        ("GRID",          (0,0),(-1,-1), 0.5, BORDER),
+        ("LEFTPADDING",   (0,0),(-1,-1), 10),
+        ("TOPPADDING",    (0,0),(-1,-1), 10),
+        ("BOTTOMPADDING", (0,0),(-1,-1), 10),
     ]))
-    elements.append(addr_table)
-    elements.append(Spacer(1, 16))
+    e.append(ab)
+    e.append(Spacer(1, 10))
 
-    # ── PARCEL & OWNERSHIP ─────────────────────────────────────────────────
-    elements.append(Paragraph("Parcel & Ownership", s["section"]))
-    parcel_rows = [
-        _row("Owner", p.get("owner_name"), s),
-        _row("Parcel (APN)", p.get("apn") or p.get("parcel_id"), s),
-        _row("Property Address", p.get("address"), s),
-        _row("County", p.get("county"), s),
-        _row("Use Type", p.get("usetype") or p.get("use_type"), s),
-        _row("Zoning", p.get("zoning"), s),
-        _row("Building SF", f"{int(p['building_sf']):,}" if p.get("building_sf") else None, s),
-        _row("Lot SF", f"{int(p['lot_sf']):,}" if p.get("lot_sf") else None, s),
-        _row("Year Built", p.get("year_built"), s),
-        _row("Owner Mailing", f"{p.get('owner_mailing_address', '')} {p.get('owner_mailing_city', '')} {p.get('owner_mailing_state', '')}".strip() or None, s),
-        _row("Absentee Owner", "YES — mailing address differs from property" if p.get("absentee") else "No", s),
-        _row("Out-of-State", "YES" if p.get("out_of_state") else "No", s),
-    ]
-    elements.append(_table([r for r in parcel_rows if r[1].text != "—"]))
-
-    # ── VALUATION ──────────────────────────────────────────────────────────
-    elements.append(Spacer(1, 4))
-    elements.append(Paragraph("Valuation", s["section"]))
-    val_rows = [
-        _row("County Assessed (Tax Value)", f"${p.get('assessed_total', 0):,.0f}" if p.get("assessed_total") else None, s),
-        _row("Land Value", f"${p.get('land_value', 0):,.0f}" if p.get("land_value") else None, s),
-        _row("Improvement Value", f"${p.get('improvement_value', 0):,.0f}" if p.get("improvement_value") else None, s),
-        _row("Est. Market Range", m.get("range_fmt"), s),
-        _row("Market Estimate Method", f"DFW {m.get('property_type', '')} multiplier ({m.get('multiplier_low', '')}–{m.get('multiplier_high', '')}x assessed)" if m.get("multiplier_low") else None, s),
-    ]
-    elements.append(_table([r for r in val_rows if r[1].text != "—"]))
-
-    # ── FINANCIAL ESTIMATES ────────────────────────────────────────────────
-    if f.get("available"):
-        elements.append(Spacer(1, 4))
-        elements.append(Paragraph("Financial Estimates", s["section"]))
-        fin_rows = [
-            _row("Est. Annual Property Tax", f"${f.get('est_annual_tax', 0):,.0f}", s),
-            _row("Est. Monthly Tax", f"${f.get('est_monthly_tax', 0):,.0f}", s),
-            _row("Effective Tax Rate", f"{f.get('tax_rate_pct', 0)}%", s),
-        ]
-        if f.get("cash_flow"):
-            fin_rows += [
-                _row("Market Rent Range", f.get("rent_per_sf_range"), s),
-                _row("Use Type", f.get("rent_use_label"), s),
-                _row("Gross Income (GSI)", f.get("gsi_range"), s),
-                _row("Net Operating Income", f.get("noi_range"), s),
-                _row("Implied Cap Rate", f"{f.get('implied_cap_rate', 0)}%", s),
-            ]
-        elements.append(_table([r for r in fin_rows if r[1].text != "—"]))
-
-    # ── FLOOD & ENVIRONMENT ────────────────────────────────────────────────
-    elements.append(Spacer(1, 4))
-    elements.append(Paragraph("FEMA Flood Zone", s["section"]))
-    flood_rows = [
-        _row("Flood Zone", flood.get("zone"), s),
-        _row("Zone Description", flood.get("zone_description") or flood.get("summary"), s),
-        _row("Risk Level", flood.get("risk_level"), s),
-        _row("Source", "FEMA National Flood Hazard Layer (NFHL)", s),
-    ]
-    elements.append(_table([r for r in flood_rows if r[1].text != "—"]))
-
-    # ── OWNER ENTITY ───────────────────────────────────────────────────────
-    if entity and not entity.get("is_individual") and not entity.get("error"):
-        elements.append(Spacer(1, 4))
-        elements.append(Paragraph("Owner Entity Intelligence (TX SOS)", s["section"]))
-        ent_rows = [
-            _row("Entity Name", entity.get("entity_name"), s),
-            _row("TX SOS Status", entity.get("status"), s),
-            _row("Formation Date", entity.get("formation_date"), s),
-            _row("Registered Agent", entity.get("registered_agent"), s),
-        ]
-        elements.append(_table([r for r in ent_rows if r[1].text != "—"]))
-
-    # ── PRO: SKIP TRACE ────────────────────────────────────────────────────
-    if tier == "pro" and skip.get("status") == "hit":
-        elements.append(Spacer(1, 4))
-        elements.append(Paragraph("Owner Contact (Skip Trace)", s["section"]))
-        phones = skip.get("phones", [])
-        emails = skip.get("emails", [])
-        ct_rows = [
-            _row("Phone(s)", ", ".join(phones[:3]) if phones else None, s),
-            _row("Email(s)", ", ".join(emails[:3]) if emails else None, s),
-        ]
-        elements.append(_table([r for r in ct_rows if r[1].text != "—"]))
-
-    # ── PRO: INVESTMENT VERDICT ────────────────────────────────────────────
-    if tier == "pro" and inv.get("verdict"):
-        elements.append(Spacer(1, 8))
-        verdict_color = GREEN if "STRONG" in (inv.get("verdict") or "").upper() else (AMBER if "INVESTIGATE" in (inv.get("verdict") or "").upper() else RED_)
-        verdict_table = Table(
-            [[Paragraph(inv.get("verdict", ""), ParagraphStyle(
-                "vv", fontName="Helvetica-Bold", fontSize=16,
-                textColor=verdict_color, alignment=TA_CENTER, leading=20
-            ))]],
-            colWidths=[6.5*inch]
-        )
-        verdict_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), LIGHT_BG),
-            ("GRID", (0, 0), (-1, -1), 1, verdict_color),
-            ("TOPPADDING", (0, 0), (-1, -1), 14),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 14),
+    # ── SIGNALS / FLAGS ──────────────────────────────────────────────────────
+    if flgs:
+        e.append(_section("Investment Signals", s))
+        flag_rows = []
+        for f in flgs:
+            t = f.get("type", "green")
+            txt = f.get("text", "")
+            icon = "✓" if t == "green" else ("⚠" if t == "yellow" else "✗")
+            st = s["flag_g"] if t == "green" else (s["flag_y"] if t == "yellow" else s["flag_r"])
+            flag_rows.append([Paragraph(f"{icon}  {txt}", st)])
+        ft = Table(flag_rows, colWidths=[W])
+        ft.setStyle(TableStyle([
+            ("ROWBACKGROUNDS", (0,0),(-1,-1), [WHITE, LIGHT_BG]),
+            ("GRID",           (0,0),(-1,-1), 0.4, BORDER),
+            ("LEFTPADDING",    (0,0),(-1,-1), 8),
+            ("TOPPADDING",     (0,0),(-1,-1), 5),
+            ("BOTTOMPADDING",  (0,0),(-1,-1), 5),
         ]))
-        elements.append(Paragraph("Investment Verdict", s["section"]))
-        elements.append(verdict_table)
-        if inv.get("summary"):
-            elements.append(Spacer(1, 6))
-            elements.append(Paragraph(inv["summary"], s["body"]))
+        e.append(ft)
 
-    # ── DEMOGRAPHICS ───────────────────────────────────────────────────────
-    if demo.get("population"):
-        elements.append(Spacer(1, 4))
-        elements.append(Paragraph("Neighborhood Demographics (Census ACS)", s["section"]))
-        dem_rows = [
-            _row("Population", f"{int(demo.get('population', 0)):,}" if demo.get("population") else None, s),
-            _row("Median Household Income", demo.get("median_household_income_fmt"), s),
-            _row("Owner-Occupied Housing", f"{demo.get('owner_occupied_pct', 0)}%" if demo.get("owner_occupied_pct") else None, s),
-            _row("Median Age", str(demo.get("median_age")) if demo.get("median_age") else None, s),
+    # ── PARCEL & OWNERSHIP ───────────────────────────────────────────────────
+    e.append(_section("Parcel & Ownership", s))
+    parcel_rows = [
+        _r("Owner of Record",     p.get("owner_name"),           s),
+        _r("Secondary Owner",     p.get("owner_name2"),          s),
+        _r("APN / Parcel ID",     p.get("apn"),                  s),
+        _r("Property Address",    p.get("property_address"),     s),
+        _r("County / State",      f"{(p.get('county') or '').title()}, {p.get('state','')}", s),
+        _r("Use Description",     p.get("use_description"),      s),
+        _r("Zoning",              p.get("zoning"),               s),
+        _r("Building SF",         f"{int(p['building_sf']):,}" if p.get("building_sf") else None, s),
+        _r("Lot (Acres)",         p.get("lot_acres"),            s),
+        _r("Year Built",          p.get("year_built"),           s),
+        _r("Owner Mailing",       p.get("owner_mailing"),        s),
+        _r("Owner City / State",  f"{p.get('owner_city','')}, {p.get('owner_state','')}" if p.get("owner_city") else None, s),
+        _r("Absentee Owner",      "YES" if p.get("absentee_owner") else "No", s),
+        _r("Out-of-State Owner",  "YES" if p.get("out_of_state_owner") else "No", s),
+        _r("Tax Delinquent",      "YES" if p.get("tax_delinquent") else "No", s),
+        _r("Data Source",         p.get("data_sources") or p.get("source"), s),
+    ]
+    t = _tbl(parcel_rows)
+    if t: e.append(t)
+
+    # ── VALUATION ────────────────────────────────────────────────────────────
+    e.append(_section("Valuation", s))
+    val_rows = [
+        _r("County Assessed Total (Tax Value)", f"${p.get('assessed_total',0):,.0f}" if p.get("assessed_total") else None, s),
+        _r("Assessed Land",        f"${p.get('assessed_land',0):,.0f}" if p.get("assessed_land") else None, s),
+        _r("Assessed Improvement", f"${p.get('assessed_improvement',0):,.0f}" if p.get("assessed_improvement") else None, s),
+        _r("YoY Change",           f"{p.get('assessed_yoy_pct')}%" if p.get("assessed_yoy_pct") is not None else None, s),
+        _r("Est. Market Range",    mkt.get("range_fmt"), s),
+        _r("Market Methodology",   mkt.get("methodology") or mkt.get("note"), s),
+        _r("Confidence",           mkt.get("confidence"), s),
+    ]
+    t = _tbl(val_rows)
+    if t: e.append(t)
+
+    # ── FINANCIAL ESTIMATES ──────────────────────────────────────────────────
+    if fin.get("available"):
+        e.append(_section("Financial Estimates", s))
+        fin_rows = [
+            _r("Est. Annual Property Tax", f"${fin.get('est_annual_tax',0):,.0f}" if fin.get("est_annual_tax") else None, s),
+            _r("Est. Monthly Tax",         f"${fin.get('est_monthly_tax',0):,.0f}" if fin.get("est_monthly_tax") else None, s),
+            _r("Effective Tax Rate",       f"{fin.get('tax_rate_pct')}%" if fin.get("tax_rate_pct") else None, s),
         ]
-        elements.append(_table([r for r in dem_rows if r[1].text != "—"]))
+        if fin.get("cash_flow"):
+            fin_rows += [
+                _r("Building SF",          f"{int(fin['building_sf']):,}" if fin.get("building_sf") else None, s),
+                _r("Use Type",             fin.get("rent_use_label"), s),
+                _r("Market Rent ($/SF/yr)",fin.get("rent_per_sf_range"), s),
+                _r("Gross Income (GSI)",   fin.get("gsi_range"), s),
+                _r("Net Oper. Income",     fin.get("noi_range"), s),
+                _r("Implied Cap Rate",     f"{fin.get('implied_cap_rate')}%" if fin.get("implied_cap_rate") else None, s),
+            ]
+        t = _tbl(fin_rows)
+        if t: e.append(t)
+        # Tax note
+        if fin.get("tax_note"):
+            e.append(Spacer(1,4))
+            e.append(Paragraph(f"⚠ {fin['tax_note']}", s["note"]))
+        if fin.get("cash_flow_note"):
+            e.append(Paragraph(f"⚠ {fin['cash_flow_note']}", s["note"]))
 
-    # ── DISCLAIMER ─────────────────────────────────────────────────────────
-    elements.append(Spacer(1, 20))
-    elements.append(HRFlowable(width="100%", thickness=0.5, color=BORDER))
-    elements.append(Spacer(1, 8))
-    elements.append(Paragraph(
+    # ── DEAL ANALYSIS ────────────────────────────────────────────────────────
+    if da.get("asking_price") or da.get("dscr") or da.get("cash_on_cash_pct"):
+        e.append(_section("Deal Analysis", s))
+        loan = da.get("loan_assumptions") or {}
+        da_rows = [
+            _r("Asking Price",             da.get("asking_price_fmt"), s),
+            _r("Price / SF",               f"${da.get('price_per_sf'):,.0f}/SF" if da.get("price_per_sf") else None, s),
+            _r("Building SF",              f"{int(da['building_sf']):,}" if da.get("building_sf") else None, s),
+            _r("Assessed vs Asking",       f"+{da.get('assessed_vs_asking_premium_pct')}% premium" if da.get("assessed_vs_asking_premium_pct") else None, s),
+            _r("Stated Cap Rate",          f"{da.get('stated_cap_rate')}%" if da.get("stated_cap_rate") else None, s),
+            _r("Stated NOI",               da.get("stated_noi_fmt"), s),
+            _r("DSCR",                     f"{da.get('dscr'):.2f}x" if da.get("dscr") else None, s),
+            _r("Cash-on-Cash Return",      f"{da.get('cash_on_cash_pct')}%" if da.get("cash_on_cash_pct") else None, s),
+            _r("Monthly Debt Service",     f"${da.get('monthly_debt_service'):,.0f}/mo" if da.get("monthly_debt_service") else None, s),
+            _r("Assumed LTV",              f"{loan.get('ltv_pct')}%" if loan.get("ltv_pct") else None, s),
+            _r("Assumed Rate",             f"{loan.get('rate_pct')}%" if loan.get("rate_pct") else None, s),
+            _r("Amortization",             f"{loan.get('amortization_years')} yrs" if loan.get("amortization_years") else None, s),
+        ]
+        t = _tbl(da_rows)
+        if t: e.append(t)
+        if da.get("note"):
+            e.append(Spacer(1,4))
+            e.append(Paragraph(f"⚠ {da['note']}", s["note"]))
+
+    # ── MOTIVATION SCORE ─────────────────────────────────────────────────────
+    if mot.get("score") is not None:
+        e.append(_section("Seller Motivation Score", s))
+        score_val  = mot.get("score", 0)
+        score_tier = mot.get("tier", "LOW")
+        score_color = GREEN if score_tier == "HIGH" else (AMBER if score_tier == "MEDIUM" else RED_C)
+        bg_color    = GREEN_BG if score_tier == "HIGH" else (AMBER_BG if score_tier == "MEDIUM" else RED_BG)
+
+        score_tbl = Table([
+            [Paragraph(str(score_val), ParagraphStyle("sc", fontName="Helvetica-Bold",
+                       fontSize=28, textColor=score_color, alignment=TA_CENTER, leading=32)),
+             Paragraph(f"<b>{score_tier}</b><br/>{mot.get('interpretation','')[:120]}",
+                       ParagraphStyle("si", fontName="Helvetica", fontSize=8,
+                                      textColor=DARK, leading=12))]
+        ], colWidths=[0.9*inch, 5.6*inch])
+        score_tbl.setStyle(TableStyle([
+            ("BACKGROUND",    (0,0),(-1,-1), bg_color),
+            ("GRID",          (0,0),(-1,-1), 0.5, BORDER),
+            ("LEFTPADDING",   (0,0),(-1,-1), 10),
+            ("TOPPADDING",    (0,0),(-1,-1), 10),
+            ("BOTTOMPADDING", (0,0),(-1,-1), 10),
+            ("VALIGN",        (0,0),(-1,-1), "MIDDLE"),
+        ]))
+        e.append(score_tbl)
+
+        # Triggered indicators
+        triggered = [i for i in mot.get("indicators", []) if i.get("triggered")]
+        if triggered:
+            e.append(Spacer(1,4))
+            e.append(Paragraph("Triggered signals:", s["note"]))
+            for ind in triggered:
+                e.append(Paragraph(f"  • {ind['name']} (+{ind['points']}pts) — {ind.get('evidence','')}", s["note"]))
+        not_triggered = [i for i in mot.get("indicators", []) if not i.get("triggered")]
+        if not_triggered:
+            e.append(Spacer(1,2))
+            e.append(Paragraph("Not triggered: " + ", ".join(i["name"] for i in not_triggered), s["note"]))
+
+    # ── OWNER ENTITY (TX SOS) ────────────────────────────────────────────────
+    if ent.get("entity_name") and not ent.get("error"):
+        e.append(_section("Owner Entity (TX Secretary of State)", s))
+        ent_rows = [
+            _r("Entity Name",       ent.get("entity_name"), s),
+            _r("TX SOS Status",     ent.get("status"), s),
+            _r("Formation Date",    ent.get("formation_date"), s),
+            _r("Registered Agent",  ent.get("registered_agent"), s),
+        ]
+        t = _tbl(ent_rows)
+        if t: e.append(t)
+    elif ent.get("entity_name"):
+        e.append(_section("Owner Entity", s))
+        e.append(Paragraph(
+            f"Entity: {ent['entity_name']}  |  TX SOS lookup blocked (403 — bot protection). "
+            f"Search manually: {ent.get('manual_url','')}",
+            s["note"]
+        ))
+
+    # ── SKIP TRACE ───────────────────────────────────────────────────────────
+    if tier == "pro":
+        e.append(_section("Skip Trace / Owner Contact", s))
+        if sk.get("status") == "hit":
+            phones = sk.get("phones", [])
+            emails = sk.get("emails", [])
+            st_rows = [
+                _r("Phone(s)", ", ".join(phones[:4]) if phones else "None found", s),
+                _r("Email(s)", ", ".join(emails[:4]) if emails else "None found", s),
+                _r("Source",   sk.get("source"), s),
+            ]
+            t = _tbl(st_rows)
+            if t: e.append(t)
+        else:
+            e.append(Paragraph(
+                f"Status: {sk.get('status','—')}  |  {sk.get('note','')}",
+                s["note"]
+            ))
+
+    # ── FEMA FLOOD ───────────────────────────────────────────────────────────
+    e.append(_section("FEMA Flood Zone", s))
+    flood_rows = [
+        _r("Zone",        fld.get("zone"), s),
+        _r("Description", fld.get("description"), s),
+        _r("FIRM Panel",  fld.get("firm_panel"), s),
+        _r("Insurance Required", _fmt_bool(fld.get("flood_insurance_required")), s),
+        _r("Source",      fld.get("source"), s),
+    ]
+    t = _tbl(flood_rows)
+    if t:
+        e.append(t)
+    elif fld.get("error"):
+        e.append(Paragraph(f"Lookup error: {fld['error'][:120]}. Verify at msc.fema.gov", s["note"]))
+
+    # ── DEMOGRAPHICS ─────────────────────────────────────────────────────────
+    if dem.get("population"):
+        e.append(_section("Neighborhood Demographics (Census ACS)", s))
+        dem_rows = [
+            _r("ZIP Code",              dem.get("zip"), s),
+            _r("Population",            f"{int(dem['population']):,}", s),
+            _r("Median HH Income",      dem.get("median_household_income_fmt"), s),
+            _r("Owner-Occupied",        f"{dem.get('owner_occupied_pct')}%" if dem.get("owner_occupied_pct") else None, s),
+            _r("Median Age",            str(dem.get("median_age")) if dem.get("median_age") else None, s),
+            _r("Unemployment Rate",     f"{dem.get('unemployment_rate')}%" if dem.get("unemployment_rate") else None, s),
+        ]
+        t = _tbl(dem_rows)
+        if t: e.append(t)
+
+    # ── DISCLAIMER ───────────────────────────────────────────────────────────
+    e.append(Spacer(1, 18))
+    e.append(HRFlowable(width=W, thickness=0.5, color=BORDER))
+    e.append(Spacer(1, 7))
+    e.append(Paragraph(
         "This report contains publicly available data from government sources including county appraisal districts, "
-        "FEMA, U.S. Census Bureau, and Texas Secretary of State. Financial estimates are projections based on "
-        "published market data and are not appraisals. PropIntel is not a licensed broker, appraiser, or attorney. "
-        "Not investment advice. All values should be independently verified before making investment decisions.",
+        "FEMA, U.S. Census Bureau, and Texas Secretary of State. Financial estimates and deal analysis figures "
+        "are projections based on published market data — not appraisals or audit-verified financials. "
+        "PropIntel is not a licensed broker, appraiser, or attorney. Not investment advice. "
+        "Verify all figures independently before making investment decisions.  "
+        f"Generated {gen} · propertyvalueintel.com",
         s["footer"]
     ))
 
-    doc.build(elements)
+    doc.build(e)
     return buf.getvalue()
