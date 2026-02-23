@@ -1717,7 +1717,7 @@ async function handleAnalyze(e) {
     const res = await fetch(API + '/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address: input, tier: 'starter' })
+      body: JSON.stringify({ input: input, tier: 'starter' })
     });
     if (res.status === 429) throw new Error('Rate limit reached — try again in an hour.');
     if (!res.ok) throw new Error(`Server error (${res.status})`);
