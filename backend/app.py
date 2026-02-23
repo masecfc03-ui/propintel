@@ -206,6 +206,61 @@ def test_email():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/admin/generate-token", methods=["POST"])
+def generate_token():
+    """
+    Admin endpoint — run the pipeline for an address and store the report,
+    returning a public token + URL without sending any email.
+    Used for: agent outreach (send the URL manually), testing, white-label.
+    POST { "address": "...", "tier": "pro" }
+    Auth: X-Admin-Key header or ?admin_key= query param
+    """
+    if not _check_admin():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    body    = request.get_json(force=True, silent=True) or {}
+    address = body.get("address", "").strip()
+    tier    = body.get("tier", "pro")
+
+    if not address:
+        return jsonify({"error": "address required"}), 400
+
+    log.info("generate-token: %s [%s]", address, tier)
+
+    try:
+        report_data = run_pipeline(address, tier)
+        report_id   = "agent-" + str(uuid.uuid4())[:8]
+        token       = str(uuid.uuid4())
+
+        # Store in DB if available
+        try:
+            from orders import store_report
+            store_report(report_id, token, report_data)
+        except Exception as db_err:
+            log.warning("DB store skipped: %s", db_err)
+            # Fallback: store in memory cache so token link works this session
+            _report_cache[token] = {"id": report_id, "data": report_data, "ts": time.time()}
+
+        report_url = f"{os.getenv('REPORT_BASE_URL','https://propertyvalueintel.com')}/report.html?token={token}"
+
+        return jsonify({
+            "report_id":   report_id,
+            "token":       token,
+            "report_url":  report_url,
+            "address":     address,
+            "tier":        tier,
+            "motivation_score": (report_data.get("motivation") or {}).get("score"),
+            "assessed_total":   (report_data.get("parcel") or {}).get("assessed_total"),
+        })
+    except Exception as e:
+        log.error("generate-token failed: %s", e, exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+# In-memory fallback cache for tokens when DB not available
+_report_cache = {}
+
+
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     """
@@ -478,18 +533,26 @@ def get_report_by_token(token):
     """
     if not token or len(token) < 32:
         return jsonify({"error": "Invalid token"}), 400
+    # Check DB first
     order = get_order_by_token(token)
-    if not order:
-        return jsonify({"error": "Report not found"}), 404
-    if not order.get("report_json"):
-        return jsonify({"error": "Report not ready yet", "status": order.get("status")}), 202
-    try:
-        data = json.loads(order["report_json"])
-        # Strip out internal fields
+    if order:
+        if not order.get("report_json"):
+            return jsonify({"error": "Report not ready yet", "status": order.get("status")}), 202
+        try:
+            data = json.loads(order["report_json"])
+            data.pop("report_id", None)
+            return jsonify(data)
+        except Exception as e:
+            return jsonify({"error": f"Could not load report: {str(e)}"}), 500
+
+    # Fallback: check in-memory cache (used by generate-token when DB unavailable)
+    cached = _report_cache.get(token)
+    if cached:
+        data = dict(cached.get("data", {}))
         data.pop("report_id", None)
         return jsonify(data)
-    except Exception as e:
-        return jsonify({"error": f"Could not load report: {str(e)}"}), 500
+
+    return jsonify({"error": "Report not found"}), 404
 
 
 @app.route("/api/orders/<order_id>/report", methods=["GET"])

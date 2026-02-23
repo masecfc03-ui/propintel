@@ -281,6 +281,51 @@
     }
     .loi-btn:hover { border-color: var(--text2); }
 
+    /* ── DATA TABLE (comps, history, scenarios) ── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .data-table th {
+      text-align: left; padding: 9px 10px;
+      background: var(--text); color: white;
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .data-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text2); }
+    .data-table tr:nth-child(even) td { background: var(--bg2); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td.val { font-weight: 700; color: var(--text); }
+    .data-table td.accent { font-weight: 700; color: var(--accent); }
+    .data-table td.green { font-weight: 600; color: var(--green); }
+    .data-table td.red { font-weight: 600; color: var(--red); }
+
+    /* ── PENDING / ATTOM UNLOCK BOX ── */
+    .pending-box {
+      background: var(--bg); border: 1px dashed var(--border);
+      border-radius: 10px; padding: 20px 24px; text-align: center;
+    }
+    .pending-title { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+    .pending-sub { font-size: 0.8rem; color: var(--text3); font-style: italic; margin-bottom: 10px; }
+    .pending-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .pending-list li { font-size: 0.78rem; color: var(--text2); }
+
+    /* ── COMP STATS TILES ── */
+    .comp-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
+    .comp-stat { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 12px; text-align: center; }
+    .comp-stat-val { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .comp-stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+    /* ── SCENARIO TABLE ── */
+    .scenario-note { font-size: 0.72rem; color: var(--text3); margin-bottom: 8px; line-height: 1.5; }
+
+    /* ── CHECKLIST ── */
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .cl-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.82rem; color: var(--text2); line-height: 1.5;
+    }
+    .cl-check { color: var(--accent); font-weight: 700; flex-shrink: 0; font-size: 0.9rem; }
+
     /* ── BUSINESS TABLE ── */
     table.biz-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
     .biz-table th {
@@ -729,10 +774,64 @@
       <div class="sec-body" id="loi-body"></div>
     </div>
 
+    <!-- AVM (ATTOM) -->
+    <div class="section-card" id="avm-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">🤖 Automated Valuation Model (AVM)</div>
+        <div class="sec-src" id="avm-src">ATTOM Data Solutions</div>
+      </div>
+      <div class="sec-body" id="avm-body"></div>
+    </div>
+
+    <!-- Purchase Scenario Modeling (PRO) -->
+    <div class="section-card" id="scenario-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">📐 Purchase Scenario Modeling <span style="background:var(--accent-light);color:var(--accent);font-size:0.62rem;padding:2px 7px;border-radius:4px;font-weight:700;margin-left:6px;letter-spacing:0.5px">PRO</span></div>
+        <div class="sec-src">7% rate · 25yr amort · 25% down</div>
+      </div>
+      <div class="sec-body" id="scenario-body"></div>
+    </div>
+
+    <!-- Mortgage & Liens (ATTOM) -->
+    <div class="section-card" id="mortgage-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">🏦 Mortgage & Open Liens</div>
+        <div class="sec-src" id="mortgage-src">ATTOM Data Solutions</div>
+      </div>
+      <div class="sec-body" id="mortgage-body"></div>
+    </div>
+
+    <!-- Sold Comparable Sales (ATTOM) -->
+    <div class="section-card" id="sold-comps-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">📈 Sold Comparable Sales</div>
+        <div class="sec-src" id="comps-src">ATTOM Data Solutions</div>
+      </div>
+      <div class="sec-body" id="sold-comps-body"></div>
+    </div>
+
+    <!-- Ownership History (ATTOM) -->
+    <div class="section-card" id="history-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">📜 Ownership & Deed History</div>
+        <div class="sec-src" id="history-src">ATTOM Data Solutions</div>
+      </div>
+      <div class="sec-body" id="history-body"></div>
+    </div>
+
+    <!-- Due Diligence Checklist -->
+    <div class="section-card" id="checklist-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">✅ Due Diligence Checklist</div>
+        <div class="sec-src">Before you close</div>
+      </div>
+      <div class="sec-body" id="checklist-body"></div>
+    </div>
+
     <!-- Disclaimer -->
     <div class="disclaimer">
       <div class="disc-title">Data Sources & Disclaimer</div>
-      <p id="disc-text">All data in this report is sourced from verified government and public records. PropIntel is not a licensed real estate broker, appraiser, or attorney. This report is for informational purposes only and does not constitute investment, legal, or financial advice. Verify all data independently before making investment decisions.</p>
+      <p id="disc-text">All data in this report is sourced from verified government and public records. PropIntel is not a licensed real estate broker, appraiser, or attorney. This report is for informational purposes only and does not constitute investment, legal, or financial advice. Data accuracy depends on county records which may lag market conditions by 12–24 months. Verify all data independently before making investment decisions.</p>
     </div>
 
   </div>
@@ -1410,6 +1509,220 @@
         `<span class="inv-signal ${s.cls}">${s.text}</span>`
       ).join('');
     }
+
+    // ── AVM SECTION ──
+    const avm = data.avm || {};
+    document.getElementById('avm-section').style.display = '';
+    if (avm.available) {
+      const ltv_est = avm.value_high && (mort && mort.open_lien_balance)
+        ? ((mort.open_lien_balance / avm.value_high) * 100).toFixed(1) + '%' : null;
+      document.getElementById('avm-body').innerHTML =
+        row('AVM Value', avm.value_fmt || 'N/A', 'accent') +
+        row('AVM Range', avm.range_fmt || 'N/A') +
+        (avm.confidence_score ? row('Confidence Score', avm.confidence_score + '%') : '') +
+        (avm.calc_date ? row('Calculation Date', avm.calc_date) : '') +
+        (ltv_est ? row('Est. LTV (AVM High)', ltv_est) : '') +
+        row('Source', 'ATTOM Data Solutions');
+    } else {
+      document.getElementById('avm-body').innerHTML = `
+        <div class="pending-box">
+          <div class="pending-title">📊 ATTOM Automated Valuation Model</div>
+          <div class="pending-sub">Activates when ATTOM_API_KEY is configured</div>
+          <ul class="pending-list">
+            <li>• Machine-learning AVM with confidence score (0–100)</li>
+            <li>• Value range (low / mid / high) based on sold comps</li>
+            <li>• Replaces the assessed-based estimate above with real market model</li>
+            <li>• Calculation date — how fresh is the data?</li>
+          </ul>
+        </div>`;
+    }
+
+    // ── PURCHASE SCENARIO MODELING (PRO) ──
+    if (isPro) {
+      document.getElementById('scenario-section').style.display = '';
+      const assessed = parcel.assessed_total || 0;
+      const mktLow = est.market_low || 0;
+      const mktHigh = est.market_high || 0;
+      const sf = Number(parcel.building_sf || 0);
+      const rateAnn = 0.07, amort = 25, downPct = 0.25;
+      function calcScenario(price) {
+        if (!price) return null;
+        const down = price * downPct, loan = price - down;
+        const r = rateAnn / 12, n = amort * 12;
+        const moPi = r > 0 ? loan * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n)-1) : 0;
+        const noi = assessed * 0.07;
+        const dscr = moPi > 0 ? (noi/12/moPi).toFixed(2) : 'N/A';
+        const psf = sf > 0 ? '$' + (price/sf).toFixed(0) + '/SF' : 'N/A';
+        return { down, loan, moPi, dscr, psf };
+      }
+      const scenarios = [
+        { label: 'Assessed Value', price: assessed },
+        { label: 'Market Low',     price: mktLow },
+        { label: 'Market High',    price: mktHigh },
+      ].filter(s => s.price > 0);
+      const rows_sc = scenarios.map(s => {
+        const c = calcScenario(s.price);
+        if (!c) return '';
+        return `<tr>
+          <td class="val">${s.label}</td>
+          <td class="accent">${'$' + s.price.toLocaleString()}</td>
+          <td>${'$' + Math.round(c.down).toLocaleString()}</td>
+          <td>${'$' + Math.round(c.loan).toLocaleString()}</td>
+          <td class="val">${'$' + Math.round(c.moPi).toLocaleString()}/mo</td>
+          <td>${c.dscr}x</td>
+          <td>${c.psf}</td>
+        </tr>`;
+      }).join('');
+      document.getElementById('scenario-body').innerHTML = `
+        <p class="scenario-note">Estimates only — 7.0% interest rate, 25-year amortization, 25% down payment. DSCR uses 7% cap rate on county assessed value. Verify with your lender before underwriting.</p>
+        <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Scenario</th><th>Price</th><th>Down 25%</th><th>Loan Amt</th><th>Mo. P&amp;I</th><th>DSCR @7%</th><th>$/SF</th></tr></thead>
+          <tbody>${rows_sc}</tbody>
+        </table>
+        </div>`;
+    }
+
+    // ── MORTGAGE & LIENS (ATTOM) ──
+    const mort = data.mortgage || {};
+    document.getElementById('mortgage-section').style.display = '';
+    if (mort.available) {
+      const mktMid = est.available ? ((est.market_low + est.market_high) / 2) : (parcel.assessed_total || 0);
+      const lienBal = mort.open_lien_balance || mort.loan_amount || 0;
+      const equity = mktMid > 0 && lienBal > 0 ? mktMid - lienBal : null;
+      const ltv = mktMid > 0 && lienBal > 0 ? (lienBal / mktMid * 100).toFixed(1) + '%' : null;
+      document.getElementById('mortgage-body').innerHTML =
+        row('Loan Amount (Original)', mort.loan_amount_fmt || 'N/A') +
+        (mort.loan_type ? row('Loan Type', mort.loan_type) : '') +
+        (mort.interest_rate ? row('Interest Rate', mort.interest_rate + '%') : '') +
+        (mort.lender_name ? row('Lender', mort.lender_name) : '') +
+        (mort.maturity_date ? row('Maturity Date', mort.maturity_date) : '') +
+        row('Open Lien Count', mort.open_lien_count != null ? String(mort.open_lien_count) : 'N/A') +
+        row('Open Lien Balance', mort.open_lien_fmt || 'N/A', lienBal > 0 ? 'red' : 'green') +
+        (equity !== null ? row('Estimated Equity', '$' + Math.round(equity).toLocaleString(), equity > 0 ? 'green' : 'red') : '') +
+        (ltv ? row('Estimated LTV', ltv) : '') +
+        (mort.last_sale_price_fmt ? row('Last Sale Price', mort.last_sale_price_fmt, 'accent') : '') +
+        (mort.last_sale_date ? row('Last Sale Date', mort.last_sale_date) : '') +
+        `<div style="font-size:0.72rem;color:var(--text3);margin-top:10px">Source: ATTOM Data Solutions. Lien balance is an estimate — order full title search before closing.</div>`;
+    } else {
+      document.getElementById('mortgage-body').innerHTML = `
+        <div class="pending-box">
+          <div class="pending-title">🏦 Mortgage & Lien Data</div>
+          <div class="pending-sub">Activates when ATTOM_API_KEY is configured</div>
+          <ul class="pending-list">
+            <li>• Open loan balance and original loan amount</li>
+            <li>• Lender name, loan type, interest rate</li>
+            <li>• Open lien count and total lien balance</li>
+            <li>• Estimated equity (market value − lien balance)</li>
+            <li>• Last sale price and transaction date</li>
+          </ul>
+        </div>`;
+    }
+
+    // ── SOLD COMPS (ATTOM) ──
+    const compsData = data.sold_comps || {};
+    document.getElementById('sold-comps-section').style.display = '';
+    if (compsData.comps && compsData.comps.length > 0) {
+      const stats = compsData.stats || {};
+      const statHtml = `
+        <div class="comp-stats">
+          <div class="comp-stat"><div class="comp-stat-val">${compsData.comps.length}</div><div class="comp-stat-label">Comps Found</div></div>
+          <div class="comp-stat"><div class="comp-stat-val">${stats.median_price_fmt || 'N/A'}</div><div class="comp-stat-label">Median Price</div></div>
+          <div class="comp-stat"><div class="comp-stat-val">${stats.median_psf_fmt || 'N/A'}</div><div class="comp-stat-label">Median $/SF</div></div>
+          <div class="comp-stat"><div class="comp-stat-val">${stats.price_range_fmt || 'N/A'}</div><div class="comp-stat-label">Price Range</div></div>
+        </div>`;
+      const compRows = compsData.comps.slice(0, 20).map(c => `<tr>
+        <td>${(c.address || '—').substring(0,30)}, ${c.city || ''}</td>
+        <td>${(c.sale_date || '—').substring(0,10)}</td>
+        <td class="accent">${c.sale_fmt || '—'}</td>
+        <td>${c.sf_fmt || (c.building_sf ? Number(c.building_sf).toLocaleString() : '—')}</td>
+        <td>${c.psf_fmt || '—'}</td>
+        <td>${c.beds || '—'}/${c.baths || '—'}</td>
+        <td>${c.year_built || '—'}</td>
+      </tr>`).join('');
+      document.getElementById('sold-comps-body').innerHTML = statHtml + `
+        <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Address</th><th>Sold Date</th><th>Price</th><th>Bldg SF</th><th>$/SF</th><th>Bed/Ba</th><th>Yr Built</th></tr></thead>
+          <tbody>${compRows}</tbody>
+        </table>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:8px">
+          Source: ATTOM Data Solutions · ${compsData.comps.length} sales within ${compsData.radius_miles || 0.5} miles · Last ${compsData.months_back || 12} months
+        </div>`;
+    } else {
+      document.getElementById('sold-comps-body').innerHTML = `
+        <div class="pending-box">
+          <div class="pending-title">📈 Sold Comparable Sales</div>
+          <div class="pending-sub">Activates when ATTOM_API_KEY is configured</div>
+          <ul class="pending-list">
+            <li>• Up to 20 sold comps within 0.5 miles</li>
+            <li>• 90-day, 6-month, and 12-month breakdowns</li>
+            <li>• Sale price, $/SF, beds/baths, days on market</li>
+            <li>• Median and average comp statistics with price range</li>
+            <li>• Is the market trending up or down?</li>
+          </ul>
+        </div>`;
+    }
+
+    // ── OWNERSHIP HISTORY (ATTOM) ──
+    const histData = data.ownership_history || {};
+    document.getElementById('history-section').style.display = '';
+    if (histData.history && histData.history.length > 0) {
+      const holdNote = histData.hold_years
+        ? `<div style="background:var(--amber-light);border:1px solid rgba(217,119,6,0.2);border-radius:8px;padding:10px 14px;font-size:0.82rem;color:#92400e;margin-bottom:12px">
+            📅 Current owner has held this property approximately <strong>${histData.hold_years} years</strong>${histData.hold_years >= 10 ? ' — long hold duration is a strong motivation indicator' : ''}.
+          </div>` : '';
+      const histRows = histData.history.map(h => `<tr>
+        <td>${(h.sale_date || '—').substring(0,10)}</td>
+        <td class="val">${(h.buyer_name || '—').substring(0,35)}</td>
+        <td class="accent">${h.sale_fmt || '—'}</td>
+        <td>${(h.document_type || '—').substring(0,25)}</td>
+      </tr>`).join('');
+      document.getElementById('history-body').innerHTML = holdNote + `
+        <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr><th>Sale Date</th><th>Buyer</th><th>Sale Price</th><th>Document Type</th></tr></thead>
+          <tbody>${histRows}</tbody>
+        </table>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:8px">Source: ATTOM Data Solutions · Deed and transfer history</div>`;
+    } else {
+      document.getElementById('history-body').innerHTML = `
+        <div class="pending-box">
+          <div class="pending-title">📜 Deed & Ownership History</div>
+          <div class="pending-sub">Activates when ATTOM_API_KEY is configured</div>
+          <ul class="pending-list">
+            <li>• Full transaction history — every sale, 20+ years back</li>
+            <li>• Buyer and seller names on each transaction</li>
+            <li>• Purchase prices and recording dates</li>
+            <li>• Hold duration: how long has current owner held?</li>
+            <li>• Document type: deed, transfer, foreclosure, etc.</li>
+          </ul>
+        </div>`;
+    }
+
+    // ── DUE DILIGENCE CHECKLIST ──
+    document.getElementById('checklist-section').style.display = '';
+    const checks = [
+      'Order Phase I Environmental Study — required for commercial financing',
+      'Pull full title search — confirm no liens, easements, or encumbrances',
+      'Request current rent roll and lease abstracts from seller',
+      'Obtain T-12 income statement and last 2 years P&amp;L',
+      'Verify actual NOI and cap rate against seller\'s stated numbers',
+      'Walk property — note deferred maintenance, HVAC age, roof condition',
+      'Confirm zoning compliance with current use',
+      'Pull all open permits — confirm no unpermitted work',
+      'Verify flood insurance requirement and cost with insurance agent',
+      'Order survey if boundary lines are unclear',
+      'Confirm property tax amounts directly with county appraisal district',
+      'Review 12 months of utility bills',
+    ];
+    document.getElementById('checklist-body').innerHTML = `
+      <ul class="checklist">${checks.map(c =>
+        `<li class="cl-item"><span class="cl-check">☐</span><span>${c}</span></li>`
+      ).join('')}</ul>
+      <div style="font-size:0.72rem;color:var(--text3);margin-top:10px">Print this report and check off each item before closing. This list is a starting point — consult your attorney and broker.</div>`;
 
     // Branding
     renderBranding();
