@@ -24,6 +24,18 @@ HEADERS = {
 def _clean(val: str) -> str:
     return " ".join(val.split()).strip() if val else ""
 
+def _dcad_fallback(query: str, reason: str) -> dict:
+    """Return structured fallback when DCAD is unreachable."""
+    encoded = requests.utils.quote(query)
+    return {
+        "source": "Dallas Central Appraisal District",
+        "source_url": SEARCH_URL,
+        "warning": reason,
+        "manual_url": f"https://www.dcad.org/property-search/?situs={encoded}",
+        "propaccess_url": f"https://propaccess.trueautomation.com/clientdb/?cid=12",
+        "note": "DCAD parcel data requires direct lookup. Use the link above to retrieve owner, APN, assessed value, and tax status.",
+    }
+
 def search_by_address(address: str) -> dict:
     """
     Search DCAD by property address.
@@ -34,16 +46,15 @@ def search_by_address(address: str) -> dict:
 
     try:
         # Step 1: Get search page (may need session/CSRF token)
-        resp = session.get(SEARCH_URL, timeout=15)
+        resp = session.get(SEARCH_URL, timeout=20)
         resp.raise_for_status()
-        time.sleep(1)
+        time.sleep(0.5)
 
         # Step 2: Submit search form
-        # DCAD uses a POST or query param — inspect actual form action
         search_resp = session.get(
             SEARCH_URL,
             params={"situs": address, "searchType": "situs"},
-            timeout=15
+            timeout=20
         )
         search_resp.raise_for_status()
         soup = BeautifulSoup(search_resp.text, "lxml")
@@ -51,11 +62,11 @@ def search_by_address(address: str) -> dict:
         return _parse_results(soup, address)
 
     except requests.exceptions.Timeout:
-        return {"error": "DCAD request timed out", "source": "DCAD"}
+        return _dcad_fallback(address, "DCAD timed out — direct lookup available")
     except requests.exceptions.ConnectionError:
-        return {"error": "DCAD connection failed", "source": "DCAD"}
+        return _dcad_fallback(address, "DCAD connection failed — direct lookup available")
     except Exception as e:
-        return {"error": str(e), "source": "DCAD"}
+        return _dcad_fallback(address, str(e))
 
 def search_by_apn(apn: str) -> dict:
     """Search DCAD by account number (APN)."""

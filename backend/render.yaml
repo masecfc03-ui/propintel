@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: propintel-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: STRIPE_LIVE_SECRET_KEY
+        sync: false
+      - key: STRIPE_LIVE_STARTER_LINK
+        sync: false
+      - key: STRIPE_LIVE_PRO_LINK
+        sync: false
