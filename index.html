@@ -548,6 +548,7 @@ footer {
     <li><a href="#how">How it works</a></li>
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#faq">FAQ</a></li>
+    <li><a href="learn.html">Learn</a></li>
   </ul>
   <a class="nav-cta" href="#pricing">Get a report →</a>
 </nav>
@@ -779,24 +780,42 @@ footer {
   <div class="faq-list">
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">Where does the data come from?</div>
-      <div class="faq-a">We pull from county assessor records, FEMA National Flood Hazard Layer, US Census ACS, REGRID parcel data, and People Data Labs for skip trace — all verified, government-sourced, updated regularly.</div>
+      <div class="faq-a">PropIntel aggregates from 7 verified sources: <strong>Regrid</strong> for parcel and ownership records (county assessor data), <strong>FEMA National Flood Hazard Layer</strong> for flood zone designation, <strong>US Census ACS</strong> for neighborhood demographics, <strong>People Data Labs</strong> for skip trace (phones and emails), <strong>ATTOM Data</strong> for AVM, sold comps, and mortgage history (Pro tier), <strong>Geocodio</strong> for address normalization, and the <strong>FEMA Map Service Center</strong> as a verification fallback. All sources are either government databases or licensed commercial aggregators used by institutional lenders and appraisers.</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">How accurate is the motivation score?</div>
-      <div class="faq-a">The motivation score is a 0–100 composite based on verified signals: absentee ownership, out-of-state mailing, LLC/entity ownership, hold duration, and tax delinquency. It reflects likelihood to be open to a deal — not a guaranteed seller.</div>
+      <div class="faq-q">What is the motivation score and how is it calculated?</div>
+      <div class="faq-a">The motivation score is a 0–100 composite index built from verified ownership signals: <strong>Absentee ownership</strong> (+25 pts — owner doesn't live at the property), <strong>Out-of-state mailing</strong> (+20 pts — owner receives mail in a different state), <strong>LLC or entity ownership</strong> (+10 pts — property held by a company rather than an individual), <strong>Long hold duration</strong> (+10 pts — owned 10+ years without a sale), and <strong>Tax delinquency</strong> (+15 pts — owner has fallen behind on property taxes). Scores 0–29 are LOW, 30–59 are MEDIUM, 60+ are HIGH. HIGH-score properties have multiple overlapping signals — these are your best outreach targets. <a href="learn.html#motivation" style="color:var(--blue-l)">Full breakdown →</a></div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">What's the difference between assessed value and market value?</div>
+      <div class="faq-a">Assessed value is the county appraisal district's number — used purely to calculate property taxes. It is not what the property is worth on the open market and is always labeled as "Tax Assessed Value" in your report. Market value is what a buyer and seller would agree to in an arm's-length transaction today. PropIntel shows both — the assessed number from public record and a market range estimate based on comparable sales and AVM data. The gap between them is often meaningful: a large gap (assessed much lower than market) signals significant unrealized equity, which is itself a motivating factor for some sellers. <a href="learn.html#value" style="color:var(--blue-l)">Read more →</a></div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">How do I read the FEMA flood zone?</div>
+      <div class="faq-a">The flood zone code determines insurance requirements and risk profile. <strong>Zone X</strong> = minimal risk, no mandatory flood insurance, standard financing. <strong>Zone AE</strong> = 100-year floodplain with calculated base flood elevation — flood insurance is required for any federally-backed loan (FHA, VA, conventional). Typically costs $800–$3,000+/year. <strong>Zone VE</strong> = coastal high-velocity zone, highest risk, most expensive insurance. For any Zone AE property, ask the seller for an elevation certificate — it can significantly reduce insurance premiums if the structure is elevated above BFE. <a href="learn.html#flood" style="color:var(--blue-l)">All zone codes explained →</a></div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">What does the deal analyzer actually calculate?</div>
+      <div class="faq-a">The deal analyzer runs three acquisition scenarios — at assessed value, market low, and market high — and for each scenario calculates: <strong>down payment</strong> (25% LTV assumption), <strong>loan amount</strong>, <strong>monthly P&I</strong> at current commercial rate, <strong>DSCR</strong> (Debt Service Coverage Ratio — the ratio of net operating income to annual debt service; lenders typically require 1.25x minimum), and <strong>$/SF</strong> (price per square foot, for direct comp against market sales). Use the assessed scenario to anchor your offer, market low as your negotiation ceiling, and market high to understand what a full-price buyer pays. <a href="learn.html#deal" style="color:var(--blue-l)">Full methodology →</a></div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">Do you cover all US states?</div>
-      <div class="faq-a">Yes. We cover all 50 states for base parcel data. Sold comps and AVM are currently strongest in Texas, with national coverage expanding. FEMA and census data is nationwide.</div>
+      <div class="faq-a">Base parcel data (owner, assessed value, flood zone, demographics) covers all 50 states. Sold comps and AVM are currently strongest in Texas and major metro markets nationally, with coverage expanding as ATTOM's dataset grows. Skip trace coverage is national. If a Pro report returns limited comp data for a specific market, it will note the data availability — you're never charged for an empty section.</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">Can I use this for client-facing work?</div>
-      <div class="faq-a">Yes. The shareable report link is clean and unbranded — safe to forward to clients. Enterprise accounts get full white-label with your logo. <a href="mailto:hello@propertyvalueintel.com" style="color:var(--blue-l)">Contact us</a> for volume pricing.</div>
+      <div class="faq-a">Yes. The shareable report link is clean and professional — safe to send to clients, lenders, or partners. For agents, use the Starter report as a listing presentation data point or buyer due-diligence supplement. For investors, share the Pro report with partners or capital providers. Enterprise accounts get full white-label with your firm's logo and branding — clients never see PropIntel. <a href="mailto:hello@propertyvalueintel.com" style="color:var(--blue-l)">Contact us for volume pricing.</a></div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
       <div class="faq-q">What's the refund policy?</div>
-      <div class="faq-a">If a report fails to generate or returns no data, we'll refund you immediately — no questions asked. If the data is live and delivered, all sales are final.</div>
+      <div class="faq-a">If a report fails to generate, returns no parcel data, or has a material data error, we'll refund in full — no questions asked. If the data is live, delivered, and accurate to public records, all sales are final. Reports are generated from the address you enter, so double-check the address format before submitting.</div>
     </div>
+  </div>
+
+  <div style="margin-top:32px">
+    <a href="learn.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--blue-l);text-decoration:none;font-weight:600">
+      Read the full learning guide — every metric explained in depth →
+    </a>
   </div>
 </div>
 
@@ -806,6 +825,7 @@ footer {
   <div class="footer-links">
     <a href="#how">How it works</a>
     <a href="#pricing">Pricing</a>
+    <a href="learn.html">Learn</a>
     <a href="mailto:hello@propertyvalueintel.com">Contact</a>
   </div>
   <span class="footer-copy">© 2026 PropertyValueIntel LLC. All rights reserved.</span>

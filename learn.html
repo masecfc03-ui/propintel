@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PropIntel Learn — Understanding Your Property Report</title>
+<meta name="description" content="Deep-dive guides on every metric in a PropIntel report — motivation score, FEMA flood zones, assessed vs market value, seller signals, sold comps, deal analyzer, and more."/>
+<link rel="canonical" href="https://propertyvalueintel.com/learn"/>
+<link rel="preconnect" href="https://api.fontshare.com"/>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #09090b;
+  --bg1:      #0f0f12;
+  --bg2:      #18181b;
+  --bg3:      #27272a;
+  --border:   rgba(255,255,255,0.07);
+  --border-hi:rgba(255,255,255,0.13);
+  --blue:     #2563eb;
+  --blue-l:   #3b82f6;
+  --green:    #22c55e;
+  --amber:    #f59e0b;
+  --red:      #ef4444;
+  --white:    #fafafa;
+  --gray-1:   #e4e4e7;
+  --gray-2:   #a1a1aa;
+  --gray-3:   #52525b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);color:var(--white);
+  line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity:0.025;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 max(24px,calc(50vw - 680px));
+  background:rgba(9,9,11,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-family:'Satoshi',sans-serif;font-weight:800;font-size:1.05rem;
+  color:var(--white);text-decoration:none;letter-spacing:-0.5px;
+  display:flex;align-items:center;gap:8px;
+}
+.nav-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--blue-l);box-shadow:0 0 8px var(--blue-l);}
+.nav-back{
+  font-size:0.82rem;color:var(--gray-2);text-decoration:none;
+  display:flex;align-items:center;gap:6px;
+}
+.nav-back:hover{color:var(--white)}
+.nav-cta{
+  background:var(--white);color:#000;border:none;padding:8px 18px;border-radius:8px;
+  font-size:0.82rem;font-weight:700;cursor:pointer;text-decoration:none;
+  transition:opacity 0.15s;
+}
+.nav-cta:hover{opacity:0.85}
+
+/* LAYOUT */
+.page{
+  max-width:1200px;margin:0 auto;
+  padding:100px 24px 80px;
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:60px;
+  align-items:start;
+}
+@media(max-width:860px){.page{grid-template-columns:1fr}.sidebar{display:none}}
+
+/* SIDEBAR */
+.sidebar{
+  position:sticky;top:80px;
+  display:flex;flex-direction:column;gap:4px;
+}
+.sidebar-heading{
+  font-size:0.65rem;font-weight:700;color:var(--gray-3);
+  text-transform:uppercase;letter-spacing:2px;
+  margin-bottom:8px;padding-left:12px;
+}
+.sidebar-link{
+  font-size:0.8rem;color:var(--gray-2);text-decoration:none;
+  padding:7px 12px;border-radius:8px;
+  transition:background 0.15s,color 0.15s;
+  border-left:2px solid transparent;
+}
+.sidebar-link:hover{background:var(--bg2);color:var(--white)}
+.sidebar-link.active{
+  color:var(--white);border-left-color:var(--blue-l);
+  background:rgba(59,130,246,0.08);
+}
+.sidebar-divider{height:1px;background:var(--border);margin:10px 0}
+
+/* MAIN CONTENT */
+.content{min-width:0;}
+
+/* HERO */
+.learn-hero{margin-bottom:64px;}
+.learn-eyebrow{
+  font-size:0.7rem;font-weight:700;color:var(--blue-l);
+  text-transform:uppercase;letter-spacing:2.5px;margin-bottom:12px;
+}
+.learn-title{
+  font-family:'Satoshi',sans-serif;
+  font-size:clamp(2rem,5vw,3.5rem);
+  font-weight:900;letter-spacing:-2px;line-height:1.05;
+  margin-bottom:16px;
+}
+.learn-sub{
+  font-size:0.95rem;color:var(--gray-2);line-height:1.7;max-width:580px;
+}
+
+/* ARTICLE */
+.article{
+  border:1px solid var(--border);border-radius:20px;
+  overflow:hidden;margin-bottom:24px;
+  scroll-margin-top:80px;
+}
+.article-header{
+  background:var(--bg1);padding:32px 36px 28px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+}
+.article-header:hover{background:var(--bg2)}
+.article-num{
+  font-family:'Satoshi',sans-serif;
+  font-size:0.7rem;font-weight:700;color:var(--gray-3);
+  text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;
+}
+.article-title{
+  font-family:'Satoshi',sans-serif;
+  font-size:1.3rem;font-weight:800;letter-spacing:-0.5px;
+  margin-bottom:8px;
+}
+.article-desc{font-size:0.82rem;color:var(--gray-2);line-height:1.6}
+.article-toggle{
+  font-size:1.4rem;color:var(--gray-3);flex-shrink:0;margin-top:4px;
+  transition:transform 0.2s;
+}
+.article.open .article-toggle{transform:rotate(45deg)}
+.article-tag{
+  display:inline-block;font-size:0.62rem;font-weight:700;
+  padding:3px 9px;border-radius:10px;margin-bottom:10px;
+}
+.tag-score{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.25)}
+.tag-value{background:rgba(59,130,246,0.1);color:var(--blue-l);border:1px solid rgba(59,130,246,0.2)}
+.tag-flood{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.tag-owner{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.tag-comps{background:rgba(124,58,237,0.1);color:#a78bfa;border:1px solid rgba(124,58,237,0.2)}
+.tag-deal{background:rgba(20,184,166,0.1);color:#2dd4bf;border:1px solid rgba(20,184,166,0.2)}
+.tag-skip{background:rgba(236,72,153,0.1);color:#f472b6;border:1px solid rgba(236,72,153,0.2)}
+
+.article-body{display:none;padding:36px;}
+.article.open .article-body{display:block}
+
+/* PROSE */
+.prose h3{
+  font-family:'Satoshi',sans-serif;
+  font-size:1rem;font-weight:800;letter-spacing:-0.3px;
+  margin:28px 0 10px;color:var(--white);
+}
+.prose h3:first-child{margin-top:0}
+.prose p{font-size:0.88rem;color:var(--gray-2);line-height:1.75;margin-bottom:14px}
+.prose strong{color:var(--gray-1);font-weight:600}
+.prose a{color:var(--blue-l);text-decoration:none}
+.prose a:hover{text-decoration:underline}
+.prose ul,.prose ol{padding-left:20px;margin-bottom:14px}
+.prose li{font-size:0.88rem;color:var(--gray-2);line-height:1.7;margin-bottom:4px}
+
+/* CALLOUT BOXES */
+.callout{
+  border-radius:12px;padding:18px 20px;margin:20px 0;
+  font-size:0.83rem;line-height:1.65;
+}
+.callout-title{font-weight:700;margin-bottom:4px;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px}
+.callout-blue{background:rgba(37,99,235,0.08);border-left:3px solid var(--blue-l);color:var(--gray-1)}
+.callout-amber{background:rgba(245,158,11,0.08);border-left:3px solid var(--amber);color:var(--gray-1)}
+.callout-green{background:rgba(34,197,94,0.08);border-left:3px solid var(--green);color:var(--gray-1)}
+.callout-red{background:rgba(239,68,68,0.08);border-left:3px solid var(--red);color:var(--gray-1)}
+
+/* SCORE TABLE */
+.score-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.82rem}
+.score-table th{
+  text-align:left;padding:10px 14px;
+  font-size:0.65rem;font-weight:700;color:var(--gray-3);
+  text-transform:uppercase;letter-spacing:1px;
+  border-bottom:1px solid var(--border);
+}
+.score-table td{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  color:var(--gray-2);vertical-align:top;
+}
+.score-table tr:last-child td{border-bottom:none}
+.score-table td:first-child{font-weight:600;color:var(--gray-1);white-space:nowrap}
+.badge-pill{
+  display:inline-block;font-size:0.65rem;font-weight:700;
+  padding:2px 8px;border-radius:8px;
+}
+.pill-green{background:rgba(34,197,94,0.12);color:var(--green)}
+.pill-amber{background:rgba(245,158,11,0.12);color:var(--amber)}
+.pill-red{background:rgba(239,68,68,0.12);color:var(--red)}
+.pill-blue{background:rgba(59,130,246,0.1);color:var(--blue-l)}
+
+/* SIGNAL TABLE */
+.signal-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.82rem}
+.signal-table th{
+  text-align:left;padding:10px 14px;
+  font-size:0.65rem;font-weight:700;color:var(--gray-3);
+  text-transform:uppercase;letter-spacing:1px;
+  border-bottom:1px solid var(--border);background:var(--bg2);
+}
+.signal-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--gray-2)}
+.signal-table tr:last-child td{border-bottom:none}
+.signal-table td:first-child{font-weight:600;color:var(--gray-1)}
+.signal-pts{
+  font-family:'Satoshi',sans-serif;font-weight:900;font-size:1rem;
+  color:var(--amber);text-align:right;white-space:nowrap;
+}
+
+/* ZONE TABLE */
+.zone-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.82rem}
+.zone-table th{
+  text-align:left;padding:10px 14px;
+  font-size:0.65rem;font-weight:700;color:var(--gray-3);
+  text-transform:uppercase;letter-spacing:1px;
+  border-bottom:1px solid var(--border);background:var(--bg2);
+}
+.zone-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--gray-2)}
+.zone-table tr:last-child td{border-bottom:none}
+.zone-table td:first-child{
+  font-family:'Satoshi',sans-serif;font-weight:900;font-size:1.1rem;
+  letter-spacing:-0.5px;color:var(--white);width:80px;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <span class="nav-logo-dot"></span>PropIntel
+  </a>
+  <a class="nav-back" href="/">← Back to home</a>
+  <a class="nav-cta" href="/#pricing">Get a report →</a>
+</nav>
+
+<div class="page">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-heading">In this guide</div>
+    <a class="sidebar-link" href="#motivation">Motivation Score</a>
+    <a class="sidebar-link" href="#value">Assessed vs Market Value</a>
+    <a class="sidebar-link" href="#flood">FEMA Flood Zones</a>
+    <a class="sidebar-link" href="#owner">Owner Intelligence</a>
+    <a class="sidebar-link" href="#comps">Sold Comparables</a>
+    <a class="sidebar-link" href="#deal">Deal Analyzer</a>
+    <a class="sidebar-link" href="#skip">Skip Trace</a>
+    <div class="sidebar-divider"></div>
+    <a class="sidebar-link" href="/">← Back to PropIntel</a>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <div class="learn-hero">
+      <div class="learn-eyebrow">Learn</div>
+      <h1 class="learn-title">Understanding your<br>property report.</h1>
+      <p class="learn-sub">Every number in a PropIntel report comes from a specific source and means something specific. This guide explains what each metric is, how it's calculated, and how to use it to make better decisions.</p>
+    </div>
+
+    <!-- 1. MOTIVATION SCORE -->
+    <div class="article open" id="motivation">
+      <div class="article-header" onclick="toggleArticle(this)">
+        <div>
+          <div class="article-num">01</div>
+          <div class="article-tag tag-score">Motivation Score</div>
+          <div class="article-title">The Motivation Score — 0 to 100</div>
+          <div class="article-desc">A composite signal score that estimates how motivated a property owner is to sell. Higher scores mean stronger indicators of urgency, distress, or disengagement.</div>
+        </div>
+        <div class="article-toggle">+</div>
+      </div>
+      <div class="article-body">
+        <div class="prose">
+
+          <h3>What is the motivation score?</h3>
+          <p>The motivation score is a <strong>0–100 composite index</strong> built from verified public-record signals. It doesn't predict whether someone will sell — it estimates how likely they are to be <em>open</em> to a conversation about selling, based on patterns in the data.</p>
+          <p>A score of 0 means none of the known seller signals are present. A score of 100 would mean every signal is firing simultaneously — which is rare. In practice, most interesting properties score between 30 and 75.</p>
+
+          <div class="callout callout-blue">
+            <div class="callout-title">How to read it</div>
+            LOW (0–29) means the owner shows no signs of distress or disengagement. They may still sell — but not because of pressure. HIGH (60+) means multiple real signals are present and aligned. That's when you reach out.
+          </div>
+
+          <h3>Score tiers</h3>
+          <table class="score-table">
+            <thead><tr><th>Range</th><th>Tier</th><th>What it means</th></tr></thead>
+            <tbody>
+              <tr><td>0–29</td><td><span class="badge-pill pill-green">LOW</span></td><td>Owner is local, engaged, and shows no distress signals. Not a priority for outreach.</td></tr>
+              <tr><td>30–59</td><td><span class="badge-pill pill-amber">MEDIUM</span></td><td>1–2 moderate signals present. Worth tracking. Good for a soft intro or drip campaign.</td></tr>
+              <tr><td>60–79</td><td><span class="badge-pill pill-red">HIGH</span></td><td>Multiple strong signals aligned. Owner is likely disengaged or under some form of pressure. Reach out now.</td></tr>
+              <tr><td>80+</td><td><span class="badge-pill pill-red">CRITICAL</span></td><td>Rare. Multiple overlapping signals — absentee, out-of-state, LLC, delinquent taxes, long hold. Act immediately.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>What signals are used?</h3>
+          <p>Each signal below adds points to the score. Points are additive — the more signals present, the higher the score.</p>
+          <table class="signal-table">
+            <thead><tr><th>Signal</th><th>Points</th><th>Why it matters</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Absentee Owner</td>
+                <td class="signal-pts">+25</td>
+                <td>Owner's mailing address differs from the property address. They don't live there. Non-resident owners are statistically more willing to sell at a discount — they have less emotional attachment and often have carrying costs.</td>
+              </tr>
+              <tr>
+                <td>Out-of-State Owner</td>
+                <td class="signal-pts">+20</td>
+                <td>Owner mails to a different state. Distance compounds disengagement — managing a property remotely is costly and stressful. Out-of-state owners often sell to avoid the burden.</td>
+              </tr>
+              <tr>
+                <td>LLC / Entity Ownership</td>
+                <td class="signal-pts">+10</td>
+                <td>Property is held in a corporate entity (LLC, LP, Corp, Trust). Entities often hold investment properties, not primary residences. Investor-held properties cycle more frequently and respond better to off-market offers.</td>
+              </tr>
+              <tr>
+                <td>Long Hold Duration</td>
+                <td class="signal-pts">+10</td>
+                <td>Property has been owned 10+ years without a sale. Long holds often have significant equity and older owners who may be approaching an estate event, retirement, or portfolio liquidation.</td>
+              </tr>
+              <tr>
+                <td>Tax Delinquency</td>
+                <td class="signal-pts">+15</td>
+                <td>Owner has fallen behind on property taxes. Active financial distress — the most reliable indicator of motivated selling. Time-sensitive: owners with delinquent taxes face liens and potential foreclosure.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>How to use this score</h3>
+          <p><strong>For investors:</strong> Sort your pipeline by score and start with 60+. These owners are most likely to respond to an off-market offer and most likely to negotiate.</p>
+          <p><strong>For agents:</strong> Use it to identify listing opportunities before they hit the MLS. A HIGH score on a property in your target neighborhood is a reason to knock on the door or send a letter today.</p>
+          <div class="callout callout-amber">
+            <div class="callout-title">Important context</div>
+            The score reflects data signals — not personal circumstances. A LOW score doesn't mean the owner won't sell. A HIGH score doesn't guarantee they will. It's a prioritization tool, not a prediction engine. Always verify with direct contact.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. ASSESSED VS MARKET VALUE -->
+    <div class="article" id="value">
+      <div class="article-header" onclick="toggleArticle(this)">
+        <div>
+          <div class="article-num">02</div>
+          <div class="article-tag tag-value">Valuation</div>
+          <div class="article-title">Assessed Value vs. Market Value</div>
+          <div class="article-desc">Two different numbers. Two different purposes. Understanding the gap between them is one of the most useful tools in real estate due diligence.</div>
+        </div>
+        <div class="article-toggle">+</div>
+      </div>
+      <div class="article-body">
+        <div class="prose">
+
+          <h3>Assessed value — what is it?</h3>
+          <p>Assessed value is the value assigned to a property by the county appraisal district (CAD) for the purpose of calculating property taxes. It is <strong>not</strong> what the property is worth on the open market. It is a tax-calculation tool.</p>
+          <p>In Texas (and most states), the county reassesses values annually. But appraisals often lag the market — meaning assessed value can be significantly below (or occasionally above) actual market value.</p>
+
+          <div class="callout callout-blue">
+            <div class="callout-title">Labeled as tax value in your report</div>
+            PropIntel always labels assessed value as "Tax Assessed Value" — never as market value — to prevent misinterpretation. This matches what you'd see on a county appraisal district record.
+          </div>
+
+          <h3>Market value estimate — how is it calculated?</h3>
+          <p>PropIntel's market estimate is a <strong>range</strong> based on assessed value, comparable sales, and local appreciation multipliers. It's shown as a range (e.g., <strong>$1.69M – $2.01M</strong>) rather than a single number, because a single number implies false precision.</p>
+          <p>When ATTOM data is enabled, the estimate is upgraded to a full AVM (Automated Valuation Model) based on actual comparable transactions, regression analysis, and MLS history — the same methodology used by Zillow and CoreLogic.</p>
+
+          <h3>The gap — what it signals</h3>
+          <p>A large gap between assessed and market value is meaningful. Here's how to read it:</p>
+          <table class="score-table">
+            <thead><tr><th>Situation</th><th>What it means</th></tr></thead>
+            <tbody>
+              <tr><td>Assessed = ~Market</td><td>County appraisal is current. Tax burden is proportional to value. No anomaly.</td></tr>
+              <tr><td>Assessed « Market (20%+ below)</td><td>Owner is potentially undertaxed. Common in appreciating markets where appraisals lag. Also means the owner has significant unrealized gains — a motivating factor to sell.</td></tr>
+              <tr><td>Assessed » Market (above market)</td><td>Rare. Could indicate an assessment error. Owner may have grounds to file a tax protest — a point of rapport when contacting them.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Price per square foot</h3>
+          <p>Always divide value by building square footage to normalize comparisons. A $1.6M property at 5,920 SF is <strong>$270/SF</strong>. If comps in the same submarket are transacting at $320–$350/SF, that's a 15–25% discount — a concrete, defensible offer basis.</p>
+          <div class="callout callout-green">
+            <div class="callout-title">Pro tip</div>
+            Use the assessed value to anchor your offer. If assessed is $800K but market comps suggest $1.1M, your first offer can legitimately open near assessed while the seller's BATNA is a market sale. The gap gives you negotiating room.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. FEMA FLOOD ZONE -->
+    <div class="article" id="flood">
+      <div class="article-header" onclick="toggleArticle(this)">
+        <div>
+          <div class="article-num">03</div>
+          <div class="article-tag tag-flood">FEMA Flood Zone</div>
+          <div class="article-title">Reading the FEMA Flood Zone</div>
+          <div class="article-desc">Every property in America is mapped to a FEMA flood zone. The zone code determines insurance requirements, financing conditions, and real risk to your investment.</div>
+        </div>
+        <div class="article-toggle">+</div>
+      </div>
+      <div class="article-body">
+        <div class="prose">
+          <h3>Where does this data come from?</h3>
+          <p>PropIntel pulls flood zone data from the <strong>FEMA National Flood Hazard Layer (NFHL)</strong> — the official government database used by lenders, insurers, and municipalities. The same data your mortgage lender checks before approving a loan.</p>
+
+          <h3>Zone codes — what they mean</h3>
+          <table class="zone-table">
+            <thead><tr><th>Zone</th><th>Risk Level</th><th>Flood Insurance</th><th>What you need to know</th></tr></thead>
+            <tbody>
+              <tr><td>X</td><td><span class="badge-pill pill-green">Minimal</span></td><td>Not required</td><td>Outside the 500-year floodplain. The safest designation. Most properties in urban Texas are Zone X. Financing and insurance are standard.</td></tr>
+              <tr><td>AE</td><td><span class="badge-pill pill-red">High</span></td><td>Required for federally-backed loans</td><td>Within the 100-year floodplain with a calculated Base Flood Elevation (BFE). Most common high-risk zone. Flood insurance typically costs $800–$3,000+/year and must be carried as long as there's a federally-backed mortgage.</td></tr>
+              <tr><td>A</td><td><span class="badge-pill pill-red">High</span></td><td>Required</td><td>100-year floodplain, but no BFE calculated. Less data than AE but the same required insurance. Common in rural or less-mapped areas.</td></tr>
+              <tr><td>VE / V</td><td><span class="badge-pill pill-red">Extreme</span></td><td>Required</td><td>Coastal high-velocity zone — storm surge and wave action. Highest risk designation. Building codes are stricter and insurance is most expensive. Primarily coastal states.</td></tr>
+              <tr><td>AH / AO</td><td><span class="badge-pill pill-amber">Elevated</span></td><td>Required</td><td>Shallow flooding — sheet flow (AO) or ponding (AH). Often seen in flat terrain like South Texas or Florida. Insurance required, BFE calculated.</td></tr>
+              <tr><td>X (shaded)</td><td><span class="badge-pill pill-amber">Moderate</span></td><td>Not required</td><td>500-year floodplain. Not mandatory, but flood insurance is recommended. A meaningful percentage of flood claims come from this zone.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>How it affects your deal</h3>
+          <ul>
+            <li><strong>Financing:</strong> Any federally-backed loan (FHA, VA, conventional via Fannie/Freddie) on an AE or A property requires flood insurance. Budget for it from day one.</li>
+            <li><strong>Insurance cost:</strong> Flood insurance is separate from homeowner's insurance. AE zone policies routinely run $1,500–$4,000/year and are not included in standard HO-3 policies.</li>
+            <li><strong>Resale:</strong> Properties in high-risk zones attract fewer buyers and typically sell at a discount vs. comparable X-zone properties.</li>
+            <li><strong>Elevation certificate:</strong> If a property is in AE but elevated well above BFE, an elevation certificate can dramatically reduce insurance premiums. Worth asking the seller for one.</li>
+          </ul>
+
+          <div class="callout callout-amber">
+            <div class="callout-title">Always verify for transactions</div>
+            Flood maps are updated periodically. For any purchase or listing, verify the current zone designation directly at <a href="https://msc.fema.gov" target="_blank">msc.fema.gov</a> — the official FEMA Map Service Center. PropIntel's data may not reflect the most recent Letter of Map Amendment (LOMA).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. OWNER INTELLIGENCE -->
+    <div class="article" id="owner">
+      <div class="article-header" onclick="toggleArticle(this)">
+        <div>
+          <div class="article-num">04</div>
+          <div class="article-tag tag-owner">Owner Intelligence</div>
+          <div class="article-title">Owner Identity & Signals</div>
+          <div class="article-desc">Who actually owns the property, where they receive mail, what entity structure they use, and what that tells you about their relationship to the asset.</div>
+        </div>
+        <div class="article-toggle">+</div>
+      </div>
+      <div class="article-body">
+        <div class="prose">
+          <h3>Where does owner data come from?</h3>
+          <p>Owner information in PropIntel comes from the <strong>county appraisal district record</strong> via Regrid's parcel database — the same public record used for property tax purposes. It reflects who is legally responsible for the taxes on the property, which in nearly all cases is the current owner of record.</p>
+          <p>This is legal, public information. County appraisal records are public documents under Texas (and federal) open records law.</p>
+
+          <h3>Individual vs. entity ownership</h3>
+          <p><strong>Individual ownership</strong> means a person holds title. Personal decisions — retirement, relocation, divorce, death — drive their sale behavior. You're negotiating with a human.</p>
+          <p><strong>Entity ownership</strong> (LLC, LP, Corporation, Trust) means an organization holds title. This matters for several reasons:</p>
+          <ul>
+            <li>Entities are usually investment-minded — they respond to numbers, not emotions</li>
+            <li>LLCs and LPs often have multiple principals — identify who controls the entity before outreach</li>
+            <li>Trusts may indicate estate planning — the beneficiaries may want liquidity</li>
+            <li>Entity owners are slightly more likely to respond to professional, direct outreach than cold residential calls</li>
+          </ul>
+
+          <h3>Mailing address vs. property address</h3>
+          <p>The <strong>mailing address</strong> is where the owner receives their property tax statement. If it differs from the property address — they don't live there. That's the definition of absentee ownership.</p>
+          <p>The mailing address also tells you where to send physical mail — letters, mailers, LOIs — which often outperform cold calls for commercial and investment properties.</p>
+
+          <h3>What "absentee" and "out-of-state" really mean</h3>
+          <p><strong>Absentee:</strong> Owner's mailing state is the same, but they don't live at the property. Could be a landlord renting it out, an investor with multiple properties, or someone who moved without selling. Each has different motivations, but all have less emotional connection to the asset than an owner-occupant.</p>
+          <p><strong>Out-of-state:</strong> Owner receives mail in a completely different state. This compounds the absentee signal — they're both disengaged and distant. Managing a property from 1,000 miles away is genuinely burdensome, and these owners often underestimate how much they're losing to vacancy, management fees, and deferred maintenance.</p>
+
+          <div class="callout callout-red">
+            <div class="callout-title">The highest-value combination</div>
+            Out-of-state + LLC + 10+ year hold = the trifecta. The entity has been holding the asset for over a decade from another state. Principals may have changed. The original investment thesis may be stale. These owners often don't even know what they own until someone asks them.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. SOLD COMPS -->
+    <div class="article" id="comps">
+      <div class="article-header" onclick="toggleArticle(this)">
+        <div>
+          <div class="article-num">05</div>
+          <div class="article-tag tag-comps">Sold Comps</div>
+          <div class="article-title">Sold Comparables — Reading the Market</div>
+          <div class="article-desc">Recent sales of similar properties are the most reliable indicator of current market value. Here's how to read them, which ones to use, and which to throw out.</div>
+        </div>
+        <div class="article-toggle">+</div>
+      </div>
+      <div class="article-body">
+        <div class="prose">
+          <h3>Where do comps come from?</h3>
+          <p>Sold comps in PropIntel Pro are sourced from <strong>ATTOM Data</strong> — one of the largest real estate databases in the US, aggregating deed records, MLS data, and public records across all 50 states. These are actual closed transactions, not list prices.</p>
+
+          <h3>90-day vs. 6-month vs. 12-month windows</h3>
+          <p>PropIntel shows comps across three windows. Each tells you something different:</p>
+          <table class="score-table">
+            <thead><tr><th>Window</th><th>Best used for</th><th>Limitation</th></tr></thead>
+            <tbody>
+              <tr><td>90 days</td><td>Most current market snapshot. Use for pricing offers and listings in active markets.</td><td>Small sample size in thin markets. Can be distorted by one outlier sale.</td></tr>
+              <tr><td>6 months</td><td>Balanced view. Smooths out individual anomalies. Best default window for most analysis.</td><td>May miss very recent price movements in fast-moving markets.</td></tr>
+              <tr><td>12 months</td><td>Trend analysis — are prices rising, falling, or flat? Compare 12-month avg to 90-day to spot direction.</td><td>Old sales in the window may no longer be representative of current conditions.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>How to pick a valid comparable</h3>
+          <p>Not all sales in the comp list are equally useful. Filter for:</p>
+          <ul>
+            <li><strong>Proximity:</strong> Same submarket or corridor. A sale 3 miles away in a different neighborhood is not a comp.</li>
+            <li><strong>Similar size:</strong> Within 20–25% of the subject's square footage. A 3,000 SF building doesn't comp a 9,000 SF building.</li>
+            <li><strong>Same use type:</strong> Retail, office, industrial, and multifamily are entirely different markets. Don't cross categories.</li>
+            <li><strong>Arms-length transactions:</strong> Exclude estate sales, bank foreclosures, and related-party transactions — they don't represent market value.</li>
+          </ul>
+
+          <h3>Price per square foot — the normalized metric</h3>
+          <p>Always normalize comps by price per square foot ($/SF). This lets you compare properties of different sizes. Calculate it for every comp and average the range. Apply that range to the subject's SF to derive a market value range.</p>
+          <p>Example: 4 comps average $285/SF with a range of $265–$310/SF. Subject is 5,920 SF. Market value range: <strong>$1.57M – $1.84M</strong>. That's your offer basis.</p>
+
+          <div class="callout callout-green">
+            <div class="callout-title">Use comps offensively</div>
+            When making an offer, cite specific comps by address and date. "4612 Greenville Ave sold in June 2023 at $1.72M — your property is similar size and condition, so I'm offering $1.55M cash close in 21 days." Specificity signals credibility and professionalism.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. DEAL ANALYZER -->
+    <div class="article" id="deal">
+      <div class="article-header" onclick="toggleArticle(this)">
+        <div>
+          <div class="article-num">06</div>
+          <div class="article-tag tag-deal">Deal Analyzer</div>
+          <div class="article-title">The Deal Analyzer — 3 Purchase Scenarios</div>
+          <div class="article-desc">A financial model that runs three purchase scenarios for any property — conservative, moderate, and aggressive — so you can stress-test a deal before you make an offer.</div>
+        </div>
+        <div class="article-toggle">+</div>
+      </div>
+      <div class="article-body">
+        <div class="prose">
+          <h3>What are the three scenarios?</h3>
+          <p>The deal analyzer runs the same property through three price assumptions:</p>
+          <ul>
+            <li><strong>Assessed Value scenario:</strong> What if you acquired at the county's assessed number? Often represents the most conservative (lowest) basis.</li>
+            <li><strong>Market Low scenario:</strong> Acquisition at the bottom of the market range estimate. A realistic off-market target.</li>
+            <li><strong>Market High scenario:</strong> Acquisition at the top of the market range. Represents what you'd pay in a competitive bid or on-market purchase.</li>
+          </ul>
+
+          <h3>Metrics calculated per scenario</h3>
+          <table class="score-table">
+            <thead><tr><th>Metric</th><th>What it means</th></tr></thead>
+            <tbody>
+              <tr><td>Down Payment (25%)</td><td>Estimated equity required at close. Assumes conventional commercial lending at 75% LTV — standard for investment properties.</td></tr>
+              <tr><td>Loan Amount</td><td>Principal balance at 75% LTV.</td></tr>
+              <tr><td>Monthly P&I</td><td>Principal + interest at current rate estimate (30-year amortization, commercial rate). Your minimum debt service.</td></tr>
+              <tr><td>DSCR</td><td>Debt Service Coverage Ratio. Net operating income divided by total debt service. Lenders typically require 1.25x minimum. Anything below 1.0 means the property doesn't pay for itself — you're subsidizing it monthly.</td></tr>
+              <tr><td>$/SF</td><td>Price per square foot. Normalizes the acquisition cost against the building size. Compare directly to comps $/SF to see if you're paying a premium or a discount.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>DSCR — the most important number</h3>
+          <p>DSCR (Debt Service Coverage Ratio) is the ratio of a property's net operating income (NOI) to its annual debt service. The formula: <strong>DSCR = NOI ÷ Annual Debt Service</strong>.</p>
+          <ul>
+            <li><strong>DSCR &gt; 1.25:</strong> Property generates enough income to service debt with 25% cushion. Lender-approved range. Green light.</li>
+            <li><strong>DSCR 1.0–1.25:</strong> Property covers its debt service but with no margin. Any vacancy or expense variance could push it negative.</li>
+            <li><strong>DSCR &lt; 1.0:</strong> NOI doesn't cover debt service. You are subsidizing the deal out of pocket each month. Only acceptable if you're buying for appreciation, not cash flow.</li>
+          </ul>
+
+          <div class="callout callout-amber">
+            <div class="callout-title">Note on NOI estimation</div>
+            The deal analyzer estimates NOI based on typical cap rates for the property type and market. Without actual rent rolls and expense data from the seller, this is a projection. Always request T-12 financials before finalizing any commercial acquisition decision.
+          </div>
+
+          <h3>How to use the three scenarios strategically</h3>
+          <p>Use the assessed scenario to anchor your initial offer — it's defensible because it comes from the government's own valuation. Use the market low as your walk-away price in negotiation. Use the market high to understand what a full-price buyer would pay — your competition.</p>
+          <p>If even the market high scenario shows a DSCR below 1.25, the deal only makes sense if you're buying below assessed value, adding value through rehab, or repositioning the asset for a different use.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. SKIP TRACE -->
+    <div class="article" id="skip">
+      <div class="article-header" onclick="toggleArticle(this)">
+        <div>
+          <div class="article-num">07</div>
+          <div class="article-tag tag-skip">Skip Trace</div>
+          <div class="article-title">Skip Trace — Finding the Decision-Maker</div>
+          <div class="article-desc">Skip tracing links a property's owner of record to their actual phone numbers and email addresses — so you can reach them directly, not just mail a letter and hope.</div>
+        </div>
+        <div class="article-toggle">+</div>
+      </div>
+      <div class="article-body">
+        <div class="prose">
+          <h3>What is skip tracing?</h3>
+          <p>Skip tracing is the process of locating contact information for a property owner using their identity and known address. The term comes from the skip tracing used by debt collectors and law enforcement — we've adapted the same methodology for real estate outreach.</p>
+          <p>PropIntel's skip trace is powered by <strong>People Data Labs</strong> — a professional identity data platform used by Fortune 500 companies for compliance, due diligence, and outreach. Phone and email coverage varies by individual and entity type.</p>
+
+          <h3>What data is returned?</h3>
+          <ul>
+            <li><strong>Mobile phone numbers</strong> — most valuable for direct outreach. Direct calls and texts to decision-makers have dramatically higher response rates than mailers.</li>
+            <li><strong>Landline numbers</strong> — less reliable for residential, sometimes useful for commercial entities.</li>
+            <li><strong>Email addresses</strong> — useful for professional outreach to LLC owners, partnership principals, and commercial property contacts.</li>
+          </ul>
+
+          <h3>Entity vs. individual tracing</h3>
+          <p>For <strong>individually-owned</strong> properties, skip tracing returns the owner's personal contact information — phone and email linked to their name and known addresses.</p>
+          <p>For <strong>entity-owned</strong> properties (LLC, LP, Trust), skip tracing attempts to identify the registered agent or principal officer associated with the entity. Coverage is lower for entity-owned properties — many LLCs are held under names designed for privacy. In those cases, supplemental research via the Secretary of State's business registry can identify the principals.</p>
+
+          <h3>How to use it</h3>
+          <p><strong>Cold call:</strong> Direct mobile contact is the highest-conversion channel for motivated seller outreach. Script: "Hi, is this [Name]? I'm a local investor and I came across your property at [address] — I wanted to reach out directly about a potential offer. Is now a good time?"</p>
+          <p><strong>Email:</strong> More appropriate for commercial and LLC-owned properties. Professional tone. Lead with the data — the fact that you know the assessed value, flood zone, and hold duration signals you've done your homework.</p>
+          <p><strong>Combined:</strong> Best results come from mail + call + email in sequence. Send a personalized letter first (physical mail has novelty now), follow up with a call 5–7 days later.</p>
+
+          <div class="callout callout-red">
+            <div class="callout-title">Legal compliance</div>
+            Always comply with federal and state do-not-call (DNC) regulations. Scrub contact lists against the National DNC Registry before automated outreach. For SMS, the TCPA requires explicit written consent before sending marketing texts. PropIntel provides the data — the compliance obligation is yours.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="margin-top:48px;padding:40px;background:var(--bg1);border:1px solid var(--border);border-radius:20px;text-align:center">
+      <div style="font-family:'Satoshi',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:-1px;margin-bottom:10px">Ready to run a report?</div>
+      <p style="font-size:0.88rem;color:var(--gray-2);margin-bottom:24px;line-height:1.7">All of this data — motivation score, FEMA zone, owner intel, comps, deal analyzer — delivered in 30 seconds for any US property.</p>
+      <a href="/#pricing" style="display:inline-block;background:var(--blue);color:white;padding:14px 32px;border-radius:10px;font-weight:700;font-size:0.9rem;text-decoration:none;transition:opacity 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Get a report →</a>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function toggleArticle(header) {
+  const article = header.parentElement;
+  article.classList.toggle('open');
+}
+
+// Sidebar active state
+const links = document.querySelectorAll('.sidebar-link[href^="#"]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.sidebar-link[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+document.querySelectorAll('.article[id]').forEach(a => observer.observe(a));
+</script>
+</body>
+</html>
