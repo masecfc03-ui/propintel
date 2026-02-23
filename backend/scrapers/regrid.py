@@ -202,8 +202,11 @@ def search_by_address(address, state=None, county=None, limit=1):
         status = e.response.status_code if e.response else 0
         if status == 401:
             return {"error": "Regrid API key invalid or expired", "source": "Regrid"}
+        if status == 403 and (state or county):
+            # Trial key blocks path= filter — retry without geographic restriction
+            return search_by_address(address, state=None, county=None, limit=limit)
         if status == 403:
-            return {"error": "Regrid trial — address outside covered counties (upgrade to paid for full US)", "source": "Regrid"}
+            return {"error": "Regrid: address outside trial coverage area", "source": "Regrid"}
         return {"error": "Regrid HTTP {}: {}".format(status, str(e)), "source": "Regrid"}
     except Exception as e:
         return {"error": str(e) or repr(e), "source": "Regrid"}

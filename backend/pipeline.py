@@ -81,11 +81,13 @@ def run(input_str: str, tier: str = "starter") -> dict:
         if zip_code:
             tasks["census"] = ex.submit(get_demographics, zip_code)
 
-        # Parcel lookup: Regrid (national) by coordinates, with address fallback
-        if lat and lng:
-            tasks["regrid"] = ex.submit(regrid_by_point, lat, lng)
-        elif address:
+        # Parcel lookup: Regrid by address (primary — most reliable), point fallback
+        # Note: Census geocoder lat/lng not precise enough for parcel centroid matching
+        # Note: trial key returns 403 with path= filter — use raw address only
+        if address:
             tasks["regrid"] = ex.submit(regrid_by_address, address)
+        elif lat and lng:
+            tasks["regrid"] = ex.submit(regrid_by_point, lat, lng)
 
         # DCAD supplemental fetch for TX addresses (Dallas County extra fields: tax district, school, etc.)
         # geocode doesn't always return county — use state + zip prefix as proxy
