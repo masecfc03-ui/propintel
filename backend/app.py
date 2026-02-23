@@ -132,6 +132,7 @@ def health():
         "ts": datetime.utcnow().isoformat(),
         # Critical services
         "regrid":           bool(os.environ.get("REGRID_API_KEY")),
+        "attom":            bool(os.environ.get("ATTOM_API_KEY")),
         "stripe":           bool(STRIPE_LIVE_SECRET_KEY),
         "webhook":          bool(STRIPE_WEBHOOK_SECRET),
         "email":            bool(os.environ.get("SENDGRID_API_KEY") or os.environ.get("SMTP_USER") or os.environ.get("MAILGUN_API_KEY")),
