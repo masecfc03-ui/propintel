@@ -7,3 +7,6 @@ __pycache__/
 venv/
 env/
 .venv/
+backend/data/
+backend/reports_cache/
+*.db
