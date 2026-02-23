@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fff;
+  }
+  .container {
+    width: 1200px; height: 630px;
+    display: flex; align-items: center;
+    padding: 80px 100px;
+    gap: 80px;
+  }
+  .left { flex: 1; }
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 40px;
+  }
+  .logo-mark {
+    width: 44px; height: 44px; background: #2563eb;
+    border-radius: 12px; display: flex; align-items: center;
+    justify-content: center; color: white; font-weight: 900;
+    font-size: 1.4rem;
+  }
+  .logo-text { font-size: 1.4rem; font-weight: 800; color: #0f172a; }
+  h1 {
+    font-size: 3.2rem; font-weight: 900; color: #0f172a;
+    line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px;
+  }
+  h1 span { color: #2563eb; }
+  p { font-size: 1.25rem; color: #475569; line-height: 1.5; }
+  .right {
+    width: 340px; flex-shrink: 0;
+  }
+  .report-card {
+    background: #f8fafc; border: 1.5px solid #e2e8f0;
+    border-radius: 20px; padding: 28px; overflow: hidden;
+  }
+  .card-header {
+    font-size: 0.75rem; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;
+  }
+  .row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid #f1f5f9;
+  }
+  .row:last-child { border-bottom: none; }
+  .row-label { font-size: 0.85rem; color: #64748b; }
+  .row-val { font-size: 0.9rem; font-weight: 700; color: #0f172a; }
+  .badge {
+    font-size: 0.65rem; font-weight: 700; padding: 2px 7px;
+    border-radius: 4px; margin-left: 6px;
+  }
+  .badge-red { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+  .badge-green { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+  .score-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8f0;
+  }
+  .score-label { font-size: 0.8rem; color: #64748b; }
+  .score-val { font-size: 1.4rem; font-weight: 900; color: #dc2626; }
+  .score-max { font-size: 0.75rem; color: #94a3b8; font-weight: 400; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="left">
+    <div class="logo">
+      <div class="logo-mark">P</div>
+      <span class="logo-text">PropIntel</span>
+    </div>
+    <h1>Property intel<br />in <span>30 seconds</span></h1>
+    <p>Owner identity · Flood zone · Assessed value<br />Seller motivation — all from public records.</p>
+  </div>
+  <div class="right">
+    <div class="report-card">
+      <div class="card-header">Sample Report</div>
+      <div class="row">
+        <span class="row-label">Owner</span>
+        <span class="row-val">LLC — Absentee <span class="badge badge-red">FLAG</span></span>
+      </div>
+      <div class="row">
+        <span class="row-label">Assessed Value</span>
+        <span class="row-val">$248,500</span>
+      </div>
+      <div class="row">
+        <span class="row-label">Flood Zone</span>
+        <span class="row-val">Zone X <span class="badge badge-green">SAFE</span></span>
+      </div>
+      <div class="row">
+        <span class="row-label">Tax Status</span>
+        <span class="row-val">Current</span>
+      </div>
+      <div class="score-row">
+        <div>
+          <div class="score-label">Motivation Score</div>
+          <div style="font-size:0.7rem;color:#94a3b8">7 verified indicators</div>
+        </div>
+        <div style="text-align:right">
+          <span class="score-val">74</span>
+          <span class="score-max"> / 100</span>
+          <div style="font-size:0.65rem;font-weight:700;color:#dc2626">HIGH</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
