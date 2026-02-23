@@ -133,6 +133,54 @@ def health():
 # Analyze
 # ─────────────────────────────────────────────────────────────────────────────
 
+@app.route("/api/admin/test-email", methods=["POST"])
+def test_email():
+    """
+    Admin endpoint — generate a real report and send it to an email.
+    Used to confirm email + PDF delivery without going through Stripe.
+    POST { "address": "...", "email": "...", "tier": "pro", "key": "<ADMIN_KEY>" }
+    """
+    if not _check_admin():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    body = request.get_json(force=True, silent=True) or {}
+    address = body.get("address", "3229 Forest Ln, Garland TX 75042")
+    email   = body.get("email", "")
+    tier    = body.get("tier", "pro")
+
+    if not email:
+        return jsonify({"error": "email required"}), 400
+
+    log.info("Test email requested: %s → %s [%s]", address, email, tier)
+
+    try:
+        report_data = run_pipeline(address, tier)
+        html = generate_html(report_data)
+        import uuid
+        report_id = "test-" + str(uuid.uuid4())[:6]
+        result = send_report(
+            to_email=email,
+            to_name="",
+            address=address,
+            tier=tier,
+            report_html=html,
+            report_id=report_id,
+            report_token=str(uuid.uuid4()),
+            report_data=report_data,
+        )
+        return jsonify({
+            "sent": result.get("success"),
+            "method": result.get("method"),
+            "pdf_attached": result.get("pdf_attached", False),
+            "error": result.get("error"),
+            "address": address,
+            "email": email,
+        })
+    except Exception as e:
+        log.error("Test email failed: %s", e, exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     """
