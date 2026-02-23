@@ -461,20 +461,107 @@ async function generateReport() {
   }
 
   try {
-    const resp = await fetch(API_URL + "/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ input: address, tier: tier, format: "json" })
-    });
+    // Run Render API + direct browser DCAD call in parallel
+    const [resp, dcadData] = await Promise.all([
+      fetch(API_URL + "/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: address, tier: tier, format: "json" })
+      }),
+      fetchDCADDirect(address)
+    ]);
 
     if (!resp.ok) throw new Error("API returned " + resp.status);
     const d = await resp.json();
-
     if (d.error) throw new Error(d.error);
+
+    // Merge direct DCAD result if Render didn't get it
+    if (dcadData && dcadData.apn && (!d.parcel || !d.parcel.apn)) {
+      d.parcel = { ...dcadData, ...(d.parcel || {}) };
+      // Re-evaluate flags with parcel data
+      if (dcadData.absentee_owner) {
+        d.flags = d.flags || [];
+        const hasAbsentee = d.flags.some(f => f.text && f.text.toLowerCase().includes("absentee"));
+        if (!hasAbsentee) {
+          const city = dcadData.owner_city || "";
+          d.flags.push({ type: "yellow", text: `Absentee owner — mailing address in ${city} (DCAD)` });
+        }
+      }
+    }
 
     renderReport(d, tier);
   } catch(e) {
     showError("Failed to generate report: " + e.message + ". Please try again or contact support.");
+  }
+}
+
+// ─── Direct browser-side DCAD lookup (bypasses Render IP block) ──────────────
+async function fetchDCADDirect(address) {
+  try {
+    const parts = address.toUpperCase().trim().split(/\s+/);
+    const streetNum = parts[0].match(/^\d/) ? parts[0] : "";
+    const streetName = parts[1] || "";
+    if (!streetNum) return null;
+
+    const where = `SITEADDRESS LIKE '${streetNum} ${streetName}%'`;
+    const fields = [
+      "PARCELID","OWNERNME1","OWNERNME2","SITEADDRESS","PRPRTYDSCRP","CNVYNAME",
+      "PSTLADDRESS","PSTLCITY","PSTLSTATE","PSTLZIP5",
+      "USECD","USEDSCRP","CLASSDSCRP",
+      "CNTASSDVAL","LNDVALUE","PRVASSDVAL",
+      "BLDGAREA","RESYRBLT","CVTTXDSCRP","SCHLDSCRP","REVALYR"
+    ].join(",");
+
+    const url = `https://maps.dcad.org/prdwa/rest/services/Property/ParcelHistory/MapServer/4/query` +
+      `?where=${encodeURIComponent(where)}&outFields=${encodeURIComponent(fields)}` +
+      `&returnGeometry=false&f=json`;
+
+    const resp = await fetch(url, {
+      headers: { "Referer": "https://propertyvalueintel.com/" }
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    const features = data.features || [];
+    if (!features.length) return null;
+
+    const a = features[0].attributes;
+    const postalAddr = [a.PSTLADDRESS, a.PSTLCITY, a.PSTLSTATE, a.PSTLZIP5]
+      .filter(Boolean).join(", ");
+    const assessed = a.CNTASSDVAL || 0;
+    const land = a.LNDVALUE || 0;
+    const absentee = a.PSTLCITY && !a.PSTLCITY.toUpperCase().includes("GARLAND");
+    const outOfState = a.PSTLSTATE && a.PSTLSTATE.toUpperCase() !== "TX";
+
+    return {
+      apn: a.PARCELID,
+      owner_name: (a.OWNERNME1 || "").trim(),
+      owner_name2: (a.OWNERNME2 || "").trim() || null,
+      owner_mailing: postalAddr,
+      owner_city: (a.PSTLCITY || "").trim(),
+      owner_state: (a.PSTLSTATE || "").trim(),
+      owner_zip: (a.PSTLZIP5 || "").trim(),
+      property_address: (a.SITEADDRESS || "").trim(),
+      legal_description: (a.PRPRTYDSCRP || "").trim(),
+      use_description: (a.USEDSCRP || "").trim(),
+      property_class: (a.CLASSDSCRP || "").trim(),
+      building_sf: a.BLDGAREA || null,
+      year_built: a.RESYRBLT || null,
+      assessed_land: land,
+      assessed_improvement: assessed - land,
+      assessed_total: assessed,
+      assessed_prev: a.PRVASSDVAL || null,
+      absentee_owner: absentee,
+      out_of_state_owner: outOfState,
+      tax_delinquent: false,
+      dcad_direct_url: a.PARCELID ?
+        `https://www.dcad.org/property-search/?account=${a.PARCELID}` :
+        "https://www.dcad.org/property-search/",
+      source: "Dallas Central Appraisal District",
+      source_url: "https://www.dcad.org/property-search/",
+      _via: "browser-direct"
+    };
+  } catch(e) {
+    return null; // Fail silently — parcel section shows manual link
   }
 }
 
