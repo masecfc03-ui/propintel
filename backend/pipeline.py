@@ -14,6 +14,7 @@ from scrapers.txsos import search_by_address as txsos_address, search_entity as 
 from scrapers.listing import parse_listing, is_address, detect_source
 from scrapers.datazapp import parse_owner_name
 from scrapers import pdl as pdl_skip
+from scrapers.walkscore import get_scores as walkscore_get
 from motivation import score as motivation_score
 
 
@@ -93,6 +94,10 @@ def run(input_str: str, tier: str = "starter") -> dict:
         if lat and lng:
             tasks["nearby"] = ex.submit(regrid_nearby, lat, lng, 0.3, 8)
 
+        # Walk Score (free API — activates when WALKSCORE_API_KEY env var set)
+        if lat and lng and address:
+            tasks["walkscore"] = ex.submit(walkscore_get, address, lat, lng)
+
         # DCAD supplemental fetch for TX addresses (Dallas County extra fields: tax district, school, etc.)
         # geocode doesn't always return county — use state + zip prefix as proxy
         geo_state = geo.get("state", "").upper()
@@ -134,6 +139,7 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["demographics"] = results.get("census", {})
     report["businesses"] = results.get("txsos", [])
     report["nearby"] = [p for p in (results.get("nearby") or []) if p and not p.get("error")]
+    report["walkscore"] = results.get("walkscore", {"available": False})
 
     # ── Owner entity intelligence (all tiers — public TX SOS data) ────────────
     owner_name = parcel_data.get("owner_name", "")

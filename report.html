@@ -1199,6 +1199,28 @@
         </div>` : ''}`;
     }
 
+    // ── WALK SCORE ──
+    const ws = data.walkscore || {};
+    if (ws.available) {
+      const scoreColor = s => s >= 70 ? 'var(--green)' : s >= 50 ? 'var(--amber)' : 'var(--red)';
+      const wsCols = [
+        ws.walk_score    != null ? { icon: '🚶', val: ws.walk_score,    label: 'Walk Score',    desc: ws.walk_description }    : null,
+        ws.transit_score != null ? { icon: '🚇', val: ws.transit_score, label: 'Transit Score', desc: ws.transit_description } : null,
+        ws.bike_score    != null ? { icon: '🚴', val: ws.bike_score,    label: 'Bike Score',    desc: ws.bike_description }    : null,
+      ].filter(Boolean);
+      if (wsCols.length) {
+        const wsHtml = wsCols.map(w => `
+          <div class="nbhd-card">
+            <div class="nbhd-card-icon">${w.icon}</div>
+            <div class="nbhd-card-val" style="color:${scoreColor(w.val)}">${w.val}</div>
+            <div class="nbhd-card-label">${w.label}</div>
+            <div style="font-size:0.68rem;color:var(--text3);margin-top:3px">${w.desc || ''}</div>
+            <div class="nbhd-card-bar"><div class="nbhd-card-fill" style="width:${w.val}%;background:${scoreColor(w.val)}"></div></div>
+          </div>`).join('');
+        document.getElementById('nbhd-grid').insertAdjacentHTML('afterbegin', wsHtml);
+      }
+    }
+
     // ── NEIGHBORHOOD CARDS ──
     const nbhdCards = [];
     if (demo.median_household_income_fmt) nbhdCards.push({ icon: '💰', val: demo.median_household_income_fmt, label: 'Median Income', pct: Math.min(100, Math.round((demo.median_household_income || 0) / 120000 * 100)), color: '#3b82f6' });
