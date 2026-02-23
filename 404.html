@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>404 — PropIntel</title>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800&f[]=satoshi@700,500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#08080a;--blue:#2563eb;--blue-l:#60a5fa;--violet:#7c3aed;--white:#f8f8fc;--g2:#a0a0b0;--g3:#60607a;--border:rgba(255,255,255,0.06)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Satoshi',system-ui,sans-serif;background:var(--bg);color:var(--white);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;-webkit-font-smoothing:antialiased}
+.orb{position:fixed;border-radius:50%;filter:blur(130px);pointer-events:none}
+.orb-1{width:700px;height:500px;top:-200px;left:-150px;background:radial-gradient(ellipse,rgba(37,99,235,0.14) 0%,transparent 70%)}
+.orb-2{width:500px;height:500px;bottom:0;right:-100px;background:radial-gradient(ellipse,rgba(124,58,237,0.1) 0%,transparent 70%)}
+.inner{position:relative;z-index:1;max-width:480px}
+.num{font-family:'Cabinet Grotesk',sans-serif;font-size:clamp(6rem,20vw,12rem);font-weight:900;letter-spacing:-8px;line-height:0.85;background:linear-gradient(135deg,var(--blue-l),var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px}
+h1{font-family:'Cabinet Grotesk',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:-1px;margin-bottom:12px}
+p{font-size:0.9rem;color:var(--g2);line-height:1.7;margin-bottom:32px}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+a.primary{background:var(--blue);color:white;padding:12px 24px;border-radius:10px;font-size:0.88rem;font-weight:700;text-decoration:none;transition:opacity 0.15s}
+a.secondary{background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--white);padding:12px 24px;border-radius:10px;font-size:0.88rem;font-weight:700;text-decoration:none;transition:opacity 0.15s}
+a:hover{opacity:0.82}
+.logo{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;text-decoration:none}
+.lm{width:28px;height:28px;background:linear-gradient(135deg,var(--blue),var(--violet));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:white}
+.ln{font-size:0.9rem;font-weight:800;color:var(--white);letter-spacing:-0.3px}
+</style>
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<a class="logo" href="/"><div class="lm">PI</div><span class="ln">PropIntel</span></a>
+<div class="inner">
+  <div class="num">404</div>
+  <h1>Nothing to see here.</h1>
+  <p>The page you're looking for doesn't exist — or the report link may have expired. Head back and run a fresh analysis.</p>
+  <div class="btns">
+    <a class="primary" href="/">Back to PropIntel →</a>
+    <a class="secondary" href="/demo.html">See a sample report</a>
+  </div>
+</div>
+</body>
+</html>

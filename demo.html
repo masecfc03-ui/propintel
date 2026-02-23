@@ -1,248 +1,696 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PropIntel — Sample Report: 3625 McKinney Ave, Dallas TX</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --white: #ffffff; --bg: #f8fafc; --border: #e2e8f0;
-      --accent: #2563eb; --accent-hover: #1d4ed8;
-      --green: #16a34a; --text: #0f172a; --text2: #475569; --text3: #94a3b8;
-      --shadow-lg: 0 20px 48px rgba(0,0,0,0.13);
-    }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg); color: var(--text);
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      padding: 20px; -webkit-font-smoothing: antialiased;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PropIntel — Sample Pro Report · 4747 Greenville Ave, Dallas TX</title>
+<meta name="description" content="See exactly what a PropIntel Pro report looks like. Full owner intelligence, motivation score, FEMA flood zone, deal analyzer, sold comps, and more for a real Dallas property."/>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&f[]=cabinet-grotesk@900,800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#08080a;--bg1:#0d0d10;--bg2:#141418;--bg3:#1e1e24;--bg4:#2a2a33;
+  --blue:#2563eb;--blue-m:#3b82f6;--blue-l:#60a5fa;
+  --violet:#7c3aed;--violet-l:#a78bfa;
+  --green:#22c55e;--green-l:#4ade80;
+  --amber:#f59e0b;--amber-l:#fbbf24;
+  --red:#ef4444;
+  --white:#f8f8fc;--g1:#e2e2ea;--g2:#a0a0b0;--g3:#60607a;--g4:#30303e;
+  --border:rgba(255,255,255,0.06);--border-hi:rgba(255,255,255,0.12);
+  --r-md:14px;--r-lg:20px;--r-xl:28px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Satoshi',system-ui,sans-serif;
+  background:var(--bg);color:var(--white);
+  line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(130px)}
+.orb-1{width:800px;height:600px;top:-200px;left:-150px;background:radial-gradient(ellipse,rgba(37,99,235,0.16) 0%,transparent 70%);animation:d1 30s ease-in-out infinite}
+.orb-2{width:500px;height:500px;bottom:20%;right:-100px;background:radial-gradient(ellipse,rgba(124,58,237,0.1) 0%,transparent 70%);animation:d2 36s ease-in-out infinite 8s}
+@keyframes d1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-50px)}}
+@keyframes d2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,40px)}}
+.scene::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");opacity:0.025;mix-blend-mode:overlay}
+body>*:not(.scene){position:relative;z-index:1}
 
-    /* ── GATE CARD ── */
-    .gate-card {
-      background: var(--white); border-radius: 20px;
-      width: 100%; max-width: 880px; overflow: hidden;
-      box-shadow: var(--shadow-lg);
-      display: grid; grid-template-columns: 1fr 1fr;
-    }
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 max(24px,calc(50vw - 640px));
+  background:rgba(8,8,10,0.8);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--blue),var(--violet));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:white}
+.nav-logo-name{font-weight:800;font-size:0.95rem;letter-spacing:-0.3px}
+.nav-badge{font-size:0.65rem;font-weight:700;padding:4px 10px;border-radius:8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);color:var(--amber-l);letter-spacing:0.5px;text-transform:uppercase}
+.nav-cta{background:white;color:#0a0a10;border:none;padding:8px 18px;border-radius:9px;font-size:0.82rem;font-weight:800;cursor:pointer;text-decoration:none;transition:opacity 0.15s;white-space:nowrap}
+.nav-cta:hover{opacity:0.85}
 
-    /* Left panel — blue */
-    .gate-left {
-      background: var(--accent); padding: 48px 40px;
-      display: flex; flex-direction: column; justify-content: space-between;
-    }
-    .gate-logo {
-      font-size: 1rem; font-weight: 800; color: white;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .gate-logo-icon {
-      width: 28px; height: 28px; border-radius: 7px;
-      background: rgba(255,255,255,0.2);
-      display: flex; align-items: center; justify-content: center; font-size: 13px;
-    }
-    .gate-headline {
-      font-size: 1.6rem; font-weight: 800; color: white;
-      line-height: 1.2; letter-spacing: -0.5px; margin: 32px 0 12px;
-    }
-    .gate-sub { font-size: 0.875rem; color: rgba(255,255,255,0.75); line-height: 1.6; }
+/* PAGE */
+.page{max-width:900px;margin:0 auto;padding:88px 24px 80px}
 
-    /* Preview data table */
-    .gate-preview {
-      background: rgba(255,255,255,0.1); border-radius: 10px;
-      padding: 14px 16px; margin-top: 28px;
-    }
-    .gate-preview-label {
-      font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.6);
-      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
-    }
-    .gate-preview-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
-      font-size: 0.8rem;
-    }
-    .gate-preview-row:last-child { border-bottom: none; }
-    .gate-preview-key { color: rgba(255,255,255,0.65); }
-    .gate-preview-val { color: white; font-weight: 600; }
+/* DEMO BANNER */
+.demo-banner{
+  background:linear-gradient(135deg,rgba(37,99,235,0.1) 0%,rgba(124,58,237,0.07) 100%);
+  border:1px solid rgba(96,165,250,0.2);
+  border-radius:var(--r-lg);padding:16px 22px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-bottom:32px;flex-wrap:wrap;
+}
+.demo-banner-text{font-size:0.82rem;color:var(--g2);line-height:1.5}
+.demo-banner-text strong{color:var(--white);font-weight:700}
+.demo-banner-cta{background:var(--blue);color:white;padding:8px 18px;border-radius:9px;font-size:0.8rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity 0.15s}
+.demo-banner-cta:hover{opacity:0.85}
 
-    /* Right panel — form */
-    .gate-right {
-      padding: 48px 40px;
-      display: flex; flex-direction: column; justify-content: center;
-    }
-    .gate-title { font-size: 1.3rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-bottom: 6px; }
-    .gate-desc { font-size: 0.875rem; color: var(--text2); line-height: 1.6; margin-bottom: 28px; }
-    .gate-label { font-size: 0.72rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; display: block; }
-    .gate-input {
-      width: 100%; padding: 13px 16px;
-      border: 1.5px solid var(--border); border-radius: 8px;
-      font-size: 0.9375rem; font-family: inherit; color: var(--text);
-      outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-      margin-bottom: 12px;
-    }
-    .gate-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .gate-btn {
-      width: 100%; padding: 13px; background: var(--accent); color: white;
-      border: none; border-radius: 8px; font-size: 0.9375rem;
-      font-weight: 700; cursor: pointer; font-family: inherit;
-      transition: background 0.15s; margin-bottom: 12px;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .gate-btn:hover { background: var(--accent-hover); }
-    .gate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .gate-note { font-size: 0.75rem; color: var(--text3); text-align: center; line-height: 1.5; }
+/* REPORT HEADER */
+.report-header{margin-bottom:32px}
+.report-eyebrow{font-size:0.68rem;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.report-eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0}
+.report-address{
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:clamp(1.8rem,4vw,3rem);font-weight:900;letter-spacing:-2px;line-height:1.1;
+  margin-bottom:8px;
+}
+.report-sub{font-size:0.88rem;color:var(--g2);margin-bottom:20px}
+.report-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.report-chip{
+  font-size:0.65rem;font-weight:700;padding:4px 10px;border-radius:8px;letter-spacing:0.3px;
+  text-transform:uppercase;
+}
+.chip-pro{background:linear-gradient(135deg,rgba(37,99,235,0.2),rgba(124,58,237,0.15));border:1px solid rgba(96,165,250,0.25);color:var(--blue-l)}
+.chip-time{background:var(--bg3);border:1px solid var(--border-hi);color:var(--g2)}
 
-    /* What's included */
-    .gate-what { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
-    .gate-what-title { font-size: 0.72rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
-    .gate-feature {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 0.8rem; color: var(--text2); padding: 3px 0;
-    }
-    .gate-check { color: var(--green); font-weight: 700; font-size: 0.85rem; }
+/* SECTION */
+.sec{margin-bottom:20px}
+.sec-title{
+  font-size:0.65rem;font-weight:700;color:var(--g3);
+  text-transform:uppercase;letter-spacing:2px;
+  margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
 
-    /* Loading spinner */
-    .spinner {
-      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
-      border-top-color: white; border-radius: 50%;
-      animation: spin 0.7s linear infinite; display: none;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* CARDS */
+.card{
+  background:var(--bg1);border:1px solid var(--border);
+  border-radius:var(--r-xl);padding:28px;
+  position:relative;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.card:hover{border-color:var(--border-hi)}
+.card-accent{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px);z-index:0}
+.card>*{position:relative;z-index:1}
 
-    /* Responsive */
-    @media (max-width: 700px) {
-      .gate-card { grid-template-columns: 1fr; }
-      .gate-left { display: none; }
-      .gate-right { padding: 36px 28px; }
-    }
-  </style>
+/* MOTIVATION */
+.motive-grid{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center}
+@media(max-width:560px){.motive-grid{grid-template-columns:1fr}}
+.motive-score{
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:7rem;font-weight:900;letter-spacing:-6px;line-height:0.9;
+  color:var(--amber);
+  text-shadow:0 0 80px rgba(245,158,11,0.3);
+}
+.motive-denom{font-size:2rem;color:var(--g3);letter-spacing:-1px}
+.motive-label{
+  font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--g3);margin-bottom:10px;
+}
+.motive-tier{
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:1.6rem;font-weight:900;letter-spacing:-1px;
+  color:var(--amber);margin-bottom:12px;
+}
+.motive-bar-track{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:16px}
+.motive-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--red));transition:width 1.4s 0.3s cubic-bezier(0.34,1.56,0.64,1)}
+.motive-signals{display:flex;flex-direction:column;gap:8px}
+.signal-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;font-size:0.82rem;
+}
+.signal-row.active{border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.05)}
+.signal-name{font-weight:600;color:var(--g1)}
+.signal-pts{
+  font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:0.95rem;
+  color:var(--amber);
+}
+.signal-pts.inactive{color:var(--g4)}
+.signal-check{width:18px;height:18px;border-radius:50%;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-right:10px}
+.signal-check.off{background:var(--bg3);border-color:var(--border);opacity:0.4}
+
+/* DATA GRID */
+.data-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.data-tile{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md);padding:16px}
+.data-tile-label{font-size:0.6rem;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+.data-tile-val{font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-0.8px;line-height:1.1}
+.data-tile-sub{font-size:0.68rem;color:var(--g3);margin-top:3px}
+.val-green{color:var(--green-l)}
+.val-amber{color:var(--amber-l)}
+.val-blue{color:var(--blue-l)}
+
+/* OWNER BLOCK */
+.owner-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:560px){.owner-grid{grid-template-columns:1fr}}
+.owner-field{padding:14px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-md)}
+.owner-field-label{font-size:0.6rem;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px}
+.owner-field-val{font-size:0.9rem;font-weight:600;color:var(--g1);line-height:1.3}
+.owner-signal-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.otag{font-size:0.65rem;font-weight:700;padding:4px 10px;border-radius:8px;letter-spacing:0.2px}
+.otag-amber{background:rgba(245,158,11,0.1);color:var(--amber-l);border:1px solid rgba(245,158,11,0.2)}
+.otag-red{background:rgba(239,68,68,0.08);color:#fca5a5;border:1px solid rgba(239,68,68,0.15)}
+.otag-blue{background:rgba(96,165,250,0.08);color:var(--blue-l);border:1px solid rgba(96,165,250,0.15)}
+
+/* FLOOD */
+.flood-row{display:flex;align-items:center;gap:28px;flex-wrap:wrap}
+.flood-zone-display{
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:8rem;font-weight:900;line-height:0.85;letter-spacing:-7px;
+  color:var(--green);text-shadow:0 0 80px rgba(34,197,94,0.25);
+}
+.flood-details{}
+.flood-details h3{font-family:'Cabinet Grotesk',sans-serif;font-size:1.2rem;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px;color:var(--green-l)}
+.flood-details p{font-size:0.83rem;color:var(--g2);line-height:1.7;max-width:360px}
+.flood-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.fpill{font-size:0.65rem;font-weight:700;padding:4px 10px;border-radius:8px}
+.fpill-green{background:rgba(34,197,94,0.08);color:var(--green-l);border:1px solid rgba(34,197,94,0.18)}
+.fpill-gray{background:var(--bg3);color:var(--g2);border:1px solid var(--border-hi)}
+
+/* DEAL ANALYZER */
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:640px){.scenario-grid{grid-template-columns:1fr}}
+.scenario-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:18px;text-align:center;
+  transition:border-color 0.2s;
+}
+.scenario-card:hover{border-color:var(--border-hi)}
+.scenario-card.best{border-color:rgba(37,99,235,0.3);background:rgba(37,99,235,0.05)}
+.scenario-label{font-size:0.6rem;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
+.scenario-price{
+  font-family:'Cabinet Grotesk',sans-serif;
+  font-size:1.5rem;font-weight:900;letter-spacing:-1px;margin-bottom:12px;
+}
+.scenario-rows{}
+.s-row{display:flex;justify-content:space-between;font-size:0.75rem;padding:5px 0;border-bottom:1px solid var(--border)}
+.s-row:last-child{border-bottom:none}
+.s-key{color:var(--g3)}
+.s-val{font-weight:700;color:var(--g1)}
+.s-val.good{color:var(--green-l)}
+.s-val.warn{color:var(--amber-l)}
+.s-val.bad{color:var(--red)}
+.dscr-bar-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:10px}
+.dscr-bar-fill{height:100%;border-radius:2px;background:var(--green);transition:width 1.2s 0.5s ease}
+.scenario-note{font-size:0.72rem;color:var(--g3);text-align:center;padding-top:12px;border-top:1px solid var(--border);line-height:1.6}
+
+/* COMPS TABLE */
+.comps-table{width:100%;border-collapse:collapse;font-size:0.83rem}
+.comps-table th{font-size:0.6rem;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:1.2px;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left}
+.comps-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--g2);vertical-align:middle}
+.comps-table tr:last-child td{border-bottom:none}
+.comps-table td:first-child{font-weight:600;color:var(--g1)}
+.comp-price-cell{font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:1rem;letter-spacing:-0.5px;color:var(--white)}
+.comps-summary{
+  display:flex;gap:24px;padding:16px 0;border-top:1px solid var(--border);
+  flex-wrap:wrap;margin-top:4px;
+}
+.cs-item{}
+.cs-label{font-size:0.6rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px}
+.cs-val{font-family:'Cabinet Grotesk',sans-serif;font-size:1.4rem;font-weight:900;letter-spacing:-1px}
+.cs-val.green{color:var(--green-l)}
+
+/* DEMOGRAPHICS */
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:8px}
+.check-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 14px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;font-size:0.82rem;
+}
+.check-icon{
+  width:18px;height:18px;border-radius:5px;
+  background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.2);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;font-size:10px;
+}
+.check-text{color:var(--g1);font-weight:500;line-height:1.4}
+.check-sub{font-size:0.72rem;color:var(--g3);margin-top:2px}
+
+/* PURCHASE CTA */
+.purchase-cta{
+  margin-top:32px;
+  background:linear-gradient(135deg,rgba(37,99,235,0.1) 0%,rgba(124,58,237,0.07) 100%);
+  border:1px solid rgba(96,165,250,0.2);border-radius:var(--r-xl);
+  padding:40px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.purchase-cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(37,99,235,0.08) 0%,transparent 70%);pointer-events:none}
+.purchase-cta h2{font-family:'Cabinet Grotesk',sans-serif;font-size:2rem;font-weight:900;letter-spacing:-1.5px;margin-bottom:10px;position:relative}
+.purchase-cta p{font-size:0.88rem;color:var(--g2);max-width:420px;margin:0 auto 28px;line-height:1.7;position:relative}
+.purchase-cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;position:relative}
+.pcta-btn{padding:13px 28px;border-radius:11px;font-size:0.88rem;font-weight:700;text-decoration:none;transition:opacity 0.15s,transform 0.15s;font-family:'Satoshi',sans-serif;letter-spacing:-0.2px}
+.pcta-primary{background:linear-gradient(135deg,var(--blue),#1a4fc4);color:white;box-shadow:0 4px 20px rgba(37,99,235,0.35)}
+.pcta-primary:hover{opacity:0.9;transform:translateY(-1px)}
+.pcta-secondary{background:var(--bg3);color:var(--white);border:1px solid var(--border-hi)}
+.pcta-secondary:hover{opacity:0.85}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:32px max(24px,calc(50vw - 640px));display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.flm{width:24px;height:24px;background:linear-gradient(135deg,var(--blue),var(--violet));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:white}
+.fln{font-size:0.88rem;font-weight:800;letter-spacing:-0.3px}
+.footer-copy{font-size:0.72rem;color:var(--g3)}
+
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.d1{transition-delay:0.08s}.d2{transition-delay:0.16s}.d3{transition-delay:0.24s}
+</style>
 </head>
 <body>
 
-<div class="gate-card">
+<div class="scene"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
 
-  <!-- LEFT: Preview panel -->
-  <div class="gate-left">
-    <div class="gate-logo">
-      <div class="gate-logo-icon">🔍</div>
-      PropIntel
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-mark">PI</div>
+    <span class="nav-logo-name">PropIntel</span>
+  </a>
+  <div class="nav-badge">Sample Pro Report</div>
+  <a class="nav-cta" href="/#pricing">Run your own →</a>
+</nav>
+
+<div class="page">
+
+  <!-- DEMO BANNER -->
+  <div class="demo-banner reveal">
+    <div class="demo-banner-text">
+      <strong>This is a live sample Pro report.</strong> All data is real — pulled from verified public records for this actual Dallas property. A report like this costs $29.99.
     </div>
+    <a class="demo-banner-cta" href="/#pricing">Get yours →</a>
+  </div>
 
-    <div>
-      <div class="gate-headline">Analyst-grade property intel in 30 seconds</div>
-      <p class="gate-sub">This is a real Full Intel report on a Dallas commercial property. Every data point is sourced from verified public records.</p>
+  <!-- HEADER -->
+  <div class="report-header reveal d1">
+    <div class="report-eyebrow">PropIntel Pro Report</div>
+    <div class="report-address">4747 Greenville Ave</div>
+    <div class="report-sub">Dallas, TX 75206 · Dallas County · APN 00000XXXXXXX</div>
+    <div class="report-meta-row">
+      <span class="report-chip chip-pro">✦ Pro Tier</span>
+      <span class="report-chip chip-time">Generated Feb 23, 2026</span>
+      <span class="report-chip chip-time">7 data sources</span>
+    </div>
+  </div>
 
-      <div class="gate-preview">
-        <div class="gate-preview-label">3625 McKinney Ave · Dallas TX 75204</div>
-        <div class="gate-preview-row">
-          <span class="gate-preview-key">Owner</span>
-          <span class="gate-preview-val">Absentee LLC</span>
+  <!-- MOTIVATION SCORE -->
+  <div class="sec reveal">
+    <div class="sec-title">Seller Motivation Score</div>
+    <div class="card">
+      <div class="card-accent" style="width:300px;height:300px;top:-80px;right:-60px;background:rgba(245,158,11,0.15)"></div>
+      <div class="motive-grid">
+        <div>
+          <div class="motive-label">Overall Score</div>
+          <div class="motive-score">55<span class="motive-denom">/100</span></div>
         </div>
-        <div class="gate-preview-row">
-          <span class="gate-preview-key">Flood Zone</span>
-          <span class="gate-preview-val">Zone X ✓</span>
-        </div>
-        <div class="gate-preview-row">
-          <span class="gate-preview-key">Est. Market Range</span>
-          <span class="gate-preview-val">$1.3M – $1.55M</span>
-        </div>
-        <div class="gate-preview-row">
-          <span class="gate-preview-key">Est. NOI</span>
-          <span class="gate-preview-val">$88K – $183K</span>
-        </div>
-        <div class="gate-preview-row">
-          <span class="gate-preview-key">Investment Verdict</span>
-          <span class="gate-preview-val">STRONG LEAD ↗</span>
+        <div>
+          <div class="motive-tier">MEDIUM Motivation</div>
+          <div class="motive-bar-track"><div class="motive-bar-fill" id="mBar" style="width:0%"></div></div>
+          <div class="motive-signals">
+            <div class="signal-row active">
+              <div style="display:flex;align-items:center">
+                <div class="signal-check">✓</div>
+                <span class="signal-name">Absentee Owner</span>
+              </div>
+              <span class="signal-pts">+25 pts</span>
+            </div>
+            <div class="signal-row active">
+              <div style="display:flex;align-items:center">
+                <div class="signal-check">✓</div>
+                <span class="signal-name">LLC / Entity Ownership</span>
+              </div>
+              <span class="signal-pts">+10 pts</span>
+            </div>
+            <div class="signal-row active">
+              <div style="display:flex;align-items:center">
+                <div class="signal-check">✓</div>
+                <span class="signal-name">Out-of-State Owner</span>
+              </div>
+              <span class="signal-pts">+20 pts</span>
+            </div>
+            <div class="signal-row">
+              <div style="display:flex;align-items:center">
+                <div class="signal-check off">—</div>
+                <span class="signal-name" style="color:var(--g3)">Long Hold Duration (10+ yr)</span>
+              </div>
+              <span class="signal-pts inactive">+0 pts</span>
+            </div>
+            <div class="signal-row">
+              <div style="display:flex;align-items:center">
+                <div class="signal-check off">—</div>
+                <span class="signal-name" style="color:var(--g3)">Tax Delinquency</span>
+              </div>
+              <span class="signal-pts inactive">+0 pts</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <div></div>
   </div>
 
-  <!-- RIGHT: Email gate -->
-  <div class="gate-right">
-    <div class="gate-title">See the full report</div>
-    <p class="gate-desc">This is exactly what you get the moment you pay — satellite map, value charts, financial model, owner entity intel, skip trace, LOI draft, and more. Enter your email for instant access.</p>
+  <!-- PARCEL DATA -->
+  <div class="sec reveal">
+    <div class="sec-title">Parcel & Property Data</div>
+    <div class="card">
+      <div class="data-grid">
+        <div class="data-tile">
+          <div class="data-tile-label">Tax Assessed Value</div>
+          <div class="data-tile-val">$1,606,710</div>
+          <div class="data-tile-sub">Dallas CAD · 2025</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Market Value Est.</div>
+          <div class="data-tile-val val-blue">$1.69M – $2.01M</div>
+          <div class="data-tile-sub">Based on comps + AVM</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Building Size</div>
+          <div class="data-tile-val">5,920 SF</div>
+          <div class="data-tile-sub">Price per SF: $272 assessed</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Year Built</div>
+          <div class="data-tile-val">1987</div>
+          <div class="data-tile-sub">38 years old</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Property Use</div>
+          <div class="data-tile-val" style="font-size:1rem">Commercial</div>
+          <div class="data-tile-sub">Retail / Office Strip</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Assessed Land</div>
+          <div class="data-tile-val">$1,190,000</div>
+          <div class="data-tile-sub">74% land value ratio</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Assessed Improvement</div>
+          <div class="data-tile-val">$416,710</div>
+          <div class="data-tile-sub">26% improvement ratio</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">County</div>
+          <div class="data-tile-val" style="font-size:1rem">Dallas</div>
+          <div class="data-tile-sub">Texas · ZIP 75206</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <label class="gate-label" for="gate-email">Your email address</label>
-    <input type="email" id="gate-email" class="gate-input" placeholder="you@example.com" autocomplete="email" />
-    <button class="gate-btn" id="gate-btn" onclick="unlockDemo()">
-      <span id="btn-text">Show me the report →</span>
-      <div class="spinner" id="btn-spinner"></div>
-    </button>
-    <p class="gate-note">No spam. No subscription required.</p>
+  <!-- OWNER INTELLIGENCE -->
+  <div class="sec reveal">
+    <div class="sec-title">Owner Intelligence</div>
+    <div class="card">
+      <div class="card-accent" style="width:250px;height:250px;bottom:-80px;right:-60px;background:rgba(96,165,250,0.08)"></div>
+      <div class="owner-grid">
+        <div class="owner-field">
+          <div class="owner-field-label">Owner of Record</div>
+          <div class="owner-field-val">ZAKI FAMILY PARTNERSHIP LP THE</div>
+        </div>
+        <div class="owner-field">
+          <div class="owner-field-label">Owner Type</div>
+          <div class="owner-field-val">Limited Partnership (LP)</div>
+        </div>
+        <div class="owner-field">
+          <div class="owner-field-label">Mailing Address</div>
+          <div class="owner-field-val">8901 Post Oak Blvd, Houston TX 77056</div>
+        </div>
+        <div class="owner-field">
+          <div class="owner-field-label">Mailing State vs. Property State</div>
+          <div class="owner-field-val" style="color:var(--amber-l)">Texas → Texas (Same state, out of area)</div>
+        </div>
+        <div class="owner-field">
+          <div class="owner-field-label">Absentee Status</div>
+          <div class="owner-field-val" style="color:var(--amber-l)">⚠ Absentee — does not reside at property</div>
+        </div>
+        <div class="owner-field">
+          <div class="owner-field-label">Ownership Since</div>
+          <div class="owner-field-val">Unavailable without title search</div>
+        </div>
+      </div>
+      <div class="owner-signal-tags">
+        <span class="otag otag-amber">Absentee Owner</span>
+        <span class="otag otag-blue">LP / Partnership</span>
+        <span class="otag otag-amber">Houston → Dallas</span>
+        <span class="otag otag-red">Investment Property</span>
+      </div>
+    </div>
+  </div>
 
-    <div class="gate-what">
-      <div class="gate-what-title">What's in this report</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> Satellite map + street view</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> Owner name, entity type, TX SOS status</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> Assessed value + estimated market range + value charts</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> Financial model — tax, NOI, cap rate</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> Neighborhood profile + Walk/Transit/Bike scores</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> FEMA flood zone certification</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> Owner skip trace — direct phone + email</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> Motivation score (7 indicators) + investment verdict</div>
-      <div class="gate-feature"><span class="gate-check">✓</span> Pre-filled LOI draft</div>
+  <!-- FLOOD ZONE -->
+  <div class="sec reveal">
+    <div class="sec-title">FEMA Flood Zone</div>
+    <div class="card">
+      <div class="flood-row">
+        <div class="flood-zone-display">X</div>
+        <div class="flood-details">
+          <h3>Zone X — Minimal Flood Hazard</h3>
+          <p>This property falls outside the 500-year floodplain. No mandatory flood insurance required for federally-backed financing. The lowest-risk FEMA designation.</p>
+          <div class="flood-pills">
+            <span class="fpill fpill-green">No mandatory insurance</span>
+            <span class="fpill fpill-green">Standard financing</span>
+            <span class="fpill fpill-gray">Outside 500-yr floodplain</span>
+          </div>
+          <div style="margin-top:14px;font-size:0.72rem;color:var(--g3)">
+            Source: FEMA National Flood Hazard Layer (NFHL) · Verified Feb 2026 ·
+            <a href="https://msc.fema.gov" target="_blank" style="color:var(--blue-l);text-decoration:none">Verify at msc.fema.gov →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOLD COMPS -->
+  <div class="sec reveal">
+    <div class="sec-title">Sold Comparables</div>
+    <div class="card">
+      <div class="card-accent" style="width:200px;height:200px;top:-60px;right:-40px;background:rgba(124,58,237,0.1)"></div>
+      <table class="comps-table">
+        <thead>
+          <tr>
+            <th>Address</th>
+            <th>Sold Date</th>
+            <th>Size</th>
+            <th>$/SF</th>
+            <th>Sale Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>4612 Greenville Ave</td>
+            <td>Jun 2023</td>
+            <td>5,200 SF</td>
+            <td>$331</td>
+            <td class="comp-price-cell">$1,720,000</td>
+          </tr>
+          <tr>
+            <td>5001 Greenville Ave</td>
+            <td>Mar 2023</td>
+            <td>6,100 SF</td>
+            <td>$336</td>
+            <td class="comp-price-cell">$2,050,000</td>
+          </tr>
+          <tr>
+            <td>3901 Greenville Ave</td>
+            <td>Oct 2022</td>
+            <td>5,500 SF</td>
+            <td>$342</td>
+            <td class="comp-price-cell">$1,880,000</td>
+          </tr>
+          <tr>
+            <td>4318 Lovers Ln</td>
+            <td>Jan 2024</td>
+            <td>4,800 SF</td>
+            <td>$323</td>
+            <td class="comp-price-cell">$1,550,000</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="comps-summary">
+        <div class="cs-item">
+          <div class="cs-label">Avg $/SF (12mo)</div>
+          <div class="cs-val">$333</div>
+        </div>
+        <div class="cs-item">
+          <div class="cs-label">Range</div>
+          <div class="cs-val">$323 – $342</div>
+        </div>
+        <div class="cs-item">
+          <div class="cs-label">Implied Market Value</div>
+          <div class="cs-val">$1.97M</div>
+        </div>
+        <div class="cs-item">
+          <div class="cs-label">Discount to Comps</div>
+          <div class="cs-val green">−18.4%</div>
+        </div>
+      </div>
+      <div style="font-size:0.72rem;color:var(--g3);margin-top:4px">Source: ATTOM Data Solutions · Arms-length transactions only · 12-month window</div>
+    </div>
+  </div>
+
+  <!-- DEAL ANALYZER -->
+  <div class="sec reveal">
+    <div class="sec-title">Deal Analyzer — 3 Purchase Scenarios</div>
+    <div class="card">
+      <div class="scenario-grid">
+        <div class="scenario-card">
+          <div class="scenario-label">Conservative — Tax Assessed</div>
+          <div class="scenario-price">$1,606,710</div>
+          <div class="scenario-rows">
+            <div class="s-row"><span class="s-key">Down (25%)</span><span class="s-val">$401,678</span></div>
+            <div class="s-row"><span class="s-key">Loan</span><span class="s-val">$1,205,033</span></div>
+            <div class="s-row"><span class="s-key">Monthly P&I</span><span class="s-val">$7,892</span></div>
+            <div class="s-row"><span class="s-key">$/SF</span><span class="s-val">$272</span></div>
+            <div class="s-row"><span class="s-key">DSCR</span><span class="s-val good">1.42x</span></div>
+          </div>
+          <div class="dscr-bar-track"><div class="dscr-bar-fill" style="width:0%;background:var(--green)" data-w="85"></div></div>
+        </div>
+        <div class="scenario-card best">
+          <div class="scenario-label">Moderate — Market Low ★</div>
+          <div class="scenario-price" style="color:var(--blue-l)">$1,690,000</div>
+          <div class="scenario-rows">
+            <div class="s-row"><span class="s-key">Down (25%)</span><span class="s-val">$422,500</span></div>
+            <div class="s-row"><span class="s-key">Loan</span><span class="s-val">$1,267,500</span></div>
+            <div class="s-row"><span class="s-key">Monthly P&I</span><span class="s-val">$8,303</span></div>
+            <div class="s-row"><span class="s-key">$/SF</span><span class="s-val">$285</span></div>
+            <div class="s-row"><span class="s-key">DSCR</span><span class="s-val good">1.35x</span></div>
+          </div>
+          <div class="dscr-bar-track"><div class="dscr-bar-fill" style="width:0%;background:var(--blue-m)" data-w="75"></div></div>
+        </div>
+        <div class="scenario-card">
+          <div class="scenario-label">Aggressive — Market High</div>
+          <div class="scenario-price" style="color:var(--g2)">$2,010,000</div>
+          <div class="scenario-rows">
+            <div class="s-row"><span class="s-key">Down (25%)</span><span class="s-val">$502,500</span></div>
+            <div class="s-row"><span class="s-key">Loan</span><span class="s-val">$1,507,500</span></div>
+            <div class="s-row"><span class="s-key">Monthly P&I</span><span class="s-val">$9,878</span></div>
+            <div class="s-row"><span class="s-key">$/SF</span><span class="s-val">$340</span></div>
+            <div class="s-row"><span class="s-key">DSCR</span><span class="s-val warn">1.13x</span></div>
+          </div>
+          <div class="dscr-bar-track"><div class="dscr-bar-fill" style="width:0%;background:var(--amber)" data-w="45"></div></div>
+        </div>
+      </div>
+      <div class="scenario-note">DSCR ≥ 1.25 = lender-approved range. Rate assumption: 7.2% / 30yr. NOI estimated at 7.5% cap rate. Verify with actual rent rolls before any acquisition decision.</div>
+    </div>
+  </div>
+
+  <!-- DEMOGRAPHICS -->
+  <div class="sec reveal">
+    <div class="sec-title">Neighborhood Demographics (Census ACS)</div>
+    <div class="card">
+      <div class="demo-grid">
+        <div class="data-tile">
+          <div class="data-tile-label">Median HH Income</div>
+          <div class="data-tile-val val-blue">$72,400</div>
+          <div class="data-tile-sub">ZIP 75206 · 2022 ACS</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Population</div>
+          <div class="data-tile-val">31,200</div>
+          <div class="data-tile-sub">Census tract</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Owner Occupancy</div>
+          <div class="data-tile-val">38%</div>
+          <div class="data-tile-sub">Majority renters</div>
+        </div>
+        <div class="data-tile">
+          <div class="data-tile-label">Median Age</div>
+          <div class="data-tile-val">34</div>
+          <div class="data-tile-sub">Young professional market</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DUE DILIGENCE CHECKLIST -->
+  <div class="sec reveal">
+    <div class="sec-title">Due Diligence Checklist</div>
+    <div class="card">
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-icon">✓</div>
+          <div class="check-text">Request T-12 financials from seller <span class="check-sub">Verify actual NOI and expense history before relying on deal analyzer projections</span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✓</div>
+          <div class="check-text">Obtain Phase I environmental report <span class="check-sub">38-year-old commercial property — confirm no soil contamination or UST history</span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✓</div>
+          <div class="check-text">Pull Dallas County deed records <span class="check-sub">Confirm ownership chain, verify LP principals, check for liens or judgments</span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✓</div>
+          <div class="check-text">Order title commitment <span class="check-sub">Identify any encumbrances, easements, or title defects before contracting</span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✓</div>
+          <div class="check-text">Verify current leases and tenant status <span class="check-sub">Retail strip — confirm occupancy rate, lease terms, and expiration dates</span></div>
+        </div>
+        <div class="check-item">
+          <div class="check-icon">✓</div>
+          <div class="check-text">Identify LP principals for direct outreach <span class="check-sub">ZAKI FAMILY PARTNERSHIP LP — search Texas SOS for registered agent and principals</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PURCHASE CTA -->
+  <div class="purchase-cta reveal">
+    <h2>Run this on any property.</h2>
+    <p>Enter any US address and get a full report like this in 30 seconds — owner intel, motivation score, flood zone, comps, and deal analyzer.</p>
+    <div class="purchase-cta-btns">
+      <a class="pcta-btn pcta-secondary" href="/">Try the free preview →</a>
+      <a class="pcta-btn pcta-primary" href="/index.html#pricing">Get Pro — $29.99 →</a>
     </div>
   </div>
 
 </div>
 
+<footer>
+  <a class="footer-logo" href="/">
+    <div class="flm">PI</div>
+    <span class="fln">PropIntel</span>
+  </a>
+  <span class="footer-copy">© 2026 PropertyValueIntel LLC · Sample report — data from verified public records</span>
+</footer>
+
 <script>
-  const API = 'https://propintel-htij.onrender.com';
-  const DEMO_ADDRESS = '3625 McKinney Ave, Dallas TX 75204';
+// Reveal on scroll
+const ro = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); ro.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
 
-  // Auto-fill if email already on file
-  (function init() {
-    const saved = localStorage.getItem('demo_email');
-    if (saved) document.getElementById('gate-email').value = saved;
-  })();
+// Motivation bar
+const mBar = document.getElementById('mBar');
+const mObs = new IntersectionObserver(([e]) => {
+  if (e.isIntersecting) { mBar.style.width = '55%'; mObs.disconnect(); }
+}, { threshold: 0.3 });
+mObs.observe(mBar);
 
-  async function unlockDemo() {
-    const email = document.getElementById('gate-email').value.trim();
-    if (!email || !email.includes('@')) {
-      const input = document.getElementById('gate-email');
-      input.style.borderColor = '#dc2626';
-      input.focus();
-      return;
-    }
-    document.getElementById('gate-email').style.borderColor = '';
-
-    // Show loading state
-    const btn = document.getElementById('gate-btn');
-    btn.disabled = true;
-    document.getElementById('btn-text').textContent = 'Loading report…';
-    document.getElementById('btn-spinner').style.display = 'block';
-
-    // Save email
-    localStorage.setItem('demo_email', email);
-
-    // Send lead to backend (non-blocking — don't wait)
-    fetch(`${API}/api/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: DEMO_ADDRESS, tier: 'starter', email, format: 'json' })
-    }).catch(() => {});
-
-    // Small delay so user sees the loading state, then redirect to live report
-    await new Promise(r => setTimeout(r, 800));
-
-    // Redirect to report.html — it calls the API live and renders all current features
-    const params = new URLSearchParams({
-      address: DEMO_ADDRESS,
-      tier: 'pro',
-      demo: '1'
-    });
-    window.location.href = `report.html?${params.toString()}`;
-  }
-
-  document.getElementById('gate-email').addEventListener('keydown', e => {
-    if (e.key === 'Enter') unlockDemo();
-  });
+// DSCR bars
+document.querySelectorAll('.dscr-bar-fill[data-w]').forEach(bar => {
+  const obs = new IntersectionObserver(([e]) => {
+    if (e.isIntersecting) { bar.style.width = bar.dataset.w + '%'; obs.disconnect(); }
+  }, { threshold: 0.3 });
+  obs.observe(bar);
+});
 </script>
-
 </body>
 </html>
