@@ -223,6 +223,43 @@
       font-size: 0.62rem; font-weight: 700; letter-spacing: 0.5px; margin-left: 8px;
       vertical-align: middle; }
 
+    /* ── MAP / VIEWS ── */
+    .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .map-frame { border-radius: 12px; overflow: hidden; background: var(--bg3);
+      border: 1px solid var(--border); position: relative; }
+    .map-frame iframe { width: 100%; height: 220px; border: none; display: block; }
+    .map-label { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.75);
+      color: white; font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; padding: 4px 10px; border-radius: 6px; z-index: 2; }
+    @media (max-width: 600px) { .map-grid { grid-template-columns: 1fr; } }
+
+    /* ── SCORE CARD ── */
+    .score-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+      margin-bottom: 20px; }
+    .score-card { background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px; text-align: center; position: relative; }
+    .score-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 3px; border-radius: 12px 12px 0 0; background: var(--border); }
+    .score-card.good::before { background: var(--green); }
+    .score-card.warn::before { background: var(--amber); }
+    .score-card.bad::before { background: var(--red); }
+    .score-card.neutral::before { background: var(--accent); }
+    .sc-icon { font-size: 1.4rem; margin-bottom: 6px; }
+    .sc-val { font-size: 1.2rem; font-weight: 900; line-height: 1.1; }
+    .sc-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text3); margin-top: 4px; }
+
+    /* ── ASSESSMENT CHART ── */
+    .assess-chart { display: flex; flex-direction: column; gap: 10px; }
+    .assess-bar-wrap { display: flex; align-items: center; gap: 12px; }
+    .assess-bar-label { font-size: 0.78rem; color: var(--text2); min-width: 120px; }
+    .assess-bar-track { flex: 1; background: var(--bg3); border-radius: 100px;
+      height: 24px; overflow: hidden; position: relative; }
+    .assess-bar-fill { height: 100%; border-radius: 100px; transition: width 1s ease;
+      display: flex; align-items: center; padding-left: 10px; font-size: 0.72rem;
+      font-weight: 700; color: white; white-space: nowrap; }
+    .assess-bar-val { font-size: 0.82rem; font-weight: 700; color: var(--text); min-width: 90px; text-align: right; }
+
     @media print {
       .topbar, .upsell, #loading, #error-state { display: none !important; }
       body { background: white; color: #0f172a; }
@@ -249,7 +286,7 @@
     <div class="load-step" id="step-fema"><div class="step-dot"></div>FEMA NFHL Flood Zone</div>
     <div class="load-step" id="step-census"><div class="step-dot"></div>Census ACS Demographics</div>
     <div class="load-step" id="step-dcad"><div class="step-dot"></div>County Parcel Record (DCAD)</div>
-    <div class="load-step" id="step-pro" style="display:none"><div class="step-dot"></div>Owner Intelligence (DataZapp)</div>
+    <div class="load-step" id="step-pro" style="display:none"><div class="step-dot"></div>Owner Intelligence (People Data Labs)</div>
   </div>
 </div>
 
@@ -287,6 +324,55 @@
 
   <!-- FLAGS -->
   <div class="flags-bar" id="r-flags"></div>
+
+  <!-- AT-A-GLANCE SCORE CARDS -->
+  <div class="score-grid" id="r-score-grid" style="display:none">
+    <div class="score-card neutral" id="sc-zone">
+      <div class="sc-icon">🌊</div>
+      <div class="sc-val" id="sc-zone-val">—</div>
+      <div class="sc-label">Flood Zone</div>
+    </div>
+    <div class="score-card neutral" id="sc-assessed">
+      <div class="sc-icon">🏛️</div>
+      <div class="sc-val" id="sc-assessed-val">—</div>
+      <div class="sc-label">Assessed Value</div>
+    </div>
+    <div class="score-card neutral" id="sc-mhi">
+      <div class="sc-icon">💰</div>
+      <div class="sc-val" id="sc-mhi-val">—</div>
+      <div class="sc-label">Area MHI</div>
+    </div>
+    <div class="score-card neutral" id="sc-motivation">
+      <div class="sc-icon">🎯</div>
+      <div class="sc-val" id="sc-mot-val">—</div>
+      <div class="sc-label">Motivation</div>
+    </div>
+  </div>
+
+  <!-- PROPERTY VIEWS (Satellite + Street View) -->
+  <div class="section" id="sec-maps" style="display:none">
+    <div class="sec-head">
+      <div class="sec-title">🗺️ Property Views</div>
+      <div class="sec-src">Google Maps · Satellite · Street View</div>
+    </div>
+    <div class="sec-body">
+      <div class="map-grid">
+        <div class="map-frame">
+          <div class="map-label">🛰️ Satellite</div>
+          <iframe id="map-satellite" src="" loading="lazy" allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade" title="Satellite view"></iframe>
+        </div>
+        <div class="map-frame">
+          <div class="map-label">🚗 Street View</div>
+          <iframe id="map-street" src="" loading="lazy" allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade" title="Street view"></iframe>
+        </div>
+      </div>
+      <p style="font-size:0.72rem;color:var(--text3);margin-top:10px">
+        Maps via Google Maps · <a id="r-gmaps-link" href="#" target="_blank">Open in Google Maps →</a>
+      </p>
+    </div>
+  </div>
 
   <!-- FEMA FLOOD ZONE -->
   <div class="section">
@@ -583,6 +669,47 @@ function renderReport(d, tier) {
   const deal = d.deal_analysis || {};
   const liens = d.liens || {};
 
+  // ── Score Cards ──────────────────────────────────────────────────────────
+  const sg = $id("r-score-grid");
+  sg.style.display = "grid";
+
+  const zone = flood.zone || "—";
+  $id("sc-zone-val").textContent = zone !== "—" ? "Zone " + zone : "—";
+  const sc_zone = $id("sc-zone");
+  sc_zone.className = "score-card " + (zone === "X" ? "good" : zone !== "—" ? "bad" : "neutral");
+
+  const assessed = parcel.assessed_total;
+  $id("sc-assessed-val").textContent = assessed ? "$" + (assessed >= 1000000
+    ? (assessed/1000000).toFixed(1) + "M" : Math.round(assessed/1000) + "K") : "—";
+  $id("sc-assessed").className = "score-card neutral";
+
+  const mhi = demo.median_household_income;
+  $id("sc-mhi-val").textContent = mhi ? "$" + Math.round(mhi/1000) + "K" : "—";
+  $id("sc-mhi").className = "score-card " + (mhi >= 60000 ? "good" : mhi >= 40000 ? "warn" : mhi ? "bad" : "neutral");
+
+  const motTier = motivation.tier || "";
+  const motScore = motivation.score;
+  $id("sc-mot-val").textContent = motScore != null ? motScore + "/100" : (isPro ? "—" : "PRO");
+  $id("sc-motivation").className = "score-card " + (motTier === "HIGH" ? "warn" : motTier === "MODERATE" ? "neutral" : motTier === "LOW" ? "good" : "neutral");
+
+  // ── Property Maps ─────────────────────────────────────────────────────────
+  if (geo.lat && geo.lng) {
+    const lat = geo.lat, lng = geo.lng;
+    const encoded = encodeURIComponent(geo.matched_address || d.input || "");
+
+    // Satellite view via Google Maps embed
+    $id("map-satellite").src =
+      `https://maps.google.com/maps?q=${lat},${lng}&z=18&t=k&output=embed&hl=en`;
+
+    // Street View via Google Maps embed
+    $id("map-street").src =
+      `https://www.google.com/maps?q=${lat},${lng}&layer=c&cbll=${lat},${lng}&cbp=12,0,0,0,0&output=svembed`;
+
+    $id("r-gmaps-link").href =
+      `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    $id("sec-maps").style.display = "block";
+  }
+
   // Tier badge
   const tierText = isPro ? "Full Intel Report · $29.99" : "Public Record Report · $9.99";
   const tierClass = isPro ? "badge-pro" : "badge-starter";
@@ -665,6 +792,7 @@ function renderReport(d, tier) {
       `<div class="dr"><span class="dl">Tax Delinquency</span>${taxStatus}</div>`,
       `<div class="dr"><span class="dl">Owner Presence</span>${absentee}</div>`,
     ].join("") +
+    buildAssessmentChart(parcel) +
     `<div style="font-size:0.72rem;color:var(--text3);margin-top:10px">
       Source: <a href="${parcel.dcad_direct_url || parcel.source_url || '#'}" target="_blank">Dallas Central Appraisal District</a>
       ${parcel.apn ? '· <a href="https://www.dcad.org/property-search/?account=' + parcel.apn + '" target="_blank">Direct APN link →</a>' : ''}
@@ -681,6 +809,9 @@ function renderReport(d, tier) {
        </div>`;
   }
 
+  // Animate assessment bars after DOM is set
+  animateAssessmentBars();
+
   // PRO SECTIONS
   if (isPro) {
     renderOwnerIntel(d, skip, parcel);
@@ -694,6 +825,68 @@ function renderReport(d, tier) {
     const addr2 = d.resolved_address || d.input || "";
     $id("r-upsell-btn").href = PRO_LINK + "?client_reference_id=" + encodeURIComponent(addr2);
   }
+}
+
+// ─── Assessment Breakdown Chart ──────────────────────────────────────────────
+function buildAssessmentChart(parcel) {
+  const total = parcel.assessed_total;
+  const land = parcel.assessed_land;
+  const imp = parcel.assessed_improvement;
+  const prev = parcel.assessed_prev;
+  if (!total || total <= 0) return "";
+
+  const landPct = land ? Math.round((land / total) * 100) : 0;
+  const impPct = 100 - landPct;
+  const yoy = (prev && prev > 0) ? ((total - prev) / prev * 100).toFixed(1) : null;
+  const yoyColor = yoy > 0 ? "var(--green)" : yoy < 0 ? "var(--red)" : "var(--text2)";
+
+  return `<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);margin-bottom:12px">
+      📊 Assessment Breakdown
+      ${yoy !== null ? '<span style="color:' + yoyColor + ';margin-left:10px">' + (yoy > 0 ? '▲' : yoy < 0 ? '▼' : '–') + ' ' + Math.abs(yoy) + '% YoY</span>' : ''}
+    </div>
+    <div class="assess-chart">
+      <div class="assess-bar-wrap">
+        <div class="assess-bar-label">Land Value</div>
+        <div class="assess-bar-track">
+          <div class="assess-bar-fill" data-w="${landPct}"
+            style="width:0%;background:linear-gradient(90deg,#3b82f6,#6366f1)">
+            ${landPct > 15 ? landPct + '%' : ''}
+          </div>
+        </div>
+        <div class="assess-bar-val">$${Math.round(land/1000)}K</div>
+      </div>
+      <div class="assess-bar-wrap">
+        <div class="assess-bar-label">Improvement</div>
+        <div class="assess-bar-track">
+          <div class="assess-bar-fill" data-w="${impPct}"
+            style="width:0%;background:linear-gradient(90deg,#22c55e,#14b8a6)">
+            ${impPct > 15 ? impPct + '%' : ''}
+          </div>
+        </div>
+        <div class="assess-bar-val">$${Math.round((imp||0)/1000)}K</div>
+      </div>
+      <div class="assess-bar-wrap">
+        <div class="assess-bar-label" style="font-weight:700;color:var(--text)">Total Assessed</div>
+        <div class="assess-bar-track">
+          <div class="assess-bar-fill" data-w="100"
+            style="width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444)">
+            100%
+          </div>
+        </div>
+        <div class="assess-bar-val" style="color:var(--amber);font-weight:800">$${Math.round(total/1000)}K</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Animate bars after render
+function animateAssessmentBars() {
+  setTimeout(() => {
+    document.querySelectorAll(".assess-bar-fill[data-w]").forEach(el => {
+      el.style.width = el.getAttribute("data-w") + "%";
+    });
+  }, 300);
 }
 
 // ─── DR helper ───────────────────────────────────────────────────────────────
