@@ -358,8 +358,23 @@
     @media print {
       .topbar { display: none; }
       .upsell-card { display: none; }
+      .no-print { display: none !important; }
       body { background: white; }
       .section-card { box-shadow: none; break-inside: avoid; }
+      /* Show annotation print views, hide edit inputs */
+      #wl-annotations input,
+      #wl-annotations textarea { display: none !important; }
+      #wl-annotations .annotation-print { display: block !important; }
+      #wl-annotations .section-card {
+        border: 1px solid #e2e8f0 !important;
+        background: #f8fafc !important;
+      }
+    }
+    .annotation-print {
+      display: none;
+      font-size: 0.9rem;
+      color: #0f172a;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -420,6 +435,39 @@
       </div>
       <div class="brand-right">
         <div class="brand-contact" id="brand-contact"></div>
+      </div>
+    </div>
+
+    <!-- WL Annotation Panel (edit mode — hidden on print) -->
+    <div id="wl-annotations" style="display:none">
+      <div class="section-card" style="border:1.5px dashed #bfdbfe;background:#eff6ff;">
+        <div class="sec-head" style="border-bottom-color:#bfdbfe">
+          <div class="sec-title" style="color:#2563eb">✏️ Agent Annotations <span style="font-size:0.7rem;font-weight:400;color:#64748b;margin-left:6px">· Saved locally · Never sent to PropIntel · Printed with report</span></div>
+          <div class="sec-src no-print" style="color:#64748b">Edit before sharing</div>
+        </div>
+        <div class="sec-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px" class="annotation-grid">
+            <div>
+              <label style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Your ARV Estimate</label>
+              <input id="ann-arv" type="text" placeholder="e.g. $875,000 – $925,000"
+                style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:0.88rem;font-family:inherit;outline:none;color:#0f172a"
+                oninput="saveAnnotations()" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'" />
+              <div id="ann-arv-print" class="no-edit" style="display:none;font-size:0.95rem;font-weight:700;color:#2563eb;padding:4px 0"></div>
+            </div>
+            <div>
+              <label style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Recommended Offer Range</label>
+              <input id="ann-offer" type="text" placeholder="e.g. $750,000 – $800,000"
+                style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:0.88rem;font-family:inherit;outline:none;color:#0f172a"
+                oninput="saveAnnotations()" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'" />
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Agent Notes / Comparable Summary</label>
+            <textarea id="ann-notes" rows="3" placeholder="Add your market commentary, comparable sales, investment thesis, or notes for the client..."
+              style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:0.88rem;font-family:inherit;outline:none;resize:vertical;color:#0f172a;line-height:1.5"
+              oninput="saveAnnotations()" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -592,7 +640,61 @@
       // Override topbar logo text to show company name
       document.querySelector('.topbar-logo').innerHTML =
         `<div class="logo-icon">🔍</div>${b.company || b.name} <span style="color:var(--text3);font-weight:400;font-size:0.75rem;margin-left:6px">via PropIntel</span>`;
+
+      // Show annotation panel for branded users
+      document.getElementById('wl-annotations').style.display = '';
+      loadAnnotations();
     } catch(e) {}
+  }
+
+  // Annotation key scoped to address so each property has its own notes
+  function _annKey() {
+    const addr = document.getElementById('prop-address');
+    return 'propintel_ann_' + (addr ? addr.textContent.trim().toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 60) : 'default');
+  }
+
+  function saveAnnotations() {
+    const data = {
+      arv: document.getElementById('ann-arv').value,
+      offer: document.getElementById('ann-offer').value,
+      notes: document.getElementById('ann-notes').value,
+    };
+    localStorage.setItem(_annKey(), JSON.stringify(data));
+    _updatePrintViews(data);
+  }
+
+  function loadAnnotations() {
+    try {
+      const raw = localStorage.getItem(_annKey());
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.arv) document.getElementById('ann-arv').value = data.arv;
+      if (data.offer) document.getElementById('ann-offer').value = data.offer;
+      if (data.notes) document.getElementById('ann-notes').value = data.notes;
+      _updatePrintViews(data);
+    } catch(e) {}
+  }
+
+  function _updatePrintViews(data) {
+    // Inject print-visible divs for each field
+    _setPrintView('ann-arv', data.arv, 'Your ARV Estimate');
+    _setPrintView('ann-offer', data.offer, 'Recommended Offer Range');
+    _setPrintView('ann-notes', data.notes, 'Agent Notes');
+  }
+
+  function _setPrintView(inputId, value, label) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    let printEl = document.getElementById(inputId + '-print');
+    if (!printEl) {
+      printEl = document.createElement('div');
+      printEl.id = inputId + '-print';
+      printEl.className = 'annotation-print';
+      input.parentNode.insertBefore(printEl, input.nextSibling);
+    }
+    printEl.innerHTML = value
+      ? `<div style="font-size:0.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">${label}</div><div style="color:#0f172a">${value.replace(/\n/g,'<br>')}</div>`
+      : '';
   }
 
   function renderReport(data) {
@@ -607,6 +709,7 @@
     const flags = data.flags || [];
     const geo = data.geo || {};
     const listing = data.listing || {};
+    const est = data.market_estimate || {};
 
     document.title = `PropIntel — ${data.resolved_address || data.input || 'Report'}`;
 
@@ -639,15 +742,35 @@
 
     // Score cards
     const scores = [
-      { label: 'Assessed Value', val: parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A', sub: parcel.source || 'County CAD' },
-      { label: 'Building SF', val: parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : (listing.building_sf ? listing.building_sf + ' SF' : 'N/A'), sub: parcel.year_built ? `Built ${parcel.year_built}` : '' },
-      { label: 'Flood Zone', val: flood.zone || 'N/A', sub: flood.zone === 'X' ? 'Minimal risk' : (flood.description || '') },
+      {
+        label: 'County Assessed (Tax)',
+        val: parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A',
+        sub: 'Official tax record · not market value'
+      },
+      {
+        label: 'Est. Market Range',
+        val: est.available ? est.range_fmt : (parcel.assessed_total ? 'See below' : 'N/A'),
+        sub: est.available ? `${est.property_type} · DFW multiplier` : 'Assessed value required',
+        tooltip: est.methodology || ''
+      },
+      {
+        label: 'Building SF',
+        val: parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : (listing.building_sf ? listing.building_sf + ' SF' : 'N/A'),
+        sub: parcel.year_built ? `Built ${parcel.year_built}` : ''
+      },
+      {
+        label: 'Flood Zone',
+        val: flood.zone || 'N/A',
+        sub: flood.zone === 'X' ? 'Minimal risk' : (flood.description || ''),
+        color: flood.zone && flood.zone !== 'X' && (flood.zone.startsWith('A') || flood.zone.startsWith('V')) ? 'red' : undefined
+      },
       isPro && motiv.score !== undefined
         ? { label: 'Motivation Score', val: `${motiv.score}/100`, sub: motiv.tier || '', color: motiv.score >= 70 ? 'red' : motiv.score >= 40 ? 'amber' : 'green' }
-        : { label: 'Median Income (ZIP)', val: demo.median_household_income_fmt || 'N/A', sub: geo.zip ? `ZIP ${geo.zip}` : '' }
-    ];
+        : null
+    ].filter(Boolean);
+
     document.getElementById('score-row').innerHTML = scores.map(s =>
-      `<div class="score-card">
+      `<div class="score-card" ${s.tooltip ? `title="${s.tooltip.replace(/"/g,"'")}"` : ''}>
         <div class="sc-label">${s.label}</div>
         <div class="sc-val" ${s.color ? `style="color:var(--${s.color})"` : ''}>${s.val}</div>
         <div class="sc-sub">${s.sub || ''}</div>
@@ -686,9 +809,10 @@
       row('Data Source', safe(parcel.source)) +
       row('Year Built', safe(parcel.year_built)) +
       row('Building SF', parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : 'N/A') +
-      row('Assessed Land', parcel.assessed_land ? fmt(parcel.assessed_land) : 'N/A') +
+      row('Assessed Land Value', parcel.assessed_land ? fmt(parcel.assessed_land) : 'N/A') +
       row('Assessed Improvement', parcel.assessed_improvement ? fmt(parcel.assessed_improvement) : 'N/A') +
-      row('Total Assessed Value', parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A') +
+      row('County Assessed (Tax)', parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A') +
+      (est.available ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">Est. Market Range <span style="color:var(--text3);font-size:0.7em;cursor:help" title="${(est.methodology||'').replace(/"/g,"'")}">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${est.range_fmt}</span></div>` : '') +
       row('Tax Delinquency', delinqTxt, delinqCls);
 
     // Flood
@@ -804,7 +928,8 @@
             ${ppsf ? `<div class="deal-metric"><div class="deal-val">$${ppsf}</div><div class="deal-label">Price / SF</div></div>` : ''}
             ${cap ? `<div class="deal-metric"><div class="deal-val">${cap}</div><div class="deal-label">Cap Rate</div></div>` : ''}
             ${ratio ? `<div class="deal-metric"><div class="deal-val">${ratio}</div><div class="deal-label">Ask vs. Assessed</div></div>` : ''}
-            ${assessed ? `<div class="deal-metric"><div class="deal-val">${fmt(assessed)}</div><div class="deal-label">Assessed Value</div></div>` : ''}
+            ${assessed ? `<div class="deal-metric"><div class="deal-val">${fmt(assessed)}</div><div class="deal-label">County Assessed (Tax)</div></div>` : ''}
+            ${est.available ? `<div class="deal-metric"><div class="deal-val" style="color:var(--accent)">${est.range_fmt}</div><div class="deal-label">Est. Market Range</div></div>` : ''}
           </div>`;
       }
 

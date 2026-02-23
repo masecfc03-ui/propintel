@@ -130,6 +130,9 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["demographics"] = results.get("census", {})
     report["businesses"] = results.get("txsos", [])
 
+    # ── Market value estimate (assessed-based range, all tiers) ───────────────
+    report["market_estimate"] = _estimate_market_value(parcel_data)
+
     # ── Step 4: Pro-only enrichment ───────────────────────────────────────────
     if tier == "pro":
         parcel_data = report["parcel"]
@@ -197,6 +200,62 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["flags"] = _build_flags(report)
 
     return report
+
+
+def _estimate_market_value(parcel: dict) -> dict:
+    """
+    Estimate market value range from county assessed value.
+
+    TX assessed values are often 75-90% of market for residential,
+    85-100% for commercial. We apply conservative multipliers and
+    clearly flag as ESTIMATE, not appraisal.
+    """
+    assessed = parcel.get("assessed_total")
+    if not assessed or assessed <= 0:
+        return {"available": False, "note": "Assessed value required for estimate"}
+
+    use_desc = (parcel.get("use_description") or "").upper()
+    prop_class = (parcel.get("property_class") or "").upper()
+
+    # Classify property type
+    is_commercial = any(w in use_desc for w in ("COMMERCIAL", "OFFICE", "RETAIL", "INDUSTRIAL", "WAREHOUSE", "MULTI"))
+    is_land = any(w in use_desc for w in ("VACANT", "LAND", "AGRICULTURAL", "FARM", "RANCH"))
+    is_residential = not is_commercial and not is_land
+
+    # TX market multipliers (conservative, calibrated for DFW market)
+    if is_commercial:
+        lo_mult, hi_mult = 1.05, 1.25  # Commercial often closer to assessed
+        type_label = "Commercial"
+    elif is_land:
+        lo_mult, hi_mult = 0.90, 1.30  # Land values volatile
+        type_label = "Land / Vacant"
+    else:
+        lo_mult, hi_mult = 1.08, 1.22  # Residential: DFW appreciation
+        type_label = "Residential"
+
+    market_low = round(assessed * lo_mult / 1000) * 1000   # Round to nearest $1K
+    market_high = round(assessed * hi_mult / 1000) * 1000
+
+    def fmt(v):
+        if v >= 1_000_000:
+            return "${:.2f}M".format(v / 1_000_000)
+        return "${:,.0f}".format(v)
+
+    return {
+        "available": True,
+        "assessed": assessed,
+        "assessed_fmt": fmt(assessed),
+        "market_low": market_low,
+        "market_high": market_high,
+        "range_fmt": "{} – {}".format(fmt(market_low), fmt(market_high)),
+        "property_type": type_label,
+        "confidence": "Moderate",
+        "methodology": "County assessed value × DFW market multiplier ({:.0f}%–{:.0f}%). "
+                       "Not an appraisal. Verify with recent comparable sales.".format(
+                           lo_mult * 100, hi_mult * 100),
+        "note": "Assessed value is the county tax value, typically below market. "
+                "This range is a data-driven estimate only.",
+    }
 
 
 def _merge_parcel(regrid: dict, dcad: dict, address: str) -> dict:
