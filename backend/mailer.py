@@ -30,7 +30,7 @@ REPORT_BASE_URL = os.environ.get("REPORT_BASE_URL", "https://masecfc03-ui.github
 
 def send_report(to_email: str, to_name: str, address: str,
                 tier: str, report_html: str, report_id: str,
-                order_id: str = "") -> dict:
+                order_id: str = "", report_token: str = "") -> dict:
     """
     Send the PropIntel report to a customer.
 
@@ -39,8 +39,8 @@ def send_report(to_email: str, to_name: str, address: str,
     if not to_email:
         return {"success": False, "method": "none", "error": "No recipient email"}
 
-    subject = f"PropIntel {'Pro' if tier == 'pro' else 'Starter'} Report — {address}"
-    html_body = _build_email_body(to_name, address, tier, report_html, report_id, order_id)
+    subject = f"PropIntel {'Full Intel' if tier == 'pro' else 'Public Record'} Report — {address}"
+    html_body = _build_email_body(to_name, address, tier, report_html, report_id, order_id, report_token)
 
     # Try Mailgun first (already configured)
     if MAILGUN_API_KEY and MAILGUN_DOMAIN:
@@ -63,11 +63,16 @@ def send_report(to_email: str, to_name: str, address: str,
 
 
 def _build_email_body(name: str, address: str, tier: str,
-                       report_html: str, report_id: str, order_id: str) -> str:
+                       report_html: str, report_id: str, order_id: str,
+                       report_token: str = "") -> str:
     """Build a clean email with embedded report link + summary."""
     tier_label = "Full Intel" if tier == "pro" else "Public Record"
     tier_color = "#22c55e" if tier == "pro" else "#3b82f6"
-    report_url = f"{REPORT_BASE_URL}/report.html?tier={tier}&report_id={report_id}"
+    # Use token-based URL (no admin auth needed) when available
+    if report_token:
+        report_url = f"{REPORT_BASE_URL}/report.html?token={report_token}"
+    else:
+        report_url = f"{REPORT_BASE_URL}/report.html?tier={tier}&report_id={report_id}"
 
     greeting = f"Hi{' ' + name.split()[0] if name else ''},"
 

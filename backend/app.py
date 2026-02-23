@@ -22,7 +22,7 @@ load_dotenv()
 
 from pipeline import run as run_pipeline
 from report.generator import generate_html, generate_pdf
-from orders import create_order, update_order, get_order_by_stripe, list_orders, list_leads, create_lead, stats as order_stats
+from orders import create_order, update_order, get_order_by_stripe, get_order_by_token, list_orders, list_leads, create_lead, stats as order_stats
 from mailer import send_report
 
 app = Flask(__name__)
@@ -196,6 +196,7 @@ def _handle_checkout_completed(session: dict):
         amount_cents=amount_total,
     )
     order_id = order["id"]
+    report_token = order.get("report_token", "")
 
     if not address:
         update_order(order_id, status="pending_address")
@@ -227,6 +228,7 @@ def _handle_checkout_completed(session: dict):
                 report_html=html,
                 report_id=order_id,
                 order_id=order_id,
+                report_token=report_token,
             )
             if result["success"]:
                 update_order(order_id, emailed=1)
@@ -284,9 +286,32 @@ def get_stats():
     return jsonify(order_stats())
 
 
+@app.route("/api/reports/<token>", methods=["GET"])
+def get_report_by_token(token):
+    """
+    Public endpoint — customers access their report via a secret token.
+    No auth required; the token itself is the secret (UUID from create_order).
+    Returns JSON report data for report.html to render client-side.
+    """
+    if not token or len(token) < 32:
+        return jsonify({"error": "Invalid token"}), 400
+    order = get_order_by_token(token)
+    if not order:
+        return jsonify({"error": "Report not found"}), 404
+    if not order.get("report_json"):
+        return jsonify({"error": "Report not ready yet", "status": order.get("status")}), 202
+    try:
+        data = json.loads(order["report_json"])
+        # Strip out internal fields
+        data.pop("report_id", None)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": f"Could not load report: {str(e)}"}), 500
+
+
 @app.route("/api/orders/<order_id>/report", methods=["GET"])
 def get_order_report(order_id):
-    """Return the stored HTML report for an order."""
+    """Return the stored HTML report for an order (admin only)."""
     if not _check_admin():
         return jsonify({"error": "Unauthorized"}), 401
 

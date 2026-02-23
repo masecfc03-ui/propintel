@@ -3,149 +3,186 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PropIntel Admin — Operations Center</title>
+  <title>PropIntel Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #0f1117; --bg2: #161b27; --bg3: #1d2535; --bg4: #232d40;
-      --border: rgba(255,255,255,0.07);
-      --accent: #3b82f6; --green: #22c55e; --red: #ef4444; --amber: #f59e0b;
-      --text: #f1f5f9; --text2: #94a3b8; --text3: #475569;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --border-light: #f1f5f9;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --red: #dc2626;
+      --red-light: #fef2f2;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --text: #0f172a;
+      --text2: #475569;
+      --text3: #94a3b8;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.04);
     }
-    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text);
-      min-height: 100vh; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* Login */
-    #login-screen { display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; padding: 24px; }
-    .login-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px;
-      padding: 48px; width: 100%; max-width: 400px; text-align: center; }
-    .login-logo { font-size: 2.5rem; margin-bottom: 16px; }
-    .login-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+    /* ── LOGIN ── */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+    }
+    .login-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 48px; width: 100%; max-width: 420px;
+      text-align: center; box-shadow: var(--shadow-md);
+    }
+    .login-mark {
+      width: 56px; height: 56px; background: var(--accent); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin: 0 auto 20px;
+    }
+    .login-title { font-size: 1.35rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
     .login-sub { color: var(--text2); font-size: 0.88rem; margin-bottom: 32px; }
-    .login-input { width: 100%; background: var(--bg3); border: 1px solid var(--border);
-      color: var(--text); padding: 14px 18px; border-radius: 12px; font-size: 0.95rem;
-      outline: none; margin-bottom: 16px; transition: border-color 0.2s; font-family: monospace; }
-    .login-input:focus { border-color: var(--accent); }
-    .login-btn { width: 100%; background: var(--accent); color: white; border: none;
-      padding: 14px; border-radius: 12px; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s; }
-    .login-btn:hover { opacity: 0.85; }
-    .login-err { color: var(--red); font-size: 0.82rem; margin-top: 12px; display: none; }
+    .login-input {
+      width: 100%; background: var(--bg); border: 1.5px solid var(--border);
+      color: var(--text); padding: 13px 16px; border-radius: 10px; font-size: 0.95rem;
+      outline: none; margin-bottom: 14px; transition: border-color 0.2s;
+      font-family: 'Inter', monospace; letter-spacing: 0.02em;
+    }
+    .login-input:focus { border-color: var(--accent); background: #fff; }
+    .login-btn {
+      width: 100%; background: var(--accent); color: #fff; border: none;
+      padding: 13px 20px; border-radius: 10px; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .login-btn:hover { background: #1d4ed8; }
+    .login-err {
+      display: none; margin-top: 14px; color: var(--red);
+      font-size: 0.85rem; background: var(--red-light);
+      border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px;
+    }
 
-    /* Main layout */
+    /* ── DASHBOARD ── */
     #dashboard { display: none; }
-    .topbar { background: var(--bg2); border-bottom: 1px solid var(--border);
-      padding: 16px 32px; display: flex; align-items: center;
-      justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-    .logo { font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-    .logo-badge { background: var(--red); color: white; font-size: 0.6rem; font-weight: 800;
-      padding: 2px 7px; border-radius: 4px; letter-spacing: 1px; }
+
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-mark {
+      width: 30px; height: 30px; background: var(--accent); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .topbar-title { font-weight: 800; font-size: 1rem; color: var(--text); }
+    .topbar-badge {
+      font-size: 0.72rem; font-weight: 600; background: var(--accent-light);
+      color: var(--accent); padding: 3px 8px; border-radius: 20px; border: 1px solid #bfdbfe;
+    }
     .topbar-right { display: flex; align-items: center; gap: 16px; }
-    .refresh-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
-      padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; }
+    #last-refresh { font-size: 0.8rem; color: var(--text3); }
+    .refresh-btn {
+      background: var(--bg); border: 1px solid var(--border); color: var(--text2);
+      padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 500;
+      cursor: pointer; transition: all 0.15s;
+    }
     .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .last-refresh { color: var(--text3); font-size: 0.75rem; }
 
-    .main { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+    .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
 
-    /* KPI cards */
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-    .kpi-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
-      padding: 24px; position: relative; overflow: hidden; }
-    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-    .kpi-green::before { background: var(--green); }
-    .kpi-blue::before { background: var(--accent); }
-    .kpi-amber::before { background: var(--amber); }
-    .kpi-purple::before { background: #a855f7; }
-    .kpi-label { font-size: 0.72rem; font-weight: 700; color: var(--text2);
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-    .kpi-value { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; }
+    /* ── KPI GRID ── */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 22px; box-shadow: var(--shadow);
+    }
+    .kpi-label { font-size: 0.78rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .kpi-value { font-size: 1.9rem; font-weight: 800; color: var(--text); letter-spacing: -1px; line-height: 1; }
     .kpi-sub { font-size: 0.78rem; color: var(--text3); margin-top: 6px; }
-    .kpi-green .kpi-value { color: var(--green); }
-    .kpi-blue .kpi-value { color: var(--accent); }
-    .kpi-amber .kpi-value { color: var(--amber); }
-    .kpi-purple .kpi-value { color: #a855f7; }
 
-    /* Sections */
-    .section { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
-      margin-bottom: 24px; overflow: hidden; }
-    .section-header { padding: 18px 24px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; }
-    .section-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.8px; }
-    .section-count { background: var(--bg3); padding: 2px 10px; border-radius: 20px;
-      font-size: 0.72rem; font-weight: 700; color: var(--text2); }
+    /* ── SECTION ── */
+    .section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; margin-bottom: 20px; overflow: hidden; box-shadow: var(--shadow);
+    }
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 22px; border-bottom: 1px solid var(--border-light);
+    }
+    .section-title { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .section-count { font-size: 0.78rem; color: var(--text3); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; }
 
-    /* Orders table */
+    /* ── STATUS PILLS ── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.72rem; font-weight: 600; padding: 3px 9px; border-radius: 20px;
+    }
+    .pill-green { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
+    .pill-red   { background: var(--red-light); color: var(--red); border: 1px solid #fecaca; }
+    .pill-amber { background: var(--amber-light); color: var(--amber); border: 1px solid #fde68a; }
+    .pill-blue  { background: var(--accent-light); color: var(--accent); border: 1px solid #bfdbfe; }
+    .pill-gray  { background: #f1f5f9; color: var(--text2); border: 1px solid var(--border); }
+
+    /* ── ENV GRID ── */
+    .env-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1px; background: var(--border-light);
+    }
+    .env-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 22px; background: var(--surface);
+    }
+    .env-dot {
+      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+    }
+    .env-dot-on  { background: var(--green); box-shadow: 0 0 0 3px rgba(22,163,74,0.15); }
+    .env-dot-off { background: #cbd5e1; }
+    .env-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+    .env-status { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
+
+    /* ── ORDERS TABLE ── */
     .orders-table { width: 100%; border-collapse: collapse; }
-    .orders-table th { text-align: left; padding: 12px 20px; font-size: 0.7rem;
-      font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-      color: var(--text3); background: var(--bg3); border-bottom: 1px solid var(--border); }
-    .orders-table td { padding: 14px 20px; border-bottom: 1px solid var(--border);
-      font-size: 0.85rem; color: var(--text2); vertical-align: top; }
+    .orders-table th {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text3); padding: 10px 22px; text-align: left;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .orders-table td {
+      padding: 14px 22px; border-bottom: 1px solid var(--border-light);
+      font-size: 0.85rem; vertical-align: middle;
+    }
     .orders-table tr:last-child td { border-bottom: none; }
-    .orders-table tr:hover td { background: var(--bg3); }
-
-    /* Status pills */
-    .status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
-      border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
-    .status-complete { background: rgba(34,197,94,0.12); color: var(--green);
-      border: 1px solid rgba(34,197,94,0.25); }
-    .status-pending { background: rgba(245,158,11,0.12); color: var(--amber);
-      border: 1px solid rgba(245,158,11,0.25); }
-    .status-error { background: rgba(239,68,68,0.12); color: var(--red);
-      border: 1px solid rgba(239,68,68,0.25); }
-
-    /* Tier pills */
-    .tier-pro { background: rgba(34,197,94,0.12); color: var(--green);
-      border: 1px solid rgba(34,197,94,0.25); }
-    .tier-starter { background: rgba(59,130,246,0.12); color: var(--accent);
-      border: 1px solid rgba(59,130,246,0.25); }
-
-    /* Address cell */
-    .order-address { color: var(--text); font-weight: 600; max-width: 200px;
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .order-email { font-size: 0.78rem; color: var(--text3); margin-top: 2px; }
-
-    /* Report link */
-    .report-link { color: var(--accent); text-decoration: none; font-size: 0.78rem;
-      font-weight: 600; }
+    .orders-table tr:hover td { background: #f8fafc; }
+    .order-address { font-weight: 600; color: var(--text); font-size: 0.85rem; }
+    .order-email { font-size: 0.75rem; color: var(--text3); margin-top: 2px; }
+    .report-link {
+      color: var(--accent); text-decoration: none; font-weight: 600; font-size: 0.8rem;
+    }
     .report-link:hover { text-decoration: underline; }
 
-    /* Revenue chart */
-    .chart-wrap { padding: 24px; }
-    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
-    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 4px;
-      background: var(--accent); transition: height 0.5s ease; }
-    .bar-label { font-size: 0.65rem; color: var(--text3); }
+    /* ── EMPTY / LOADING ── */
+    .empty { padding: 48px 24px; text-align: center; }
+    .empty-icon { font-size: 2rem; margin-bottom: 12px; }
+    .empty-text { color: var(--text2); font-size: 0.88rem; }
+    .loading { padding: 32px 22px; color: var(--text3); font-size: 0.88rem; }
 
-    /* Empty state */
-    .empty { text-align: center; padding: 60px 24px; color: var(--text3); }
-    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
-    .empty-text { font-size: 0.9rem; }
-
-    /* Loading */
-    .loading { text-align: center; padding: 40px; color: var(--text3); font-size: 0.88rem; }
-
-    /* Env status */
-    .env-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px; }
-    .env-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px;
-      background: var(--bg3); border-radius: 10px; }
-    .env-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .env-dot-on { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.5); }
-    .env-dot-off { background: var(--text3); }
-    .env-name { font-size: 0.82rem; font-weight: 600; }
-    .env-status { font-size: 0.72rem; color: var(--text3); }
-
-    @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2,1fr); }
-      .env-grid { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width: 600px) { .kpi-grid { grid-template-columns: 1fr; }
-      .topbar { padding: 14px 16px; } .main { padding: 20px 12px; } }
+    @media (max-width: 640px) {
+      .topbar { padding: 0 16px; }
+      .main { padding: 20px 16px; }
+      .kpi-value { font-size: 1.6rem; }
+      .orders-table th, .orders-table td { padding: 12px 14px; }
+      .orders-table th:nth-child(5),
+      .orders-table td:nth-child(5) { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -153,85 +190,115 @@
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">⚙️</div>
+    <div class="login-mark">📊</div>
     <div class="login-title">PropIntel Admin</div>
-    <div class="login-sub">Operations Center — Restricted Access</div>
-    <input type="password" class="login-input" id="admin-key-input"
-      placeholder="Admin key..." onkeydown="if(event.key==='Enter')doLogin()" />
+    <div class="login-sub">Enter your admin key to access the dashboard</div>
+    <input type="password" id="admin-key-input" class="login-input" placeholder="Admin key" autocomplete="current-password" />
     <button class="login-btn" onclick="doLogin()">Access Dashboard →</button>
-    <div class="login-err" id="login-err">Invalid admin key. Try again.</div>
+    <div class="login-err" id="login-err">Invalid admin key. Check your credentials and try again.</div>
   </div>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard">
-
   <div class="topbar">
-    <div class="logo">
-      🔍 PropIntel <span class="logo-badge">ADMIN</span>
+    <div class="topbar-left">
+      <div class="topbar-mark">📊</div>
+      <span class="topbar-title">PropIntel Admin</span>
+      <span class="topbar-badge">Operations</span>
     </div>
     <div class="topbar-right">
-      <div class="last-refresh" id="last-refresh">Refreshing...</div>
-      <button class="refresh-btn" onclick="loadData()">⟳ Refresh</button>
+      <span id="last-refresh">Loading...</span>
+      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
     </div>
   </div>
 
   <div class="main">
 
-    <!-- KPI CARDS -->
+    <!-- KPI GRID -->
     <div class="kpi-grid">
-      <div class="kpi-card kpi-green">
+      <div class="kpi-card">
         <div class="kpi-label">Total Revenue</div>
-        <div class="kpi-value" id="kpi-revenue">$0</div>
-        <div class="kpi-sub" id="kpi-rev-sub">All completed orders</div>
+        <div class="kpi-value" id="kpi-revenue">$0.00</div>
+        <div class="kpi-sub" id="kpi-rev-sub">—</div>
       </div>
-      <div class="kpi-card kpi-blue">
-        <div class="kpi-label">Orders Completed</div>
+      <div class="kpi-card">
+        <div class="kpi-label">Completed Orders</div>
         <div class="kpi-value" id="kpi-orders">0</div>
-        <div class="kpi-sub" id="kpi-orders-sub">Reports delivered</div>
+        <div class="kpi-sub">All time</div>
       </div>
-      <div class="kpi-card kpi-amber">
+      <div class="kpi-card">
         <div class="kpi-label">Pro Reports</div>
         <div class="kpi-value" id="kpi-pro">0</div>
         <div class="kpi-sub">$29.99 each</div>
       </div>
-      <div class="kpi-card kpi-purple">
+      <div class="kpi-card">
         <div class="kpi-label">Starter Reports</div>
         <div class="kpi-value" id="kpi-starter">0</div>
         <div class="kpi-sub">$9.99 each</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Email Leads</div>
+        <div class="kpi-value" id="kpi-leads">0</div>
+        <div class="kpi-sub">Captured</div>
       </div>
     </div>
 
     <!-- SYSTEM STATUS -->
     <div class="section">
       <div class="section-header">
-        <div class="section-title">🔧 System Status</div>
-        <div id="sys-status-pill" class="status status-pending">Loading...</div>
+        <div class="section-title">System Status</div>
+        <div id="sys-status-pill" class="pill pill-gray">Loading...</div>
       </div>
       <div class="env-grid" id="env-grid">
         <div class="env-item">
           <div class="env-dot env-dot-off" id="env-webhook"></div>
-          <div><div class="env-name">Stripe Webhook</div><div class="env-status" id="env-webhook-txt">Checking...</div></div>
+          <div>
+            <div class="env-name">Stripe Webhook</div>
+            <div class="env-status" id="env-webhook-txt">Checking...</div>
+          </div>
         </div>
         <div class="env-item">
           <div class="env-dot env-dot-off" id="env-email"></div>
-          <div><div class="env-name">Email Delivery</div><div class="env-status" id="env-email-txt">Checking...</div></div>
+          <div>
+            <div class="env-name">Email Delivery</div>
+            <div class="env-status" id="env-email-txt">Checking...</div>
+          </div>
         </div>
         <div class="env-item">
           <div class="env-dot env-dot-off" id="env-datazapp"></div>
-          <div><div class="env-name">DataZapp Skip Trace</div><div class="env-status" id="env-datazapp-txt">Checking...</div></div>
+          <div>
+            <div class="env-name">DataZapp Skip Trace</div>
+            <div class="env-status" id="env-datazapp-txt">Checking...</div>
+          </div>
         </div>
         <div class="env-item">
           <div class="env-dot env-dot-on"></div>
-          <div><div class="env-name">Geocode API</div><div class="env-status">Census Geocoder ✅</div></div>
+          <div>
+            <div class="env-name">Geocode API</div>
+            <div class="env-status">Census Geocoder ✅</div>
+          </div>
         </div>
         <div class="env-item">
           <div class="env-dot env-dot-on"></div>
-          <div><div class="env-name">FEMA NFHL</div><div class="env-status">ArcGIS REST API ✅</div></div>
+          <div>
+            <div class="env-name">FEMA NFHL</div>
+            <div class="env-status">ArcGIS REST API ✅</div>
+          </div>
         </div>
         <div class="env-item">
           <div class="env-dot env-dot-on"></div>
-          <div><div class="env-name">Census ACS</div><div class="env-status">5-Year Estimates ✅</div></div>
+          <div>
+            <div class="env-name">Regrid Parcel API</div>
+            <div class="env-status">Trial — expires 2026-03-25 ✅</div>
+          </div>
+        </div>
+        <div class="env-item">
+          <div class="env-dot env-dot-on"></div>
+          <div>
+            <div class="env-name">Census ACS</div>
+            <div class="env-status">5-Year Estimates ✅</div>
+          </div>
         </div>
       </div>
     </div>
@@ -239,7 +306,7 @@
     <!-- RECENT ORDERS -->
     <div class="section">
       <div class="section-header">
-        <div class="section-title">📦 Recent Orders</div>
+        <div class="section-title">Recent Orders</div>
         <div class="section-count" id="orders-count">—</div>
       </div>
       <div id="orders-body">
@@ -259,7 +326,6 @@ function doLogin() {
   if (!key) return;
   adminKey = key;
 
-  // Test with a health + stats call
   Promise.all([
     fetch(API_URL + "/api/health"),
     fetch(API_URL + "/api/stats?admin_key=" + encodeURIComponent(key))
@@ -269,14 +335,15 @@ function doLogin() {
       adminKey = "";
       return;
     }
+    sessionStorage.setItem("propintel_admin_key", key);
     document.getElementById("login-screen").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
     loadData();
-    // Auto-refresh every 60s
     setInterval(loadData, 60000);
   }).catch(err => {
-    document.getElementById("login-err").style.display = "block";
-    document.getElementById("login-err").textContent = "Could not reach API: " + err.message;
+    const el = document.getElementById("login-err");
+    el.style.display = "block";
+    el.textContent = "Could not reach API: " + err.message;
   });
 }
 
@@ -297,10 +364,8 @@ async function loadData() {
     renderStats(stats);
     renderOrders(ordersData.orders || []);
 
-    const now = new Date();
     document.getElementById("last-refresh").textContent =
-      "Last updated " + now.toLocaleTimeString();
-
+      "Updated " + new Date().toLocaleTimeString();
   } catch(e) {
     document.getElementById("last-refresh").textContent = "Refresh failed: " + e.message;
   }
@@ -310,17 +375,20 @@ function renderHealth(h) {
   const allOk = h.status === "ok";
   const pill = document.getElementById("sys-status-pill");
   pill.textContent = allOk ? "All Systems Operational" : "Degraded";
-  pill.className = "status " + (allOk ? "status-complete" : "status-error");
+  pill.className = "pill " + (allOk ? "pill-green" : "pill-red");
 
-  setEnv("env-webhook", h.webhook, "Configured", "Not configured");
-  setEnv("env-email", h.email, "Configured", "Not configured — add SENDGRID_API_KEY");
-  setEnv("env-datazapp", h.datazapp, "Connected", "Awaiting DATAZAPP_API_KEY");
+  setEnv("env-webhook",  h.webhook,    "Configured", "Not configured");
+  setEnv("env-email",    h.email,      "Configured", "Add SENDGRID_API_KEY or MAILGUN_API_KEY");
+  const skipLabel = h.skip_trace_provider && h.skip_trace_provider !== "none"
+    ? h.skip_trace_provider.charAt(0).toUpperCase() + h.skip_trace_provider.slice(1) + " connected"
+    : "Awaiting DATAZAPP_API_KEY";
+  setEnv("env-datazapp", h.skip_trace, skipLabel, "Awaiting DATAZAPP_API_KEY");
 }
 
 function setEnv(dotId, isOn, onTxt, offTxt) {
   const dot = document.getElementById(dotId);
   const txt = document.getElementById(dotId + "-txt");
-  dot.className = "env-dot " + (isOn ? "env-dot-on" : "env-dot-off");
+  if (dot) dot.className = "env-dot " + (isOn ? "env-dot-on" : "env-dot-off");
   if (txt) txt.textContent = isOn ? onTxt : offTxt;
 }
 
@@ -330,10 +398,8 @@ function renderStats(s) {
   document.getElementById("kpi-orders").textContent = s.completed_orders || 0;
   document.getElementById("kpi-pro").textContent = s.pro_count || 0;
   document.getElementById("kpi-starter").textContent = s.starter_count || 0;
-
-  // Projected ARR (rough)
-  const weeklyRev = (s.revenue_dollars || 0);
-  document.getElementById("kpi-rev-sub").textContent = s.total_orders + " total orders";
+  document.getElementById("kpi-leads").textContent = s.total_leads || 0;
+  document.getElementById("kpi-rev-sub").textContent = (s.total_orders || 0) + " total orders";
 }
 
 function renderOrders(orders) {
@@ -342,29 +408,38 @@ function renderOrders(orders) {
 
   if (orders.length === 0) {
     body.innerHTML = '<div class="empty"><div class="empty-icon">📦</div>' +
-      '<div class="empty-text">No orders yet. Stripe webhook will populate orders after first payment.</div></div>';
+      '<div class="empty-text">No orders yet. Orders populate after first Stripe webhook fires.</div></div>';
     return;
   }
 
   const rows = orders.map(o => {
     const status = o.status || "pending";
-    const statusClass = status.startsWith("complete") ? "status-complete" :
-                        status.startsWith("error") ? "status-error" : "status-pending";
-    const tierClass = o.tier === "pro" ? "tier-pro" : "tier-starter";
+    const tierPill = o.tier === "pro"
+      ? '<span class="pill pill-blue">PRO</span>'
+      : '<span class="pill pill-gray">STARTER</span>';
+    const statusPill = status.startsWith("complete")
+      ? '<span class="pill pill-green">Complete</span>'
+      : status.startsWith("error")
+      ? '<span class="pill pill-red">Error</span>'
+      : '<span class="pill pill-amber">Pending</span>';
     const amt = o.amount_cents ? "$" + (o.amount_cents / 100).toFixed(2) : "—";
-    const date = o.created_at ? new Date(o.created_at + "Z").toLocaleDateString("en-US",
-      {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"}) : "—";
-    const emailedBadge = o.emailed ? ' <span style="color:#22c55e;font-size:0.7rem">✉ sent</span>' : '';
-    const reportLink = (status === "complete" || status.startsWith("complete")) ?
-      `<a href="${API_URL}/api/orders/${o.id}/report?admin_key=${encodeURIComponent(adminKey)}" ` +
-      `target="_blank" class="report-link">View Report →</a>` : "—";
+    const date = o.created_at
+      ? new Date(o.created_at + "Z").toLocaleDateString("en-US", {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"})
+      : "—";
+    const emailedBadge = o.emailed
+      ? ' <span class="pill pill-green" style="font-size:0.65rem">✉ sent</span>' : '';
+    const reportLink = status.startsWith("complete")
+      ? `<a href="${API_URL}/api/orders/${o.id}/report?admin_key=${encodeURIComponent(adminKey)}" target="_blank" class="report-link">View →</a>`
+      : "—";
 
     return `<tr>
-      <td><div class="order-address">${o.address || '—'}</div>
-          <div class="order-email">${o.customer_email || ''}${emailedBadge}</div></td>
-      <td><span class="status ${tierClass}">${(o.tier||'?').toUpperCase()}</span></td>
-      <td>${amt}</td>
-      <td><span class="status ${statusClass}">${status}</span></td>
+      <td>
+        <div class="order-address">${o.address || '—'}</div>
+        <div class="order-email">${o.customer_email || ''}${emailedBadge}</div>
+      </td>
+      <td>${tierPill}</td>
+      <td style="font-weight:600">${amt}</td>
+      <td>${statusPill}</td>
       <td>${reportLink}</td>
       <td style="color:var(--text3);font-size:0.78rem">${date}</td>
     </tr>`;
@@ -383,15 +458,19 @@ function renderOrders(orders) {
   </table>`;
 }
 
-// Check for saved key in sessionStorage
+// Auto-login if key stored in session
 const savedKey = sessionStorage.getItem("propintel_admin_key");
 if (savedKey) {
   document.getElementById("admin-key-input").value = savedKey;
-  // Don't auto-login — user must confirm
+  adminKey = savedKey;
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  loadData();
+  setInterval(loadData, 60000);
 }
 
-document.getElementById("admin-key-input").addEventListener("input", function() {
-  sessionStorage.setItem("propintel_admin_key", this.value);
+document.getElementById("admin-key-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") doLogin();
 });
 </script>
 </body>

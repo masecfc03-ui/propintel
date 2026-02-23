@@ -873,6 +873,7 @@ mason@mathislandco.com | 972-834-7204`;
   // ── MAIN LOAD ──
   async function loadReport() {
     const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
     const orderId = params.get('order_id') || params.get('report_id');
     const tier = params.get('tier') || 'starter';
     const address = params.get('address') || localStorage.getItem('last_address');
@@ -882,17 +883,25 @@ mason@mathislandco.com | 972-834-7204`;
     setTimeout(() => { stepDone('step-flood'); stepActive('step-demo'); }, 1600);
     setTimeout(() => { stepDone('step-demo'); stepActive('step-done'); }, 2400);
 
-    if (orderId) {
-      // Fetch stored report by order ID
+    if (token) {
+      // Fetch stored report by public token (post-purchase email link)
       try {
-        const res = await fetch(`${API}/api/orders/${orderId}/report`);
+        const res = await fetch(`${API}/api/reports/${token}`);
+        if (res.status === 202) {
+          showError('Your report is still processing. Please check back in a moment or refresh the page.');
+          return;
+        }
         if (!res.ok) throw new Error('Report not found');
-        const html = await res.text();
-        // The backend returns HTML for order reports; redirect to it
-        document.open(); document.write(html); document.close();
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        stepDone('step-done');
+        setTimeout(() => renderReport(data), 300);
       } catch (err) {
-        showError('Could not load report for order ' + orderId + '. ' + err.message);
+        showError('Could not load your report: ' + err.message);
       }
+    } else if (orderId) {
+      // Legacy: admin-accessed order report — redirect to token if possible
+      showError('Report link expired. Return to PropIntel and re-run your analysis.');
     } else if (address) {
       // Run fresh pipeline
       try {
