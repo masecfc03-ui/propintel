@@ -1,5 +1,5 @@
 """
-DealLens.ai — Backend API
+PropIntel — Backend API
 POST /api/analyze → run pipeline, return report data + HTML
 GET  /api/health  → status check
 """
@@ -189,5 +189,5 @@ def _sample_report_data() -> dict:
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     debug = os.environ.get("DEBUG", "true").lower() == "true"
-    print(f"DealLens API starting on port {port}")
+    print(f"PropIntel API starting on port {port}")
     app.run(host="0.0.0.0", port=port, debug=debug)

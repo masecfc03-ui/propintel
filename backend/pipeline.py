@@ -1,5 +1,5 @@
 """
-DealLens Pipeline — Orchestrates all data fetches for a given input.
+PropIntel Pipeline — Orchestrates all data fetches for a given input.
 Input: address or listing URL
 Output: structured report data dict
 """
