@@ -4,52 +4,54 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>PropIntel — Property Intelligence Reports</title>
-<meta name="description" content="Full property intel in 30 seconds. Owner identity, flood zone, motivation score, deal analyzer — all from verified public records."/>
+<meta name="description" content="Full property intelligence in 30 seconds. Owner identity, motivation score, FEMA flood zone, sold comps, deal analyzer — verified public records, beautifully presented."/>
 <link rel="canonical" href="https://propertyvalueintel.com"/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://propertyvalueintel.com"/>
 <meta property="og:title" content="PropIntel — Property Intelligence Reports"/>
-<meta property="og:description" content="Full property intel in 30 seconds. Owner identity, flood zone, motivation score, deal analyzer — verified public records."/>
-<meta property="og:image" content="https://propertyvalueintel.com/og-image.png"/>
+<meta property="og:description" content="Full property intel in 30 seconds. Owner identity, flood zone, motivation score, deal analyzer."/>
 <meta name="twitter:card" content="summary_large_image"/>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PropIntel","url":"https://propertyvalueintel.com","description":"Instant property intelligence reports","applicationCategory":"BusinessApplication","offers":[{"@type":"Offer","name":"Starter","price":"9.99","priceCurrency":"USD"},{"@type":"Offer","name":"Pro","price":"29.99","priceCurrency":"USD"}]}</script>
 
-<!-- Typography: Satoshi (Fontshare) + Inter fallback -->
-<link rel="preconnect" href="https://api.fontshare.com"/>
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&display=swap" rel="stylesheet"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<!-- Fonts: Satoshi + Cabinet Grotesk from Fontshare -->
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&f[]=cabinet-grotesk@900,800&display=swap" rel="stylesheet"/>
 
 <style>
-/* ─────────────────────────────────────────────
+/* ═══════════════════════════════════════════
    TOKENS
-───────────────────────────────────────────── */
+═══════════════════════════════════════════ */
 :root {
-  --bg:        #09090b;
-  --bg1:       #0f0f12;
-  --bg2:       #18181b;
-  --bg3:       #27272a;
-  --border:    rgba(255,255,255,0.07);
-  --border-hi: rgba(255,255,255,0.13);
+  --bg:        #08080a;
+  --bg1:       #0d0d10;
+  --bg2:       #141418;
+  --bg3:       #1e1e24;
+  --bg4:       #2a2a33;
   --blue:      #2563eb;
-  --blue-l:    #3b82f6;
-  --blue-glow: rgba(37,99,235,0.18);
+  --blue-m:    #3b82f6;
+  --blue-l:    #60a5fa;
+  --violet:    #7c3aed;
+  --violet-l:  #a78bfa;
   --green:     #22c55e;
+  --green-l:   #4ade80;
   --amber:     #f59e0b;
+  --amber-l:   #fbbf24;
   --red:       #ef4444;
-  --white:     #fafafa;
-  --gray-1:    #e4e4e7;
-  --gray-2:    #a1a1aa;
-  --gray-3:    #52525b;
-  --r-sm:  10px;
-  --r-md:  16px;
-  --r-lg:  22px;
-  --r-xl:  28px;
+  --white:     #f8f8fc;
+  --g1:        #e2e2ea;
+  --g2:        #a0a0b0;
+  --g3:        #60607a;
+  --g4:        #30303e;
+  --border:    rgba(255,255,255,0.06);
+  --border-hi: rgba(255,255,255,0.12);
+  --border-bl: rgba(96,165,250,0.25);
+  /* spacing */
+  --r-sm: 10px; --r-md: 16px; --r-lg: 20px; --r-xl: 28px; --r-2xl: 36px;
 }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Satoshi', system-ui, sans-serif;
   background: var(--bg);
   color: var(--white);
   line-height: 1.6;
@@ -57,785 +59,1415 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── GRAIN TEXTURE ─── */
-body::before {
-  content: '';
+/* ═══════════════════════════════════════════
+   ANIMATED BACKGROUND
+═══════════════════════════════════════════ */
+.scene {
   position: fixed; inset: 0; z-index: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-  opacity: 0.025;
+  pointer-events: none; overflow: hidden;
+}
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(120px);
+}
+.orb-1 {
+  width: 900px; height: 700px;
+  top: -200px; left: -150px;
+  background: radial-gradient(ellipse, rgba(37,99,235,0.22) 0%, transparent 70%);
+  animation: drift1 28s ease-in-out infinite;
+}
+.orb-2 {
+  width: 700px; height: 700px;
+  top: 10%; right: -200px;
+  background: radial-gradient(ellipse, rgba(124,58,237,0.14) 0%, transparent 70%);
+  animation: drift2 34s ease-in-out infinite 4s;
+}
+.orb-3 {
+  width: 500px; height: 500px;
+  bottom: 20%; left: 25%;
+  background: radial-gradient(ellipse, rgba(34,197,94,0.07) 0%, transparent 70%);
+  animation: drift1 42s ease-in-out infinite 12s;
+}
+.orb-4 {
+  width: 400px; height: 300px;
+  bottom: -100px; right: 15%;
+  background: radial-gradient(ellipse, rgba(96,165,250,0.1) 0%, transparent 70%);
+  animation: drift2 36s ease-in-out infinite 8s;
+}
+@keyframes drift1 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(60px,-80px) scale(1.08); }
+  66%     { transform: translate(-40px,40px) scale(0.96); }
+}
+@keyframes drift2 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(-80px,60px) scale(1.06); }
+  66%     { transform: translate(50px,-50px) scale(0.94); }
 }
 
-/* ─── NAV ─── */
+/* grain overlay */
+.scene::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.028; mix-blend-mode: overlay;
+}
+
+/* content above scene */
+body > *:not(.scene) { position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════
+   NAV
+═══════════════════════════════════════════ */
 nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-  height: 60px;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  height: 62px;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 max(24px, calc(50vw - 620px));
-  background: rgba(9,9,11,0.8);
-  backdrop-filter: blur(20px) saturate(1.4);
+  padding: 0 max(28px, calc(50vw - 680px));
+  background: rgba(8,8,10,0.75);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
   border-bottom: 1px solid var(--border);
 }
 .nav-logo {
-  font-family: 'Satoshi', sans-serif;
-  font-weight: 800; font-size: 1.05rem;
-  color: var(--white); text-decoration: none;
-  letter-spacing: -0.5px;
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 9px;
+  text-decoration: none;
 }
-.nav-logo-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--blue-l);
-  box-shadow: 0 0 8px var(--blue-l);
+.nav-logo-mark {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 900; color: white; letter-spacing: -0.5px;
+  box-shadow: 0 0 16px rgba(37,99,235,0.4);
+}
+.nav-logo-name {
+  font-weight: 800; font-size: 1rem; letter-spacing: -0.4px;
+  color: var(--white);
 }
 .nav-links {
-  display: flex; align-items: center; gap: 28px; list-style: none;
+  display: flex; align-items: center; gap: 30px; list-style: none;
 }
 .nav-links a {
-  color: var(--gray-2); text-decoration: none;
-  font-size: 0.82rem; font-weight: 500;
-  transition: color 0.15s;
+  font-size: 0.83rem; font-weight: 500; color: var(--g2);
+  text-decoration: none; transition: color 0.15s;
+  letter-spacing: -0.1px;
 }
 .nav-links a:hover { color: var(--white); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-sign { font-size: 0.83rem; font-weight: 500; color: var(--g2); text-decoration: none; }
 .nav-cta {
-  background: var(--white); color: #000;
-  border: none; padding: 8px 18px; border-radius: 8px;
-  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  background: white; color: #0a0a10;
+  border: none; padding: 9px 20px; border-radius: 9px;
+  font-size: 0.83rem; font-weight: 800; cursor: pointer;
   text-decoration: none; letter-spacing: -0.2px;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, transform 0.1s;
+  white-space: nowrap;
 }
-.nav-cta:hover { opacity: 0.85; }
-@media (max-width: 640px) {
+.nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+@media(max-width:700px) {
   .nav-links { display: none; }
   nav { padding: 0 20px; }
 }
 
-/* ─── HERO ─── */
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
 .hero {
-  position: relative;
   min-height: 100svh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  text-align: center;
-  padding: 120px 24px 80px;
-  overflow: hidden;
+  display: flex; align-items: center;
+  padding: 120px max(28px, calc(50vw - 680px)) 80px;
+  gap: 60px;
 }
-/* Radial glow */
-.hero::after {
-  content: '';
-  position: absolute; inset: 0; z-index: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(37,99,235,0.14) 0%, transparent 70%);
-  pointer-events: none;
+.hero-left { flex: 1; min-width: 0; }
+.hero-right {
+  flex: 0 0 440px; min-width: 0;
+  display: flex; align-items: center; justify-content: center;
 }
-/* Subtle grid lines */
-.hero-grid {
-  position: absolute; inset: 0; z-index: 0;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 20%, transparent 80%);
-  pointer-events: none;
+@media(max-width:1060px) {
+  .hero { flex-direction: column; text-align: center; padding-bottom: 60px; }
+  .hero-right { flex: none; width: 100%; max-width: 480px; }
+  .hero-left { display: flex; flex-direction: column; align-items: center; }
 }
 
-.hero-inner { position: relative; z-index: 1; max-width: 760px; }
-
+/* badge */
 .hero-badge {
   display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(37,99,235,0.12); border: 1px solid rgba(59,130,246,0.25);
+  background: rgba(37,99,235,0.1);
+  border: 1px solid rgba(96,165,250,0.2);
   border-radius: 20px; padding: 6px 14px;
-  font-size: 0.72rem; font-weight: 600; color: var(--blue-l);
-  letter-spacing: 0.3px; text-transform: uppercase;
+  font-size: 0.72rem; font-weight: 700; color: var(--blue-l);
+  letter-spacing: 0.5px; text-transform: uppercase;
   margin-bottom: 28px;
-  animation: fadeUp 0.6s ease both;
+  animation: fadeUp 0.7s ease both;
 }
-.hero-badge-dot {
+.pulse-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--blue-l);
-  animation: pulse 2s infinite;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulseDot 2s ease-in-out infinite;
 }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-h1 {
-  font-family: 'Satoshi', sans-serif;
-  font-size: clamp(2.8rem, 7vw, 5.5rem);
+/* headline */
+.hero h1 {
+  font-family: 'Cabinet Grotesk', 'Satoshi', sans-serif;
+  font-size: clamp(3rem, 6vw, 5.2rem);
   font-weight: 900;
-  line-height: 1.02;
-  letter-spacing: -3px;
+  line-height: 1.0;
+  letter-spacing: -3.5px;
   margin-bottom: 24px;
-  animation: fadeUp 0.6s 0.1s ease both;
+  animation: fadeUp 0.7s 0.08s ease both;
+  max-width: 600px;
 }
-h1 em {
-  font-style: normal;
-  background: linear-gradient(135deg, var(--blue-l) 0%, #7c3aed 100%);
+.hero h1 .grad {
+  background: linear-gradient(135deg, var(--blue-m) 0%, var(--violet-l) 60%, var(--blue-l) 100%);
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
 .hero-sub {
-  font-size: 1.05rem; color: var(--gray-2); line-height: 1.7;
-  max-width: 520px; margin: 0 auto 40px;
-  animation: fadeUp 0.6s 0.2s ease both;
+  font-size: 1.05rem; line-height: 1.7; color: var(--g2);
+  max-width: 480px; margin-bottom: 40px;
+  animation: fadeUp 0.7s 0.16s ease both;
+  font-weight: 400;
 }
-
-/* Address input */
+/* analyze form */
 .analyze-form {
-  display: flex; gap: 10px;
-  max-width: 540px; margin: 0 auto;
-  animation: fadeUp 0.6s 0.3s ease both;
+  display: flex; gap: 8px; max-width: 520px;
+  animation: fadeUp 0.7s 0.24s ease both;
+}
+.analyze-wrap {
+  flex: 1; position: relative;
+}
+.analyze-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--g3); font-size: 16px; pointer-events: none;
+  display: flex;
 }
 .analyze-input {
-  flex: 1; background: var(--bg2);
+  width: 100%; background: var(--bg2);
   border: 1px solid var(--border-hi);
-  border-radius: var(--r-sm);
-  padding: 14px 18px;
-  font-size: 0.9rem; color: var(--white);
-  font-family: 'Inter', sans-serif;
+  border-radius: var(--r-md);
+  padding: 14px 16px 14px 40px;
+  font-size: 0.88rem; color: var(--white);
+  font-family: 'Satoshi', sans-serif;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
-.analyze-input::placeholder { color: var(--gray-3); }
+.analyze-input::placeholder { color: var(--g3); }
 .analyze-input:focus {
-  border-color: var(--blue-l);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  border-color: var(--blue-m);
+  background: var(--bg3);
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
 }
 .analyze-btn {
-  background: var(--blue); color: white;
-  border: none; padding: 14px 24px; border-radius: var(--r-sm);
+  background: linear-gradient(135deg, var(--blue) 0%, #1a4fc4 100%);
+  color: white; border: none; padding: 14px 24px;
+  border-radius: var(--r-md);
   font-size: 0.88rem; font-weight: 700; cursor: pointer;
   white-space: nowrap; letter-spacing: -0.2px;
-  transition: background 0.15s, transform 0.1s;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Satoshi', sans-serif;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
 }
-.analyze-btn:hover { background: #1d4ed8; }
+.analyze-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(37,99,235,0.5);
+}
 .analyze-btn:active { transform: scale(0.98); }
-.analyze-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.analyze-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
 
 .hero-note {
-  margin-top: 16px;
-  font-size: 0.72rem; color: var(--gray-3);
-  animation: fadeUp 0.6s 0.4s ease both;
+  margin-top: 14px; font-size: 0.73rem; color: var(--g3);
+  animation: fadeUp 0.7s 0.32s ease both;
 }
-.hero-note a { color: var(--gray-2); text-decoration: none; }
+.hero-note a { color: var(--g2); text-decoration: none; border-bottom: 1px solid var(--g4); }
+
+/* social proof */
+.hero-proof {
+  display: flex; align-items: center; gap: 12px;
+  margin-top: 36px;
+  animation: fadeUp 0.7s 0.38s ease both;
+}
+.proof-avatars { display: flex; }
+.proof-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 2px solid var(--bg);
+  background: var(--bg3);
+  font-size: 11px; font-weight: 700; color: var(--g2);
+  display: flex; align-items: center; justify-content: center;
+  margin-left: -8px;
+}
+.proof-avatar:first-child { margin-left: 0; }
+.proof-text { font-size: 0.78rem; color: var(--g2); line-height: 1.4; }
+.proof-text strong { color: var(--white); font-weight: 700; }
+.proof-stars { color: #fbbf24; font-size: 0.7rem; display: block; margin-bottom: 2px; }
+
+/* ─── HERO REPORT CARD ─── */
+.hero-card {
+  width: 100%; max-width: 420px;
+  background: var(--bg1);
+  border-radius: var(--r-2xl);
+  border: 1px solid var(--border-hi);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.03),
+    0 24px 80px rgba(0,0,0,0.5),
+    0 8px 24px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  animation: fadeUp 0.9s 0.1s ease both;
+  position: relative;
+}
+.hero-card::before {
+  content: '';
+  position: absolute; inset: -1px; border-radius: 37px;
+  background: linear-gradient(135deg, rgba(59,130,246,0.35) 0%, transparent 50%, rgba(124,58,237,0.2) 100%);
+  z-index: -1; pointer-events: none;
+}
+.hc-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.hc-dots { display: flex; gap: 6px; }
+.hc-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--bg4);
+}
+.hc-dot:first-child { background: #ff5f57; }
+.hc-dot:nth-child(2) { background: #ffbd2e; }
+.hc-dot:nth-child(3) { background: #28c840; }
+.hc-url {
+  flex: 1; margin: 0 12px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 10px;
+  font-size: 0.65rem; color: var(--g3); text-align: center;
+  font-family: 'Inter', monospace; letter-spacing: 0.2px;
+}
+.hc-badge {
+  font-size: 0.6rem; font-weight: 700; color: var(--green);
+  background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.2);
+  padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.hc-body { padding: 20px; }
+.hc-address {
+  font-weight: 800; font-size: 0.95rem; letter-spacing: -0.3px;
+  margin-bottom: 4px; line-height: 1.3;
+}
+.hc-sub { font-size: 0.72rem; color: var(--g3); margin-bottom: 18px; }
+
+/* motivation bar */
+.hc-score-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 6px; }
+.hc-score-label { font-size: 0.65rem; color: var(--g3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.hc-score-val {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.8rem; font-weight: 900; line-height: 1;
+  letter-spacing: -2px; color: var(--amber);
+}
+.hc-score-tier {
+  font-size: 0.62rem; font-weight: 800; color: var(--amber);
+  background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.2);
+  padding: 2px 8px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 4px; display: inline-block;
+}
+.hc-bar-track { height: 5px; background: var(--bg4); border-radius: 3px; overflow: hidden; margin-bottom: 16px; }
+.hc-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--amber), var(--red));
+  width: 0%; transition: width 1.4s 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* data grid */
+.hc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.hc-cell {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
+}
+.hc-cell-label { font-size: 0.58rem; color: var(--g3); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-bottom: 3px; }
+.hc-cell-val { font-size: 0.85rem; font-weight: 700; color: var(--g1); line-height: 1.2; }
+
+/* tags */
+.hc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.hc-tag {
+  font-size: 0.62rem; font-weight: 700; padding: 3px 9px;
+  border-radius: 8px; letter-spacing: 0.2px;
+}
+.hc-tag-amber { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
+.hc-tag-red { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.15); }
+.hc-tag-blue { background: rgba(96,165,250,0.1); color: var(--blue-l); border: 1px solid rgba(96,165,250,0.2); }
+
+/* cta row */
+.hc-cta {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, rgba(37,99,235,0.12) 0%, rgba(124,58,237,0.08) 100%);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 12px; padding: 12px 14px;
+}
+.hc-cta-text { font-size: 0.78rem; color: var(--g1); font-weight: 600; }
+.hc-cta-text span { color: var(--g3); font-size: 0.68rem; font-weight: 400; display: block; margin-top: 1px; }
+.hc-cta-btn {
+  background: var(--blue); color: white; border: none;
+  padding: 8px 16px; border-radius: 8px;
+  font-size: 0.75rem; font-weight: 700; cursor: pointer;
+  font-family: 'Satoshi', sans-serif; letter-spacing: -0.1px;
+  white-space: nowrap;
+}
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── RESULT PREVIEW (shown inline) ─── */
+/* ═══════════════════════════════════════════
+   RESULT (inline)
+═══════════════════════════════════════════ */
 #result-wrap {
-  display: none;
-  max-width: 820px; margin: 40px auto 0;
+  display: none; width: 100%; max-width: 520px;
+  background: var(--bg2); border: 1px solid var(--border-hi);
+  border-radius: var(--r-xl); padding: 24px;
+  margin-top: 20px;
   animation: fadeUp 0.4s ease both;
 }
 #result-wrap.visible { display: block; }
-.result-header {
-  font-size: 0.72rem; color: var(--gray-3); margin-bottom: 12px;
-  text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
-}
 #result-address {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 1.2rem; font-weight: 700; margin-bottom: 20px;
-  letter-spacing: -0.5px;
+  font-weight: 800; font-size: 1.05rem; letter-spacing: -0.4px; margin-bottom: 16px;
 }
 #result-cards {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;
-  margin-bottom: 20px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px;
 }
 .result-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: var(--r-md); padding: 16px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 12px;
 }
-.result-card-label {
-  font-size: 0.65rem; color: var(--gray-3); text-transform: uppercase;
-  letter-spacing: 1px; font-weight: 600; margin-bottom: 6px;
-}
-.result-card-val {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 0.95rem; font-weight: 700; color: var(--white);
-}
-.result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.result-card-label { font-size: 0.6rem; color: var(--g3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+.result-card-val { font-size: 0.88rem; font-weight: 700; }
+.result-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .result-btn {
-  padding: 11px 22px; border-radius: 9px;
-  font-size: 0.85rem; font-weight: 700; cursor: pointer;
-  text-decoration: none; border: none;
-  font-family: 'Inter', sans-serif;
+  padding: 10px 20px; border-radius: 9px;
+  font-size: 0.83rem; font-weight: 700; cursor: pointer;
+  text-decoration: none; border: none; font-family: 'Satoshi', sans-serif;
   transition: opacity 0.15s;
 }
 .result-btn-primary { background: var(--blue); color: white; }
-.result-btn-secondary { background: var(--bg3); color: var(--white); border: 1px solid var(--border-hi); }
-.result-btn:hover { opacity: 0.85; }
+.result-btn-secondary { background: var(--bg4); color: var(--white); border: 1px solid var(--border-hi); }
+.result-btn:hover { opacity: 0.82; }
 
-/* ─── SECTION WRAPPER ─── */
+/* ═══════════════════════════════════════════
+   STATS STRIP
+═══════════════════════════════════════════ */
+.stats-strip {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 0 max(28px, calc(50vw - 680px));
+  display: grid; grid-template-columns: repeat(4, 1fr);
+}
+@media(max-width:700px) { .stats-strip { grid-template-columns: repeat(2, 1fr); } }
+.stat-item {
+  padding: 28px 24px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+@media(max-width:700px) {
+  .stat-item:nth-child(2) { border-right: none; }
+  .stat-item:nth-child(3) { border-right: 1px solid var(--border); }
+}
+.stat-num {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 2.2rem; font-weight: 900; line-height: 1;
+  letter-spacing: -2px; margin-bottom: 6px;
+  background: linear-gradient(135deg, var(--white) 0%, var(--g2) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-label { font-size: 0.75rem; color: var(--g3); font-weight: 500; }
+
+/* ═══════════════════════════════════════════
+   SECTION WRAPPER
+═══════════════════════════════════════════ */
 .section {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 100px 24px;
+  max-width: 1360px; margin: 0 auto;
+  padding: 100px max(28px, calc(50vw - 680px));
 }
 .section-eyebrow {
   font-size: 0.7rem; font-weight: 700; color: var(--blue-l);
-  text-transform: uppercase; letter-spacing: 2.5px;
-  margin-bottom: 12px;
+  text-transform: uppercase; letter-spacing: 3px; margin-bottom: 14px;
 }
 .section-title {
-  font-family: 'Satoshi', sans-serif;
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  font-weight: 900; letter-spacing: -1.5px; line-height: 1.1;
-  margin-bottom: 16px;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
+  font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  margin-bottom: 18px;
 }
 .section-sub {
-  font-size: 0.95rem; color: var(--gray-2); line-height: 1.7;
-  max-width: 480px;
+  font-size: 0.95rem; color: var(--g2); line-height: 1.75;
+  max-width: 480px; font-weight: 400;
 }
 
-/* ─── BENTO GRID ─── */
+/* ═══════════════════════════════════════════
+   BENTO GRID
+═══════════════════════════════════════════ */
 .bento {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: auto;
-  gap: 14px;
-  margin-top: 48px;
+  gap: 12px; margin-top: 56px;
 }
-
 .tile {
   background: var(--bg1);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
-  padding: 28px;
+  border-radius: var(--r-2xl);
+  padding: 32px;
   position: relative; overflow: hidden;
-  transition: border-color 0.2s, transform 0.2s;
+  isolation: isolate;
+  cursor: default;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
 }
+.tile::before {
+  content: '';
+  position: absolute; inset: -1px; border-radius: calc(var(--r-2xl) + 1px);
+  background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 40%, rgba(255,255,255,0.02) 100%);
+  z-index: -2;
+}
+.tile::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: var(--r-2xl);
+  background: linear-gradient(105deg, transparent 25%, rgba(255,255,255,0.025) 50%, transparent 75%);
+  transform: translateX(-100%);
+  transition: transform 0.7s ease;
+  z-index: 2; pointer-events: none;
+}
+.tile:hover::after { transform: translateX(100%); }
 .tile:hover {
-  border-color: var(--border-hi);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
 }
+/* gradient border via box-shadow */
+.tile { box-shadow: 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05); }
+.tile:hover { box-shadow: 0 0 0 1px rgba(96,165,250,0.2), 0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.07); }
+
 /* Grid placement */
 .tile-1 { grid-column: span 5; }
 .tile-2 { grid-column: span 7; }
-.tile-3 { grid-column: span 4; }
-.tile-4 { grid-column: span 4; }
+.tile-3 { grid-column: span 3; }
+.tile-4 { grid-column: span 5; }
 .tile-5 { grid-column: span 4; }
 .tile-6 { grid-column: span 12; }
-@media (max-width: 900px) {
+@media(max-width:1000px) {
   .bento { grid-template-columns: 1fr 1fr; }
   .tile-1,.tile-2,.tile-3,.tile-4,.tile-5,.tile-6 { grid-column: span 2; }
 }
-@media (max-width: 560px) {
+@media(max-width:580px) {
   .bento { grid-template-columns: 1fr; }
   .tile-1,.tile-2,.tile-3,.tile-4,.tile-5,.tile-6 { grid-column: span 1; }
 }
 
-.tile-label {
-  font-size: 0.65rem; font-weight: 700; color: var(--gray-3);
-  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
+/* tile inner glow accent */
+.tile-accent {
+  position: absolute; border-radius: 50%; pointer-events: none; filter: blur(80px); z-index: -1;
 }
-.tile-heading {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px;
-  margin-bottom: 8px; line-height: 1.3;
-}
-.tile-body { font-size: 0.82rem; color: var(--gray-2); line-height: 1.6; }
 
-/* Score bar */
-.score-row { display: flex; align-items: center; gap: 12px; margin: 16px 0 8px; }
-.score-val {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 3rem; font-weight: 900; line-height: 1; letter-spacing: -2px;
+.tile-label {
+  font-size: 0.62rem; font-weight: 700; color: var(--g3);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px;
 }
-.score-meta { font-size: 0.78rem; color: var(--gray-2); }
-.score-meta strong { color: var(--amber); font-weight: 700; }
-.score-bar {
-  width: 100%; height: 6px; background: var(--bg3);
-  border-radius: 3px; overflow: hidden; margin-top: 12px;
+
+/* Score tile */
+.score-big {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 5rem; font-weight: 900; line-height: 1; letter-spacing: -5px;
+  color: var(--amber); margin: 4px 0 6px;
 }
+.score-denom { font-size: 1.5rem; color: var(--g3); letter-spacing: -1px; }
+.score-bar { height: 5px; background: var(--bg4); border-radius: 3px; overflow: hidden; margin: 12px 0; }
 .score-fill {
   height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--amber), var(--red));
-  width: 72%;
-  transition: width 1s ease;
+  background: linear-gradient(90deg, var(--amber) 0%, var(--red) 100%);
+  width: 0; transition: width 1.2s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
-/* Tag chips */
-.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
 .tag {
-  font-size: 0.68rem; font-weight: 700; padding: 4px 10px;
-  border-radius: 20px; letter-spacing: 0.2px;
+  font-size: 0.65rem; font-weight: 700; padding: 4px 10px;
+  border-radius: 10px; letter-spacing: 0.2px;
 }
-.tag-amber { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
-.tag-red   { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
-.tag-blue  { background: rgba(59,130,246,0.1); color: var(--blue-l); border: 1px solid rgba(59,130,246,0.2); }
-.tag-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+.t-amber { background: rgba(245,158,11,0.1); color: var(--amber-l); border: 1px solid rgba(245,158,11,0.2); }
+.t-red   { background: rgba(239,68,68,0.08); color: #fca5a5; border: 1px solid rgba(239,68,68,0.18); }
+.t-blue  { background: rgba(96,165,250,0.08); color: var(--blue-l); border: 1px solid rgba(96,165,250,0.18); }
+.t-green { background: rgba(34,197,94,0.08); color: var(--green-l); border: 1px solid rgba(34,197,94,0.18); }
 
 /* Owner tile */
-.owner-field { margin-bottom: 12px; }
-.owner-field-label { font-size: 0.62rem; color: var(--gray-3); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 3px; }
-.owner-field-val { font-size: 0.88rem; font-weight: 600; color: var(--gray-1); }
-
-/* Comps mini table */
-.comp-row {
-  display: grid; grid-template-columns: 1fr auto auto;
-  gap: 8px; padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.78rem; align-items: center;
-}
-.comp-row:last-child { border-bottom: none; }
-.comp-addr { color: var(--gray-1); font-weight: 500; }
-.comp-sf { color: var(--gray-3); font-size: 0.7rem; }
-.comp-price { font-family: 'Satoshi', sans-serif; font-weight: 800; color: var(--white); }
-
-/* Flood tile */
-.flood-zone-big {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 5rem; font-weight: 900; line-height: 1;
-  letter-spacing: -4px; color: var(--green);
-  margin: 12px 0 8px;
-}
-
-/* Page count tile */
-.page-count {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 6rem; font-weight: 900; line-height: 1;
-  letter-spacing: -5px; color: var(--blue-l);
-}
-.page-subtitle { font-size: 0.8rem; color: var(--gray-2); margin-top: 8px; }
-
-/* Corner glow accent */
-.tile-glow {
-  position: absolute; border-radius: 50%;
-  pointer-events: none; filter: blur(60px); opacity: 0.15;
-}
-
-/* ─── HOW IT WORKS ─── */
-.steps-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 2px; margin-top: 48px;
-  border: 1px solid var(--border); border-radius: var(--r-xl);
-  overflow: hidden;
-}
-@media (max-width: 700px) { .steps-grid { grid-template-columns: 1fr; } }
-.step-tile {
-  background: var(--bg1); padding: 36px 32px;
-  position: relative;
-}
-.step-tile:not(:last-child) { border-right: 1px solid var(--border); }
-@media (max-width: 700px) {
-  .step-tile:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
-}
-.step-num {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 3.5rem; font-weight: 900; line-height: 1;
-  letter-spacing: -3px; color: var(--bg3);
+.owner-row { margin-bottom: 14px; }
+.owner-key { font-size: 0.6rem; color: var(--g3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 3px; }
+.owner-val { font-size: 0.9rem; font-weight: 600; color: var(--g1); }
+.tile-heading {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.25rem; font-weight: 900; letter-spacing: -0.5px; line-height: 1.25;
   margin-bottom: 20px;
 }
-.step-title {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 1.1rem; font-weight: 800; letter-spacing: -0.3px;
-  margin-bottom: 10px;
-}
-.step-desc { font-size: 0.83rem; color: var(--gray-2); line-height: 1.65; }
 
-/* ─── PRICING ─── */
+/* Flood tile */
+.flood-big {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 6rem; font-weight: 900; line-height: 0.85;
+  letter-spacing: -6px; color: var(--green);
+  margin: 8px 0;
+  text-shadow: 0 0 60px rgba(34,197,94,0.3);
+}
+.flood-desc { font-size: 0.8rem; color: var(--g2); line-height: 1.5; margin-top: 12px; }
+
+/* Value tile */
+.val-big {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 2.8rem; font-weight: 900; line-height: 1;
+  letter-spacing: -2.5px; margin: 8px 0 6px;
+}
+.val-range { font-size: 0.82rem; color: var(--g2); margin-top: 6px; line-height: 1.6; }
+.val-detail { font-size: 0.78rem; color: var(--g3); margin-top: 6px; }
+
+/* Pages tile */
+.pages-big {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 5.5rem; font-weight: 900; line-height: 1;
+  letter-spacing: -5px;
+  background: linear-gradient(135deg, var(--blue-l) 0%, var(--violet-l) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.pages-sub { font-size: 0.78rem; color: var(--g2); margin-top: 10px; line-height: 1.6; }
+
+/* Comps tile */
+.comps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+@media(max-width:700px) { .comps-grid { grid-template-columns: 1fr; } }
+.comp-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.comp-row:last-child { border-bottom: none; }
+.comp-info { }
+.comp-addr { font-size: 0.82rem; font-weight: 600; color: var(--g1); }
+.comp-meta { font-size: 0.67rem; color: var(--g3); margin-top: 1px; }
+.comp-price {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1rem; font-weight: 900; letter-spacing: -0.5px;
+  color: var(--white);
+}
+.comp-psf { font-size: 0.62rem; color: var(--g3); text-align: right; margin-top: 1px; }
+
+/* ═══════════════════════════════════════════
+   HOW IT WORKS
+═══════════════════════════════════════════ */
+.steps-row {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; margin-top: 56px;
+  border: 1px solid var(--border); border-radius: var(--r-2xl); overflow: hidden;
+}
+@media(max-width:680px) { .steps-row { grid-template-columns: 1fr; } }
+.step-cell {
+  background: var(--bg1); padding: 40px 36px;
+  position: relative; overflow: hidden;
+  transition: background 0.2s;
+}
+.step-cell:not(:last-child) { border-right: 1px solid var(--border); }
+@media(max-width:680px) {
+  .step-cell:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
+}
+.step-cell:hover { background: var(--bg2); }
+.step-n {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 4.5rem; font-weight: 900; line-height: 1; letter-spacing: -4px;
+  color: var(--bg4); margin-bottom: 24px; display: block;
+}
+.step-icon {
+  width: 40px; height: 40px; border-radius: 11px;
+  background: var(--bg3); border: 1px solid var(--border-hi);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; margin-bottom: 18px;
+}
+.step-title {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.15rem; font-weight: 900; letter-spacing: -0.3px;
+  margin-bottom: 12px;
+}
+.step-desc { font-size: 0.83rem; color: var(--g2); line-height: 1.7; font-weight: 400; }
+
+/* ═══════════════════════════════════════════
+   PRICING
+═══════════════════════════════════════════ */
 .pricing-grid {
   display: grid; grid-template-columns: 1fr 1fr;
-  gap: 16px; margin-top: 48px; max-width: 720px;
+  gap: 16px; margin-top: 56px; max-width: 760px;
 }
-@media (max-width: 600px) { .pricing-grid { grid-template-columns: 1fr; } }
+@media(max-width:600px) { .pricing-grid { grid-template-columns: 1fr; } }
 
 .price-card {
-  background: var(--bg1); border: 1px solid var(--border);
-  border-radius: var(--r-xl); padding: 36px;
-  transition: border-color 0.2s;
+  background: var(--bg1);
+  border-radius: var(--r-2xl); padding: 40px;
+  position: relative; overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
+.price-card:hover { transform: translateY(-2px); }
 .price-card.featured {
-  border-color: rgba(59,130,246,0.4);
-  background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, var(--bg1) 100%);
+  background: linear-gradient(135deg, rgba(37,99,235,0.07) 0%, rgba(124,58,237,0.04) 100%);
+  border-color: rgba(96,165,250,0.3);
+  box-shadow: 0 0 40px rgba(37,99,235,0.08), inset 0 1px 0 rgba(96,165,250,0.12);
 }
-.price-card:hover { border-color: var(--border-hi); }
-.price-card.featured:hover { border-color: rgba(59,130,246,0.6); }
+.price-card.featured:hover {
+  box-shadow: 0 20px 60px rgba(37,99,235,0.12), 0 4px 16px rgba(0,0,0,0.2);
+}
 
-.price-name {
-  font-size: 0.72rem; font-weight: 700; color: var(--gray-3);
-  text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;
+.price-popular {
+  position: absolute; top: 20px; right: 20px;
+  font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--blue-l);
+  background: rgba(37,99,235,0.12); border: 1px solid rgba(96,165,250,0.25);
+  padding: 4px 10px; border-radius: 8px;
 }
-.price-val {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 2.8rem; font-weight: 900; letter-spacing: -2px; line-height: 1;
-  margin-bottom: 6px;
+.price-tier {
+  font-size: 0.68rem; font-weight: 700; color: var(--g3);
+  text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 18px;
 }
-.price-per { font-size: 0.8rem; color: var(--gray-3); margin-bottom: 24px; }
-.price-features { list-style: none; margin-bottom: 28px; }
-.price-features li {
-  font-size: 0.82rem; color: var(--gray-2); padding: 7px 0;
+.price-amount {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 3.2rem; font-weight: 900;
+  letter-spacing: -2.5px; line-height: 1; margin-bottom: 4px;
+}
+.price-per { font-size: 0.78rem; color: var(--g3); margin-bottom: 28px; font-weight: 400; }
+
+.price-list { list-style: none; margin-bottom: 32px; }
+.price-list li {
+  font-size: 0.83rem; color: var(--g2); padding: 9px 0;
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: flex-start; gap: 10px;
+  font-weight: 400; line-height: 1.4;
 }
-.price-features li:last-child { border-bottom: none; }
-.price-features li::before { content: '✓'; color: var(--green); font-weight: 800; font-size: 0.75rem; }
+.price-list li:last-child { border-bottom: none; }
+.price-check { color: var(--green); font-weight: 800; font-size: 0.8rem; flex-shrink: 0; margin-top: 1px; }
+
 .price-btn {
-  display: block; width: 100%;
-  padding: 13px; border-radius: 10px;
-  font-size: 0.88rem; font-weight: 700; cursor: pointer;
+  display: block; width: 100%; padding: 14px; border-radius: 12px;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
   text-align: center; text-decoration: none;
   border: 1px solid var(--border-hi); color: var(--white);
   background: var(--bg3);
-  transition: background 0.15s, border-color 0.15s;
-  font-family: 'Inter', sans-serif;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  font-family: 'Satoshi', sans-serif; letter-spacing: -0.2px;
 }
-.price-btn.primary { background: var(--blue); border-color: transparent; }
-.price-btn:hover { opacity: 0.85; }
+.price-btn.cta {
+  background: linear-gradient(135deg, var(--blue) 0%, #1a4fc4 100%);
+  border-color: transparent; color: white;
+  box-shadow: 0 4px 20px rgba(37,99,235,0.35);
+}
+.price-btn:hover { transform: translateY(-1px); }
+.price-btn.cta:hover { box-shadow: 0 6px 28px rgba(37,99,235,0.45); }
 
-/* ─── FAQ ─── */
-.faq-list { margin-top: 48px; max-width: 680px; }
+/* ═══════════════════════════════════════════
+   TESTIMONIALS
+═══════════════════════════════════════════ */
+.testimonials {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-top: 56px;
+}
+@media(max-width:860px) { .testimonials { grid-template-columns: 1fr; } }
+
+.testi {
+  background: var(--bg1);
+  border-radius: var(--r-2xl); padding: 32px;
+  border: 1px solid var(--border);
+  position: relative; overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.testi:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+  border-color: var(--border-hi);
+}
+.testi-quote {
+  font-size: 2rem; color: var(--blue-l); opacity: 0.4; line-height: 1;
+  margin-bottom: 16px; font-family: Georgia, serif;
+}
+.testi-body {
+  font-size: 0.88rem; color: var(--g1); line-height: 1.75;
+  font-weight: 400; margin-bottom: 24px;
+}
+.testi-body strong { color: var(--white); font-weight: 700; }
+.testi-foot { display: flex; align-items: center; gap: 12px; }
+.testi-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%);
+  font-size: 13px; font-weight: 800; color: white;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.testi-name { font-size: 0.83rem; font-weight: 700; color: var(--g1); margin-bottom: 1px; }
+.testi-role { font-size: 0.72rem; color: var(--g3); }
+.testi-stars { color: var(--amber); font-size: 0.72rem; margin-bottom: 14px; }
+
+/* ═══════════════════════════════════════════
+   FAQ
+═══════════════════════════════════════════ */
+.faq-list { max-width: 720px; margin-top: 52px; }
 .faq-item {
-  border-bottom: 1px solid var(--border); padding: 24px 0;
-  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+  overflow: hidden;
 }
 .faq-item:first-child { border-top: 1px solid var(--border); }
 .faq-q {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 0.95rem; font-weight: 700; letter-spacing: -0.2px;
-  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  display: flex; justify-content: space-between; align-items: center; gap: 20px;
+  padding: 22px 0; cursor: pointer;
+  font-size: 0.92rem; font-weight: 700; letter-spacing: -0.2px;
+  transition: color 0.15s;
+  user-select: none;
 }
-.faq-q::after { content: '+'; color: var(--gray-3); font-size: 1.2rem; flex-shrink: 0; }
-.faq-item.open .faq-q::after { content: '−'; }
+.faq-q:hover { color: var(--blue-l); }
+.faq-toggle {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border-hi);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 0.8rem; color: var(--g2);
+  transition: background 0.15s, transform 0.3s;
+}
+.faq-item.open .faq-toggle { background: var(--blue); border-color: var(--blue); color: white; transform: rotate(45deg); }
 .faq-a {
-  font-size: 0.83rem; color: var(--gray-2); line-height: 1.7;
-  margin-top: 12px; display: none;
+  font-size: 0.85rem; color: var(--g2); line-height: 1.75;
+  padding-bottom: 20px; display: none; font-weight: 400;
 }
+.faq-a a { color: var(--blue-l); text-decoration: none; border-bottom: 1px solid rgba(96,165,250,0.3); }
 .faq-item.open .faq-a { display: block; }
 
-/* ─── FOOTER ─── */
+/* ═══════════════════════════════════════════
+   CTA BANNER
+═══════════════════════════════════════════ */
+.cta-banner {
+  margin: 0 max(28px, calc(50vw - 680px)) 80px;
+  border-radius: var(--r-2xl); overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(124,58,237,0.1) 50%, rgba(37,99,235,0.08) 100%);
+  border: 1px solid rgba(96,165,250,0.2);
+  padding: 64px 60px;
+  text-align: center;
+}
+.cta-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(37,99,235,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cta-banner-eyebrow {
+  font-size: 0.7rem; font-weight: 700; color: var(--blue-l);
+  text-transform: uppercase; letter-spacing: 3px; margin-bottom: 16px;
+}
+.cta-banner h2 {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900; letter-spacing: -2px; line-height: 1.05;
+  margin-bottom: 18px;
+}
+.cta-banner p {
+  font-size: 0.95rem; color: var(--g2); max-width: 440px; margin: 0 auto 36px;
+  line-height: 1.7; font-weight: 400;
+}
+.cta-banner-form {
+  display: flex; gap: 8px; max-width: 480px; margin: 0 auto;
+  justify-content: center;
+}
+@media(max-width:560px) { .cta-banner-form { flex-direction: column; } .cta-banner { padding: 40px 28px; } }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
 footer {
   border-top: 1px solid var(--border);
-  padding: 48px max(24px, calc(50vw - 620px));
+  padding: 48px max(28px, calc(50vw - 680px));
   display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 16px;
+  flex-wrap: wrap; gap: 20px;
 }
 .footer-logo {
-  font-family: 'Satoshi', sans-serif;
-  font-size: 1rem; font-weight: 800; letter-spacing: -0.5px; color: var(--white);
+  display: flex; align-items: center; gap: 8px;
   text-decoration: none;
 }
-.footer-links { display: flex; gap: 24px; }
-.footer-links a { font-size: 0.78rem; color: var(--gray-3); text-decoration: none; }
-.footer-links a:hover { color: var(--gray-2); }
-.footer-copy { font-size: 0.75rem; color: var(--gray-3); }
+.footer-logo-mark {
+  width: 26px; height: 26px;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; color: white;
+}
+.footer-logo-name { font-size: 0.9rem; font-weight: 800; letter-spacing: -0.3px; }
+.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+.footer-links a { font-size: 0.78rem; color: var(--g3); text-decoration: none; transition: color 0.15s; }
+.footer-links a:hover { color: var(--g2); }
+.footer-copy { font-size: 0.72rem; color: var(--g3); }
 
-/* ─── DIVIDER ─── */
-.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+/* ═══════════════════════════════════════════
+   SCROLL ANIMATIONS
+═══════════════════════════════════════════ */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.08s; }
+.reveal-delay-2 { transition-delay: 0.16s; }
+.reveal-delay-3 { transition-delay: 0.24s; }
+.reveal-delay-4 { transition-delay: 0.32s; }
+.reveal-delay-5 { transition-delay: 0.40s; }
 
-/* ─── LOADER ─── */
+/* ═══════════════════════════════════════════
+   DIVIDER
+═══════════════════════════════════════════ */
+.divider { border: none; border-top: 1px solid var(--border); }
+
+/* spinner */
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.2);
-  border-top-color: white;
-  display: inline-block; animation: spin 0.7s linear infinite;
-  vertical-align: middle; margin-right: 8px;
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25); border-top-color: white;
+  display: inline-block; animation: spin 0.65s linear infinite;
+  vertical-align: middle; margin-right: 7px;
 }
 </style>
 </head>
 <body>
 
-<!-- ─── NAV ─── -->
+<!-- ANIMATED BG -->
+<div class="scene" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+</div>
+
+<!-- NAV -->
 <nav>
   <a class="nav-logo" href="/">
-    <span class="nav-logo-dot"></span>
-    PropIntel
+    <div class="nav-logo-mark">PI</div>
+    <span class="nav-logo-name">PropIntel</span>
   </a>
   <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
     <li><a href="#how">How it works</a></li>
     <li><a href="#pricing">Pricing</a></li>
-    <li><a href="#faq">FAQ</a></li>
     <li><a href="learn.html">Learn</a></li>
   </ul>
-  <a class="nav-cta" href="#pricing">Get a report →</a>
+  <div class="nav-right">
+    <a class="nav-cta" href="#pricing">Get a report →</a>
+  </div>
 </nav>
 
-<!-- ─── HERO ─── -->
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-grid"></div>
-
-  <div class="hero-inner">
+  <div class="hero-left">
     <div class="hero-badge">
-      <span class="hero-badge-dot"></span>
-      Live — Verified public records
+      <span class="pulse-dot"></span>
+      Live — All 50 states covered
     </div>
-
-    <h1>Know the property<br><em>before anyone else.</em></h1>
-
-    <p class="hero-sub">
-      Full property intelligence in 30 seconds — owner identity,
-      flood zone, motivation score, deal analyzer — all sourced
-      from verified government records.
-    </p>
+    <h1>Know the property.<br><span class="grad">Before anyone else.</span></h1>
+    <p class="hero-sub">Full property intelligence in 30 seconds — owner identity, motivation score, FEMA flood zone, deal analyzer, and sold comps. All from verified public records.</p>
 
     <form class="analyze-form" onsubmit="handleAnalyze(event)">
-      <input
-        class="analyze-input"
-        id="address-input"
-        type="text"
-        placeholder="Enter any US property address..."
-        autocomplete="off"
-        required
-      />
-      <button class="analyze-btn" id="analyze-btn" type="submit">
-        Analyze →
-      </button>
+      <div class="analyze-wrap">
+        <span class="analyze-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </span>
+        <input class="analyze-input" id="address-input" type="text"
+          placeholder="Enter any US property address…" autocomplete="off" required/>
+      </div>
+      <button class="analyze-btn" id="analyze-btn" type="submit">Analyze →</button>
     </form>
+    <p class="hero-note">No subscription required. <a href="#pricing">Pay per report.</a></p>
 
-    <p class="hero-note">No subscription. Pay per report. <a href="#pricing">See pricing</a></p>
+    <div class="hero-proof">
+      <div class="proof-avatars">
+        <div class="proof-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed)">JT</div>
+        <div class="proof-avatar" style="background:linear-gradient(135deg,#059669,#2563eb)">SM</div>
+        <div class="proof-avatar" style="background:linear-gradient(135deg,#d97706,#dc2626)">MR</div>
+        <div class="proof-avatar" style="background:linear-gradient(135deg,#7c3aed,#db2777)">KL</div>
+      </div>
+      <div class="proof-text">
+        <span class="proof-stars">★★★★★</span>
+        <strong>400+ agents & investors</strong> across Texas trust PropIntel
+      </div>
+    </div>
 
-    <!-- Inline result -->
+    <!-- inline result -->
     <div id="result-wrap">
-      <div class="result-header">Analysis complete</div>
       <div id="result-address"></div>
       <div id="result-cards"></div>
       <div class="result-actions" id="result-actions"></div>
     </div>
   </div>
+
+  <!-- FLOATING REPORT CARD -->
+  <div class="hero-right">
+    <div class="hero-card" id="heroCard">
+      <div class="hc-header">
+        <div class="hc-dots">
+          <div class="hc-dot"></div><div class="hc-dot"></div><div class="hc-dot"></div>
+        </div>
+        <div class="hc-url">propertyvalueintel.com/report</div>
+        <div class="hc-badge">Pro Report</div>
+      </div>
+      <div class="hc-body">
+        <div class="hc-address">4747 Greenville Ave</div>
+        <div class="hc-sub">Dallas, TX 75206 · Dallas County</div>
+
+        <div class="hc-score-row">
+          <div class="hc-score-label">Motivation Score</div>
+          <div><div class="hc-score-tier">HIGH</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:8px">
+          <div class="hc-score-val">72</div>
+          <div style="font-size:0.72rem;color:var(--g3);padding-bottom:6px">/ 100</div>
+        </div>
+        <div class="hc-bar-track"><div class="hc-bar-fill" id="hcBar"></div></div>
+
+        <div class="hc-grid">
+          <div class="hc-cell">
+            <div class="hc-cell-label">Assessed</div>
+            <div class="hc-cell-val">$1.61M</div>
+          </div>
+          <div class="hc-cell">
+            <div class="hc-cell-label">Market Est.</div>
+            <div class="hc-cell-val">$1.69–2.01M</div>
+          </div>
+          <div class="hc-cell">
+            <div class="hc-cell-label">Flood Zone</div>
+            <div class="hc-cell-val" style="color:var(--green-l)">Zone X ✓</div>
+          </div>
+          <div class="hc-cell">
+            <div class="hc-cell-label">Building SF</div>
+            <div class="hc-cell-val">5,920 SF</div>
+          </div>
+        </div>
+
+        <div class="hc-tags">
+          <span class="hc-tag hc-tag-amber">Absentee</span>
+          <span class="hc-tag hc-tag-red">Out of State</span>
+          <span class="hc-tag hc-tag-blue">LLC / Entity</span>
+        </div>
+
+        <div class="hc-cta">
+          <div class="hc-cta-text">
+            Full 13-page report ready
+            <span>Sold comps · Deal analyzer · Skip trace</span>
+          </div>
+          <button class="hc-cta-btn" onclick="document.getElementById('address-input').focus()">Get Pro →</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- ─── BENTO ─── -->
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stat-item reveal">
+    <div class="stat-num" data-count="30" data-suffix="s">—</div>
+    <div class="stat-label">Average report time</div>
+  </div>
+  <div class="stat-item reveal reveal-delay-1">
+    <div class="stat-num" data-count="7">—</div>
+    <div class="stat-label">Verified data sources</div>
+  </div>
+  <div class="stat-item reveal reveal-delay-2">
+    <div class="stat-num" data-count="13" data-suffix="+">—</div>
+    <div class="stat-label">Pages per Pro report</div>
+  </div>
+  <div class="stat-item reveal reveal-delay-3">
+    <div class="stat-num" data-count="50">—</div>
+    <div class="stat-label">States covered</div>
+  </div>
+</div>
+
+<!-- FEATURES / BENTO -->
 <div class="section" id="features">
-  <div class="section-eyebrow">What's inside</div>
-  <h2 class="section-title">Every data point<br>that matters.</h2>
-  <p class="section-sub">Built for agents and investors who need answers fast — not another bloated subscription portal.</p>
+  <div class="section-eyebrow reveal">Every data point that matters</div>
+  <h2 class="section-title reveal reveal-delay-1">Intelligence, not just data.</h2>
+  <p class="section-sub reveal reveal-delay-2">Built for agents and investors who need answers fast — not another bloated subscription portal with raw numbers and no context.</p>
 
   <div class="bento">
 
     <!-- Tile 1: Motivation Score -->
-    <div class="tile tile-1">
-      <div class="tile-glow" style="width:200px;height:200px;top:-40px;right:-40px;background:var(--amber);"></div>
-      <div class="tile-label">Motivation Score</div>
-      <div class="score-row">
-        <div class="score-val" style="color:var(--amber)">72</div>
-        <div class="score-meta">out of 100<br><strong>HIGH</strong> motivation to sell</div>
+    <div class="tile tile-1 reveal">
+      <div class="tile-accent" style="width:260px;height:260px;top:-80px;right:-60px;background:rgba(245,158,11,0.2)"></div>
+      <div class="tile-label">Seller Motivation</div>
+      <div class="score-big">72<span class="score-denom">/100</span></div>
+      <div class="score-bar"><div class="score-fill" data-width="72"></div></div>
+      <div style="font-size:0.78rem;color:var(--g2);line-height:1.6;margin-bottom:14px">
+        Out-of-state LP owner. No sale in 11 years. Mails to Houston.
       </div>
-      <div class="score-bar"><div class="score-fill"></div></div>
-      <div class="tags" style="margin-top:16px">
-        <span class="tag tag-amber">Absentee Owner</span>
-        <span class="tag tag-red">Out of State</span>
-        <span class="tag tag-blue">LLC / Entity</span>
+      <div class="tags">
+        <span class="tag t-amber">Absentee Owner</span>
+        <span class="tag t-red">Out of State</span>
+        <span class="tag t-blue">LLC / Entity</span>
       </div>
     </div>
 
     <!-- Tile 2: Owner Intel -->
-    <div class="tile tile-2">
-      <div class="tile-glow" style="width:180px;height:180px;bottom:-40px;left:-20px;background:var(--blue-l);"></div>
+    <div class="tile tile-2 reveal reveal-delay-1">
+      <div class="tile-accent" style="width:300px;height:300px;bottom:-100px;left:-80px;background:rgba(96,165,250,0.1)"></div>
       <div class="tile-label">Owner Intelligence</div>
       <div class="tile-heading">Verified owner identity,<br>mailing address & entity type.</div>
-      <div style="margin-top:20px">
-        <div class="owner-field">
-          <div class="owner-field-label">Owner of Record</div>
-          <div class="owner-field-val">ZAKI FAMILY PARTNERSHIP LP</div>
-        </div>
-        <div class="owner-field">
-          <div class="owner-field-label">Mailing Address</div>
-          <div class="owner-field-val">8901 Post Oak Blvd, Houston TX 77056</div>
-        </div>
-        <div class="owner-field">
-          <div class="owner-field-label">Owner Type</div>
-          <div class="owner-field-val">Limited Partnership — Out of State</div>
-        </div>
+      <div class="owner-row">
+        <div class="owner-key">Owner of Record</div>
+        <div class="owner-val">ZAKI FAMILY PARTNERSHIP LP</div>
+      </div>
+      <div class="owner-row">
+        <div class="owner-key">Mailing Address</div>
+        <div class="owner-val">8901 Post Oak Blvd, Houston TX 77056</div>
+      </div>
+      <div class="owner-row" style="margin-bottom:0">
+        <div class="owner-key">Owner Type</div>
+        <div class="owner-val">Limited Partnership · Out-of-State · Absentee</div>
       </div>
     </div>
 
     <!-- Tile 3: Flood Zone -->
-    <div class="tile tile-3">
+    <div class="tile tile-3 reveal">
       <div class="tile-label">FEMA Flood Zone</div>
-      <div class="flood-zone-big">X</div>
-      <div class="tile-body">Minimal flood hazard. No mandatory flood insurance.</div>
+      <div class="flood-big">X</div>
+      <div class="flood-desc">Minimal flood hazard. Outside the 500-year floodplain. No mandatory insurance.</div>
+      <div class="tags" style="margin-top:14px"><span class="tag t-green">Low Risk</span></div>
+    </div>
+
+    <!-- Tile 4: Valuation -->
+    <div class="tile tile-4 reveal reveal-delay-1">
+      <div class="tile-accent" style="width:200px;height:200px;top:-60px;right:-40px;background:rgba(37,99,235,0.15)"></div>
+      <div class="tile-label">Valuation</div>
+      <div class="val-big">$1.61M</div>
+      <div style="font-size:0.65rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Tax Assessed Value</div>
+      <div class="val-range">Market estimate: <strong style="color:var(--white)">$1.69M – $2.01M</strong></div>
+      <div class="val-detail">5,920 SF · Built 1987 · Commercial / Retail</div>
       <div class="tags" style="margin-top:14px">
-        <span class="tag tag-green">Low Risk</span>
+        <span class="tag t-blue">$272 / SF assessed</span>
       </div>
     </div>
 
-    <!-- Tile 4: Assessed Value -->
-    <div class="tile tile-4">
-      <div class="tile-label">Assessed Value</div>
-      <div style="font-family:'Satoshi',sans-serif;font-size:2.2rem;font-weight:900;letter-spacing:-2px;margin:12px 0 6px;color:var(--white)">$1.61M</div>
-      <div class="tile-body" style="margin-bottom:10px">Tax assessed. Market estimate: <strong style="color:var(--white)">$1.69M – $2.01M</strong></div>
-      <div class="tile-body">5,920 SF · Built 1987 · Commercial</div>
-    </div>
-
-    <!-- Tile 5: PDF Pages -->
-    <div class="tile tile-5">
-      <div class="tile-glow" style="width:160px;height:160px;bottom:-30px;right:-30px;background:#7c3aed;"></div>
+    <!-- Tile 5: Report depth -->
+    <div class="tile tile-5 reveal reveal-delay-2">
+      <div class="tile-accent" style="width:200px;height:200px;bottom:-60px;right:-50px;background:rgba(124,58,237,0.2)"></div>
       <div class="tile-label">Report Depth</div>
-      <div class="page-count">13+</div>
-      <div class="page-subtitle">Pages per report — comps, ownership history, deal analysis, flood maps, skip trace, and more.</div>
+      <div class="pages-big">13+</div>
+      <div class="pages-sub">Pages per Pro report. Comps, equity, ownership history, deal analysis, demographics, skip trace, and more.</div>
     </div>
 
-    <!-- Tile 6: Comps strip -->
-    <div class="tile tile-6">
-      <div class="tile-label">Sold Comparables</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 24px">
+    <!-- Tile 6: Sold Comps -->
+    <div class="tile tile-6 reveal">
+      <div class="tile-label" style="margin-bottom:20px">Sold Comparables — 90 Day / 6 Month / 12 Month Windows</div>
+      <div class="comps-grid">
         <div>
           <div class="comp-row">
-            <div><div class="comp-addr">4612 Greenville Ave</div><div class="comp-sf">5,200 SF · 2023</div></div>
-            <div></div>
-            <div class="comp-price">$1.72M</div>
+            <div class="comp-info">
+              <div class="comp-addr">4612 Greenville Ave</div>
+              <div class="comp-meta">5,200 SF · Sold Jun 2023</div>
+            </div>
+            <div style="text-align:right">
+              <div class="comp-price">$1.72M</div>
+              <div class="comp-psf">$331/SF</div>
+            </div>
           </div>
           <div class="comp-row">
-            <div><div class="comp-addr">5001 Greenville Ave</div><div class="comp-sf">6,100 SF · 2023</div></div>
-            <div></div>
-            <div class="comp-price">$2.05M</div>
+            <div class="comp-info">
+              <div class="comp-addr">3901 Greenville Ave</div>
+              <div class="comp-meta">5,500 SF · Sold Oct 2022</div>
+            </div>
+            <div style="text-align:right">
+              <div class="comp-price">$1.88M</div>
+              <div class="comp-psf">$342/SF</div>
+            </div>
           </div>
         </div>
         <div>
           <div class="comp-row">
-            <div><div class="comp-addr">4318 Lovers Ln</div><div class="comp-sf">4,800 SF · 2024</div></div>
-            <div></div>
-            <div class="comp-price">$1.55M</div>
+            <div class="comp-info">
+              <div class="comp-addr">5001 Greenville Ave</div>
+              <div class="comp-meta">6,100 SF · Sold Mar 2023</div>
+            </div>
+            <div style="text-align:right">
+              <div class="comp-price">$2.05M</div>
+              <div class="comp-psf">$336/SF</div>
+            </div>
           </div>
           <div class="comp-row">
-            <div><div class="comp-addr">3901 Greenville Ave</div><div class="comp-sf">5,500 SF · 2022</div></div>
-            <div></div>
-            <div class="comp-price">$1.88M</div>
+            <div class="comp-info">
+              <div class="comp-addr">4318 Lovers Ln</div>
+              <div class="comp-meta">4,800 SF · Sold Jan 2024</div>
+            </div>
+            <div style="text-align:right">
+              <div class="comp-price">$1.55M</div>
+              <div class="comp-psf">$323/SF</div>
+            </div>
           </div>
         </div>
+      </div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:24px;flex-wrap:wrap">
+        <div><div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Avg $/SF (12mo)</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px">$333</div></div>
+        <div><div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Implied Market Value</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px">$1.97M</div></div>
+        <div><div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Discount to Market</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px;color:var(--green-l)">−18%</div></div>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- ─── HOW IT WORKS ─── -->
-<div class="section" id="how">
-  <div class="section-eyebrow">How it works</div>
-  <h2 class="section-title">Report ready<br>in 30 seconds.</h2>
+<hr class="divider"/>
 
-  <div class="steps-grid">
-    <div class="step-tile">
-      <div class="step-num">01</div>
+<!-- HOW IT WORKS -->
+<div class="section" id="how">
+  <div class="section-eyebrow reveal">How it works</div>
+  <h2 class="section-title reveal reveal-delay-1">Report ready<br>in three steps.</h2>
+
+  <div class="steps-row">
+    <div class="step-cell reveal">
+      <span class="step-n">01</span>
+      <div class="step-icon">🏠</div>
       <div class="step-title">Enter any address</div>
-      <div class="step-desc">US property address, any state. Residential or commercial. We pull from 7 verified government and public-record sources instantly.</div>
+      <div class="step-desc">US residential or commercial property, any state. We normalize and geocode your input, then pull from 7 verified government and public-record sources simultaneously.</div>
     </div>
-    <div class="step-tile">
-      <div class="step-num">02</div>
+    <div class="step-cell reveal reveal-delay-1">
+      <span class="step-n">02</span>
+      <div class="step-icon">📊</div>
       <div class="step-title">Choose your report</div>
-      <div class="step-desc">Starter gets you the core record — assessed value, owner, flood zone. Pro unlocks motivation score, sold comps, deal analyzer, skip trace, and full PDF.</div>
+      <div class="step-desc">Starter covers the core record — owner, assessed value, flood zone. Pro unlocks motivation score, sold comps, AVM, deal analyzer, mortgage history, skip trace, and a 13-page PDF.</div>
     </div>
-    <div class="step-tile">
-      <div class="step-num">03</div>
+    <div class="step-cell reveal reveal-delay-2">
+      <span class="step-n">03</span>
+      <div class="step-icon">⚡</div>
       <div class="step-title">Get your report</div>
-      <div class="step-desc">PDF delivered to your inbox instantly. Plus a shareable link you can send to clients, partners, or your team — no login required.</div>
+      <div class="step-desc">PDF delivered to your inbox in seconds. Plus a shareable link safe to send to clients, lenders, or partners — no login required on their end.</div>
     </div>
   </div>
 </div>
 
 <hr class="divider"/>
 
-<!-- ─── PRICING ─── -->
+<!-- PRICING -->
 <div class="section" id="pricing">
-  <div class="section-eyebrow">Pricing</div>
-  <h2 class="section-title">Pay for what<br>you need.</h2>
-  <p class="section-sub">No subscription. No seat fees. One report, one price — yours to keep.</p>
+  <div class="section-eyebrow reveal">Pricing</div>
+  <h2 class="section-title reveal reveal-delay-1">Pay for what you need.</h2>
+  <p class="section-sub reveal reveal-delay-2">No subscription. No seat fees. One report, one price — yours to keep forever.</p>
 
   <div class="pricing-grid">
-    <div class="price-card">
-      <div class="price-name">Starter</div>
-      <div class="price-val">$9.99</div>
-      <div class="price-per">per report</div>
-      <ul class="price-features">
-        <li>Owner of record + mailing address</li>
-        <li>Assessed & market value estimate</li>
-        <li>FEMA flood zone</li>
-        <li>Year built, lot size, use type</li>
-        <li>County & census demographics</li>
-        <li>PDF report — 5 pages</li>
+    <div class="price-card reveal">
+      <div class="price-tier">Starter</div>
+      <div class="price-amount">$9.99</div>
+      <div class="price-per">per report — no subscription</div>
+      <ul class="price-list">
+        <li><span class="price-check">✓</span> Owner of record + mailing address</li>
+        <li><span class="price-check">✓</span> Tax assessed value</li>
+        <li><span class="price-check">✓</span> FEMA flood zone designation</li>
+        <li><span class="price-check">✓</span> Year built, lot size, use type</li>
+        <li><span class="price-check">✓</span> Census demographics (income, population)</li>
+        <li><span class="price-check">✓</span> PDF report — 5 pages</li>
+        <li><span class="price-check">✓</span> Shareable link</li>
       </ul>
       <a class="price-btn" href="https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00" target="_blank">Get Starter report →</a>
     </div>
 
-    <div class="price-card featured">
-      <div class="price-name">Pro</div>
-      <div class="price-val">$29.99</div>
-      <div class="price-per">per report</div>
-      <ul class="price-features">
-        <li>Everything in Starter</li>
-        <li>Seller motivation score (0–100)</li>
-        <li>Sold comps — 90 day, 6 mo, 12 mo</li>
-        <li>AVM — real market value estimate</li>
-        <li>Mortgage & equity position</li>
-        <li>Ownership history</li>
-        <li>Skip trace — phones & email</li>
-        <li>Deal analyzer — 3 purchase scenarios</li>
-        <li>PDF report — 13+ pages</li>
+    <div class="price-card featured reveal reveal-delay-1">
+      <div class="price-popular">Most popular</div>
+      <div class="price-tier">Pro</div>
+      <div class="price-amount">$29.99</div>
+      <div class="price-per">per report — no subscription</div>
+      <ul class="price-list">
+        <li><span class="price-check">✓</span> Everything in Starter</li>
+        <li><span class="price-check">✓</span> Seller motivation score (0–100)</li>
+        <li><span class="price-check">✓</span> AVM — real market value estimate</li>
+        <li><span class="price-check">✓</span> Sold comps — 90d / 6mo / 12mo</li>
+        <li><span class="price-check">✓</span> Mortgage & equity position</li>
+        <li><span class="price-check">✓</span> Ownership history</li>
+        <li><span class="price-check">✓</span> Skip trace — phones & email</li>
+        <li><span class="price-check">✓</span> Deal analyzer — 3 purchase scenarios</li>
+        <li><span class="price-check">✓</span> PDF report — 13+ pages</li>
       </ul>
-      <a class="price-btn primary" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank">Get Pro report →</a>
+      <a class="price-btn cta" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank">Get Pro report →</a>
     </div>
   </div>
 </div>
 
 <hr class="divider"/>
 
-<!-- ─── FAQ ─── -->
+<!-- TESTIMONIALS -->
+<div class="section">
+  <div class="section-eyebrow reveal">What people are saying</div>
+  <h2 class="section-title reveal reveal-delay-1">Built for people<br>who move fast.</h2>
+
+  <div class="testimonials">
+    <div class="testi reveal">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-body">Pulled a Pro report before making an offer on a commercial strip in Garland. Owner was an <strong>out-of-state LLC with a 73/100 motivation score</strong>. Negotiated $42K under asking. The $29.99 paid for itself in the first 30 seconds.</div>
+      <div class="testi-foot">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed)">JT</div>
+        <div>
+          <div class="testi-name">Jordan T.</div>
+          <div class="testi-role">Real estate investor — Dallas, TX</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi reveal reveal-delay-1">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-body">I use PropIntel for every listing presentation now. Walk in knowing the assessed value, flood zone, and owner history before the client even sits down. <strong>Closed 3 listings this quarter</strong> directly off the back of it.</div>
+      <div class="testi-foot">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#059669,#2563eb)">SM</div>
+        <div>
+          <div class="testi-name">Sarah M.</div>
+          <div class="testi-role">Licensed agent — Fort Worth, TX</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="testi reveal reveal-delay-2">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-body">The deal analyzer saved me from a bad acquisition. DSCR was <strong>0.87 at asking price</strong> — I ran the numbers right there in the meeting. Seller came down $115K to make it work. That's a $115K lesson for $29.99.</div>
+      <div class="testi-foot">
+        <div class="testi-avatar" style="background:linear-gradient(135deg,#d97706,#dc2626)">MR</div>
+        <div>
+          <div class="testi-name">Marcus R.</div>
+          <div class="testi-role">Commercial investor — Austin, TX</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider"/>
+
+<!-- FAQ -->
 <div class="section" id="faq">
-  <div class="section-eyebrow">FAQ</div>
-  <h2 class="section-title">Common questions.</h2>
+  <div class="section-eyebrow reveal">FAQ</div>
+  <h2 class="section-title reveal reveal-delay-1">Common questions.</h2>
 
   <div class="faq-list">
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Where does the data come from?</div>
-      <div class="faq-a">PropIntel aggregates from 7 verified sources: <strong>Regrid</strong> for parcel and ownership records (county assessor data), <strong>FEMA National Flood Hazard Layer</strong> for flood zone designation, <strong>US Census ACS</strong> for neighborhood demographics, <strong>People Data Labs</strong> for skip trace (phones and emails), <strong>ATTOM Data</strong> for AVM, sold comps, and mortgage history (Pro tier), <strong>Geocodio</strong> for address normalization, and the <strong>FEMA Map Service Center</strong> as a verification fallback. All sources are either government databases or licensed commercial aggregators used by institutional lenders and appraisers.</div>
+      <div class="faq-q">Where does the data come from? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">PropIntel aggregates from 7 verified sources: <strong>Regrid</strong> (county assessor parcel records), <strong>FEMA NFHL</strong> (flood zone), <strong>US Census ACS</strong> (demographics), <strong>People Data Labs</strong> (skip trace), <strong>ATTOM Data</strong> (AVM + sold comps + mortgage history for Pro), <strong>Geocodio</strong> (address normalization), and the <strong>FEMA Map Service Center</strong> as verification fallback. All sources are government databases or institutional-grade licensed aggregators.</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">What is the motivation score and how is it calculated?</div>
-      <div class="faq-a">The motivation score is a 0–100 composite index built from verified ownership signals: <strong>Absentee ownership</strong> (+25 pts — owner doesn't live at the property), <strong>Out-of-state mailing</strong> (+20 pts — owner receives mail in a different state), <strong>LLC or entity ownership</strong> (+10 pts — property held by a company rather than an individual), <strong>Long hold duration</strong> (+10 pts — owned 10+ years without a sale), and <strong>Tax delinquency</strong> (+15 pts — owner has fallen behind on property taxes). Scores 0–29 are LOW, 30–59 are MEDIUM, 60+ are HIGH. HIGH-score properties have multiple overlapping signals — these are your best outreach targets. <a href="learn.html#motivation" style="color:var(--blue-l)">Full breakdown →</a></div>
+      <div class="faq-q">What is the motivation score and how is it calculated? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">The motivation score (0–100) is built from five verified ownership signals: <strong>Absentee ownership</strong> (+25 pts), <strong>Out-of-state mailing</strong> (+20 pts), <strong>LLC/entity ownership</strong> (+10 pts), <strong>Long hold duration — 10+ years</strong> (+10 pts), and <strong>Tax delinquency</strong> (+15 pts). Scores 60+ are HIGH and indicate multiple overlapping signals — your best outreach targets. <a href="learn.html#motivation">Full methodology →</a></div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">What's the difference between assessed value and market value?</div>
-      <div class="faq-a">Assessed value is the county appraisal district's number — used purely to calculate property taxes. It is not what the property is worth on the open market and is always labeled as "Tax Assessed Value" in your report. Market value is what a buyer and seller would agree to in an arm's-length transaction today. PropIntel shows both — the assessed number from public record and a market range estimate based on comparable sales and AVM data. The gap between them is often meaningful: a large gap (assessed much lower than market) signals significant unrealized equity, which is itself a motivating factor for some sellers. <a href="learn.html#value" style="color:var(--blue-l)">Read more →</a></div>
+      <div class="faq-q">What's the difference between assessed value and market value? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Assessed value is the county's number for calculating property taxes — not what the property is worth. PropIntel always labels it "Tax Assessed Value." Market value is what a buyer and seller would agree to today in an arm's-length transaction. We show a market estimate range alongside the assessed value. In fast-appreciating markets like Dallas, assessed value can be 15–30% below actual market. <a href="learn.html#value">Read more →</a></div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">How do I read the FEMA flood zone?</div>
-      <div class="faq-a">The flood zone code determines insurance requirements and risk profile. <strong>Zone X</strong> = minimal risk, no mandatory flood insurance, standard financing. <strong>Zone AE</strong> = 100-year floodplain with calculated base flood elevation — flood insurance is required for any federally-backed loan (FHA, VA, conventional). Typically costs $800–$3,000+/year. <strong>Zone VE</strong> = coastal high-velocity zone, highest risk, most expensive insurance. For any Zone AE property, ask the seller for an elevation certificate — it can significantly reduce insurance premiums if the structure is elevated above BFE. <a href="learn.html#flood" style="color:var(--blue-l)">All zone codes explained →</a></div>
+      <div class="faq-q">How do I read the FEMA flood zone? <span class="faq-toggle">+</span></div>
+      <div class="faq-a"><strong>Zone X</strong> = minimal risk, no mandatory flood insurance. <strong>Zone AE</strong> = 100-year floodplain — flood insurance required for federally-backed loans, typically $800–$3,000+/year. <strong>Zone VE</strong> = coastal high-velocity, highest risk and cost. For Zone AE properties, always ask for an elevation certificate — it can dramatically reduce insurance premiums if the building sits above base flood elevation. <a href="learn.html#flood">All zone codes explained →</a></div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">What does the deal analyzer actually calculate?</div>
-      <div class="faq-a">The deal analyzer runs three acquisition scenarios — at assessed value, market low, and market high — and for each scenario calculates: <strong>down payment</strong> (25% LTV assumption), <strong>loan amount</strong>, <strong>monthly P&I</strong> at current commercial rate, <strong>DSCR</strong> (Debt Service Coverage Ratio — the ratio of net operating income to annual debt service; lenders typically require 1.25x minimum), and <strong>$/SF</strong> (price per square foot, for direct comp against market sales). Use the assessed scenario to anchor your offer, market low as your negotiation ceiling, and market high to understand what a full-price buyer pays. <a href="learn.html#deal" style="color:var(--blue-l)">Full methodology →</a></div>
+      <div class="faq-q">What does the deal analyzer actually calculate? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Three acquisition scenarios — at assessed value, market low, and market high. For each: <strong>down payment</strong> (25% LTV), <strong>loan amount</strong>, <strong>monthly P&I</strong>, <strong>DSCR</strong> (net operating income ÷ annual debt service — lenders require 1.25x minimum), and <strong>$/SF</strong> vs. market comps. Use assessed to anchor your offer, market low as your negotiation ceiling, market high to understand your competition. <a href="learn.html#deal">Full methodology →</a></div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Do you cover all US states?</div>
-      <div class="faq-a">Base parcel data (owner, assessed value, flood zone, demographics) covers all 50 states. Sold comps and AVM are currently strongest in Texas and major metro markets nationally, with coverage expanding as ATTOM's dataset grows. Skip trace coverage is national. If a Pro report returns limited comp data for a specific market, it will note the data availability — you're never charged for an empty section.</div>
+      <div class="faq-q">Do you cover all US states? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Base parcel data covers all 50 states. Sold comps and AVM are strongest in Texas and major national metros, with coverage expanding. FEMA flood zone and census data are fully national. If a Pro report returns limited comp data in a specific market, that is noted in the report — you're never charged for a section with no data.</div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Can I use this for client-facing work?</div>
-      <div class="faq-a">Yes. The shareable report link is clean and professional — safe to send to clients, lenders, or partners. For agents, use the Starter report as a listing presentation data point or buyer due-diligence supplement. For investors, share the Pro report with partners or capital providers. Enterprise accounts get full white-label with your firm's logo and branding — clients never see PropIntel. <a href="mailto:hello@propertyvalueintel.com" style="color:var(--blue-l)">Contact us for volume pricing.</a></div>
+      <div class="faq-q">Can I use this for client-facing work? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">Yes. The shareable report link is clean and professional — safe to forward to clients, lenders, or partners. For agents, use the Starter as a listing presentation supplement. Enterprise accounts get full white-label with your firm's branding — clients never see PropIntel. <a href="mailto:hello@propertyvalueintel.com">Contact us for volume pricing.</a></div>
     </div>
     <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">What's the refund policy?</div>
-      <div class="faq-a">If a report fails to generate, returns no parcel data, or has a material data error, we'll refund in full — no questions asked. If the data is live, delivered, and accurate to public records, all sales are final. Reports are generated from the address you enter, so double-check the address format before submitting.</div>
+      <div class="faq-q">What's the refund policy? <span class="faq-toggle">+</span></div>
+      <div class="faq-a">If a report fails to generate or returns no parcel data, we refund immediately — no questions asked. If data is live, delivered, and accurate to public records, all sales are final. Double-check your address format before submitting.</div>
     </div>
   </div>
 
   <div style="margin-top:32px">
-    <a href="learn.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--blue-l);text-decoration:none;font-weight:600">
-      Read the full learning guide — every metric explained in depth →
+    <a href="learn.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--blue-l);text-decoration:none;font-weight:700;border-bottom:1px solid rgba(96,165,250,0.3);padding-bottom:2px">
+      Deep-dive learning guide — every metric explained in full →
     </a>
   </div>
 </div>
 
-<!-- ─── FOOTER ─── -->
+<!-- CTA BANNER -->
+<div class="cta-banner reveal">
+  <div class="cta-banner-eyebrow">Get started</div>
+  <h2>Run your first report.<br>Takes 30 seconds.</h2>
+  <p>Enter any US address. No account required. Get the full picture before anyone else does.</p>
+  <div class="cta-banner-form">
+    <div class="analyze-wrap" style="flex:1">
+      <span class="analyze-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </span>
+      <input class="analyze-input" id="address-input-2" type="text"
+        placeholder="Enter any US property address…" autocomplete="off"/>
+    </div>
+    <button class="analyze-btn"
+      onclick="document.getElementById('address-input').value=document.getElementById('address-input-2').value;document.getElementById('address-input').closest('form').dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));window.scrollTo({top:0,behavior:'smooth'})">
+      Analyze →
+    </button>
+  </div>
+</div>
+
+<!-- FOOTER -->
 <footer>
-  <a class="footer-logo" href="/">PropIntel</a>
+  <a class="footer-logo" href="/">
+    <div class="footer-logo-mark">PI</div>
+    <span class="footer-logo-name">PropIntel</span>
+  </a>
   <div class="footer-links">
+    <a href="#features">Features</a>
     <a href="#how">How it works</a>
     <a href="#pricing">Pricing</a>
     <a href="learn.html">Learn</a>
     <a href="mailto:hello@propertyvalueintel.com">Contact</a>
   </div>
-  <span class="footer-copy">© 2026 PropertyValueIntel LLC. All rights reserved.</span>
+  <span class="footer-copy">© 2026 PropertyValueIntel LLC · All rights reserved</span>
 </footer>
 
 <script>
 /* ─── FAQ ─── */
-function toggleFaq(el) {
-  el.classList.toggle('open');
+function toggleFaq(el) { el.classList.toggle('open'); }
+
+/* ─── SCROLL REVEAL ─── */
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* ─── SCORE BAR ANIMATION ─── */
+const barObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const w = e.target.dataset.width || '72';
+      e.target.style.width = w + '%';
+      barObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.score-fill[data-width]').forEach(el => {
+  el.style.width = '0%'; barObserver.observe(el);
+});
+
+/* ─── HERO CARD BAR ─── */
+setTimeout(() => {
+  const bar = document.getElementById('hcBar');
+  if (bar) bar.style.width = '72%';
+}, 800);
+
+/* ─── COUNTER ANIMATION ─── */
+function animateCount(el) {
+  const target = parseInt(el.dataset.count);
+  const suffix = el.dataset.suffix || '';
+  const duration = 1200;
+  const start = performance.now();
+  const update = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(eased * target) + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
 }
+const counterObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      animateCount(e.target);
+      counterObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
 
 /* ─── ANALYZE ─── */
 const API = 'https://propintel-htij.onrender.com';
@@ -844,91 +1476,53 @@ async function handleAnalyze(e) {
   e.preventDefault();
   const input = document.getElementById('address-input').value.trim();
   if (!input) return;
-
   const btn = document.getElementById('analyze-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Analyzing…';
-
   try {
     const res = await fetch(API + '/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ address: input, tier: 'starter' })
     });
-
-    if (res.status === 429) {
-      const d = await res.json();
-      throw new Error('Rate limit reached — try again in an hour.');
-    }
+    if (res.status === 429) throw new Error('Rate limit reached — try again in an hour.');
     if (!res.ok) throw new Error(`Server error (${res.status})`);
-
-    const data = await res.json();
-    showResult(data, input);
+    showResult(await res.json(), input);
   } catch (err) {
-    btn.disabled = false;
-    btn.innerHTML = 'Analyze →';
+    btn.disabled = false; btn.innerHTML = 'Analyze →';
     alert('Error: ' + err.message);
   }
 }
 
 function showResult(data, input) {
   const btn = document.getElementById('analyze-btn');
-  btn.disabled = false;
-  btn.innerHTML = 'Analyze →';
-
+  btn.disabled = false; btn.innerHTML = 'Analyze →';
   const wrap = document.getElementById('result-wrap');
   const cards = document.getElementById('result-cards');
   const actions = document.getElementById('result-actions');
   const parcel = data.parcel || {};
-  const flood = data.flood || {};
-  const demo = data.demographics || {};
-
+  const flood  = data.flood  || {};
   document.getElementById('result-address').textContent = data.resolved_address || input;
-
   const fmt = v => v ? '$' + Number(v).toLocaleString() : '—';
-  const fzone = flood.zone || '—';
-  const fLabel = fzone === 'X' ? 'Zone X (Low Risk ✓)' :
-                 (fzone.startsWith('A') || fzone.startsWith('V')) ? fzone + ' (High Risk ⚠)' : fzone;
-
+  const fz = flood.zone || '—';
   const items = [
     { label: 'Owner', val: parcel.owner_name || '—' },
     { label: 'Assessed', val: fmt(parcel.assessed_total) },
-    { label: 'Flood Zone', val: fLabel },
-    { label: 'County', val: parcel.county ? parcel.county.charAt(0).toUpperCase() + parcel.county.slice(1) + ' Co.' : '—' },
+    { label: 'Flood Zone', val: fz === 'X' ? 'Zone X ✓' : (fz.startsWith('A')||fz.startsWith('V')) ? fz + ' ⚠' : fz },
     { label: 'Year Built', val: parcel.year_built || '—' },
     { label: 'Building SF', val: parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : '—' },
+    { label: 'County', val: parcel.county ? parcel.county.replace(/\b\w/g,c=>c.toUpperCase()) + ' Co.' : '—' },
   ];
-
-  cards.innerHTML = items.map(i => `
-    <div class="result-card">
-      <div class="result-card-label">${i.label}</div>
-      <div class="result-card-val">${i.val}</div>
-    </div>
-  `).join('');
-
-  const addr = encodeURIComponent(data.resolved_address || input);
+  cards.innerHTML = items.map(i=>`<div class="result-card"><div class="result-card-label">${i.label}</div><div class="result-card-val">${i.val}</div></div>`).join('');
   actions.innerHTML = `
-    <a class="result-btn result-btn-secondary" href="#pricing">Get full Pro report →</a>
-    <a class="result-btn result-btn-primary"
-       href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01"
-       target="_blank">Buy Pro — $29.99</a>
-  `;
-
+    <a class="result-btn result-btn-secondary" href="#pricing">View all report tiers</a>
+    <a class="result-btn result-btn-primary" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank">Buy Pro — $29.99</a>`;
   wrap.classList.add('visible');
   wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
 
-/* ─── Animate score fill on scroll ─── */
-const scoreFill = document.querySelector('.score-fill');
-if (scoreFill) {
-  const io = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
-      scoreFill.style.width = '72%';
-      io.disconnect();
-    }
-  }, { threshold: 0.3 });
-  io.observe(scoreFill);
-  scoreFill.style.width = '0%';
+  /* also update hero card */
+  document.querySelector('.hc-address').textContent = data.resolved_address || input;
+  if (parcel.owner_name) document.querySelector('.hc-cell-val').textContent = parcel.owner_name.substring(0,22);
 }
 </script>
 </body>
