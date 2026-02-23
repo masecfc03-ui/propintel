@@ -157,6 +157,13 @@ def _build_flags(report: dict) -> list:
     elif parcel.get("owner_name"):
         flags.append({"type": "green", "text": "No tax delinquency detected — taxes current (DCAD)"})
 
+    # Absentee / out-of-state owner
+    if parcel.get("out_of_state_owner"):
+        flags.append({"type": "yellow", "text": "⚠️ Out-of-state owner — mailing address outside TX (DCAD)"})
+    elif parcel.get("absentee_owner"):
+        owner_city = parcel.get("owner_city", "")
+        flags.append({"type": "yellow", "text": f"Absentee owner — mailing address in {owner_city}, not at subject property (DCAD)"})
+
     # Motivation
     if motivation:
         tier = motivation.get("tier", "")
