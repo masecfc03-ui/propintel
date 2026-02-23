@@ -83,33 +83,40 @@ def _build_email_body(name: str, address: str, tier: str,
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <style>
   body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f8fafc; margin: 0; padding: 0; }}
-  .wrap {{ max-width: 600px; margin: 0 auto; background: white; }}
-  .header {{ background: #1a1a1a; padding: 32px 40px; text-align: center; }}
-  .logo {{ font-size: 1.2rem; font-weight: 800; color: white; text-decoration: none; }}
-  .logo-dot {{ display: inline-block; background: #3b82f6; border-radius: 6px;
-    width: 22px; height: 22px; text-align: center; line-height: 22px;
-    font-size: 12px; margin-right: 6px; vertical-align: middle; }}
-  .body {{ padding: 40px; }}
-  .subject-box {{ background: #f1f5f9; border-left: 4px solid {tier_color};
-    border-radius: 8px; padding: 16px 20px; margin: 24px 0; }}
-  .subject-label {{ font-size: 0.75rem; font-weight: 700; color: #64748b;
+    background: #f8fafc; margin: 0; padding: 0; color: #0f172a; }}
+  .wrap {{ max-width: 600px; margin: 0 auto; background: white;
+    border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }}
+  .header {{ background: white; border-bottom: 1px solid #e2e8f0;
+    padding: 24px 40px; }}
+  .logo {{ display: flex; align-items: center; gap: 8px; text-decoration: none; }}
+  .logo-mark {{ display: inline-flex; align-items: center; justify-content: center;
+    background: #2563eb; border-radius: 8px; width: 28px; height: 28px;
+    font-size: 0.8rem; color: white; font-weight: 800; flex-shrink: 0; }}
+  .logo-text {{ font-size: 1rem; font-weight: 800; color: #0f172a;
+    letter-spacing: -0.3px; }}
+  .body {{ padding: 36px 40px; }}
+  .subject-box {{ background: #f8fafc; border-left: 3px solid {tier_color};
+    border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 22px 0; }}
+  .subject-label {{ font-size: 0.7rem; font-weight: 700; color: #94a3b8;
     text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }}
-  .subject-address {{ font-size: 1.1rem; font-weight: 700; color: #0f172a; }}
-  .tier-pill {{ display: inline-block; padding: 3px 10px; border-radius: 20px;
-    font-size: 0.72rem; font-weight: 700; color: white;
-    background: {tier_color}; margin-top: 8px; }}
-  .cta {{ display: block; text-align: center; background: #3b82f6;
-    color: white; padding: 16px 32px; border-radius: 50px;
-    font-weight: 700; font-size: 1rem; text-decoration: none;
-    margin: 32px 0; }}
-  .features {{ background: #f8fafc; border-radius: 10px; padding: 20px 24px; margin: 24px 0; }}
-  .feat-title {{ font-size: 0.8rem; font-weight: 700; color: #475569;
+  .subject-address {{ font-size: 1rem; font-weight: 700; color: #0f172a; }}
+  .tier-pill {{ display: inline-block; padding: 2px 9px; border-radius: 20px;
+    font-size: 0.68rem; font-weight: 700; color: {tier_color};
+    background: {'#f0fdf4' if tier == 'pro' else '#eff6ff'};
+    border: 1px solid {'#bbf7d0' if tier == 'pro' else '#bfdbfe'};
+    margin-top: 7px; }}
+  .cta {{ display: block; text-align: center; background: #2563eb;
+    color: white !important; padding: 15px 32px; border-radius: 10px;
+    font-weight: 700; font-size: 0.95rem; text-decoration: none;
+    margin: 28px 0; letter-spacing: -0.2px; }}
+  .features {{ background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 18px 22px; margin: 22px 0; }}
+  .feat-title {{ font-size: 0.72rem; font-weight: 700; color: #94a3b8;
     text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }}
   .feat {{ display: flex; align-items: flex-start; gap: 10px;
-    padding: 6px 0; font-size: 0.88rem; color: #334155; }}
-  .footer {{ background: #f1f5f9; padding: 24px 40px; text-align: center;
-    font-size: 0.75rem; color: #94a3b8; }}
+    padding: 5px 0; font-size: 0.85rem; color: #334155; }}
+  .footer {{ background: #f8fafc; border-top: 1px solid #e2e8f0;
+    padding: 20px 40px; text-align: center; font-size: 0.72rem; color: #94a3b8; }}
 </style>
 </head>
 <body>
@@ -117,7 +124,8 @@ def _build_email_body(name: str, address: str, tier: str,
 
   <div class="header">
     <a href="https://propertyvalueintel.com" class="logo">
-      <span class="logo-dot">🔍</span>PropIntel
+      <span class="logo-mark">P</span>
+      <span class="logo-text">PropIntel</span>
     </a>
   </div>
 
@@ -154,9 +162,9 @@ def _build_email_body(name: str, address: str, tier: str,
   </div>
 
   <div class="footer">
-    &copy; 2026 PropIntel · propertyvalueintel.com<br>
-    This report contains only verified public record data.
-    PropIntel is not a licensed broker, appraiser, or attorney.
+    &copy; 2026 PropIntel &middot; <a href="https://propertyvalueintel.com" style="color:#64748b">propertyvalueintel.com</a><br><br>
+    This report contains only verified public record data sourced from government databases.<br>
+    PropIntel is not a licensed broker, appraiser, or attorney. Not investment advice.
   </div>
 </div>
 </body>
