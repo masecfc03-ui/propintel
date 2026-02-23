@@ -325,6 +325,17 @@
   <!-- FLAGS -->
   <div class="flags-bar" id="r-flags"></div>
 
+  <!-- INVESTMENT INTELLIGENCE PILLS -->
+  <div id="r-intel-pills" style="display:none;margin-bottom:16px">
+    <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+      color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      <span style="color:var(--accent)">⚡</span> INVESTMENT INTELLIGENCE
+      <span style="font-size:0.68rem;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">
+        — from verified public data only</span>
+    </div>
+    <div id="r-intel-pills-inner" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+  </div>
+
   <!-- AT-A-GLANCE SCORE CARDS -->
   <div class="score-grid" id="r-score-grid" style="display:none">
     <div class="score-card neutral" id="sc-zone">
@@ -594,8 +605,11 @@ async function fetchDCADDirect(address) {
       "PARCELID","OWNERNME1","OWNERNME2","SITEADDRESS","PRPRTYDSCRP","CNVYNAME",
       "PSTLADDRESS","PSTLCITY","PSTLSTATE","PSTLZIP5",
       "USECD","USEDSCRP","CLASSDSCRP",
-      "CNTASSDVAL","LNDVALUE","PRVASSDVAL",
-      "BLDGAREA","RESYRBLT","CVTTXDSCRP","SCHLDSCRP","REVALYR"
+      "CNTASSDVAL","LNDVALUE","PRVASSDVAL","PRPSDVAL",
+      "BLDGAREA","RESYRBLT","CVTTXDSCRP","SCHLDSCRP","REVALYR",
+      "LGLSTARTDT","TOTCNTTXOD","TOTPRVTXTOD","TXODYRCHG","TXODPCNTCHG",
+      "ASSDVALYRCG","ASSDPCNTCG","CNTTXBLVAL","DBA1",
+      "WATERSERV","SEWERSERV","FLOORCOUNT","STRCLASS"
     ].join(",");
 
     const url = `https://maps.dcad.org/prdwa/rest/services/Property/ParcelHistory/MapServer/4/query` +
@@ -618,10 +632,23 @@ async function fetchDCADDirect(address) {
     const absentee = a.PSTLCITY && !a.PSTLCITY.toUpperCase().includes("GARLAND");
     const outOfState = a.PSTLSTATE && a.PSTLSTATE.toUpperCase() !== "TX";
 
+    // Parse acquisition date → years owned
+    let acquisition_date = null, years_owned = null;
+    if (a.LGLSTARTDT) {
+      try {
+        const d = new Date(a.LGLSTARTDT);
+        if (!isNaN(d)) {
+          acquisition_date = d.toISOString().split("T")[0];
+          years_owned = Math.floor((Date.now() - d.getTime()) / (365.25 * 24 * 3600 * 1000));
+        }
+      } catch(e) {}
+    }
+
     return {
       apn: a.PARCELID,
       owner_name: (a.OWNERNME1 || "").trim(),
       owner_name2: (a.OWNERNME2 || "").trim() || null,
+      dba: (a.DBA1 || "").trim() || null,
       owner_mailing: postalAddr,
       owner_city: (a.PSTLCITY || "").trim(),
       owner_state: (a.PSTLSTATE || "").trim(),
@@ -630,12 +657,26 @@ async function fetchDCADDirect(address) {
       legal_description: (a.PRPRTYDSCRP || "").trim(),
       use_description: (a.USEDSCRP || "").trim(),
       property_class: (a.CLASSDSCRP || "").trim(),
+      structure_class: (a.STRCLASS || "").trim(),
       building_sf: a.BLDGAREA || null,
+      floor_count: a.FLOORCOUNT || null,
       year_built: a.RESYRBLT || null,
       assessed_land: land,
       assessed_improvement: assessed - land,
       assessed_total: assessed,
       assessed_prev: a.PRVASSDVAL || null,
+      assessed_yoy_change: a.ASSDVALYRCG || null,
+      assessed_yoy_pct: a.ASSDPCNTCG || null,
+      proposed_value: a.PRPSDVAL || null,
+      taxable_value: a.CNTTXBLVAL || null,
+      tax_amount_current: a.TOTCNTTXOD || null,
+      tax_amount_prev: a.TOTPRVTXTOD || null,
+      tax_yoy_change: a.TXODYRCHG || null,
+      tax_yoy_pct: a.TXODPCNTCHG || null,
+      water_service: (a.WATERSERV || "").trim() || null,
+      sewer_service: (a.SEWERSERV || "").trim() || null,
+      acquisition_date: acquisition_date,
+      years_owned: years_owned,
       absentee_owner: absentee,
       out_of_state_owner: outOfState,
       tax_delinquent: false,
@@ -778,20 +819,40 @@ function renderReport(d, tier) {
     const absentee = parcel.absentee_owner ?
       '<span class="dv amber">⚠️ Absentee — mailing ≠ property</span>' :
       '<span class="dv green">Owner-occupied area</span>';
+    // Years owned / acquisition date
+    const acqDate = parcel.acquisition_date ?
+      new Date(parcel.acquisition_date).toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"}) : null;
+    const yearsStr = parcel.years_owned != null ?
+      `${parcel.years_owned} year${parcel.years_owned !== 1 ? 's' : ''} ${acqDate ? '(since ' + acqDate + ')' : ''}` : "—";
+
+    // Tax data
+    const taxAmt = parcel.tax_amount_current;
+    const taxYoy = parcel.tax_yoy_pct;
+    const taxStr = taxAmt ? fmtMoney(taxAmt) + "/yr" + (taxYoy != null ? ` (${taxYoy > 0 ? '▲' : '▼'} ${Math.abs(taxYoy)}% YoY)` : "") : "—";
+    const proposedStr = parcel.proposed_value ? fmtMoney(parcel.proposed_value) +
+      (parcel.assessed_total ? ` (${parcel.proposed_value > parcel.assessed_total ? '▲' : '▼'} ${Math.abs(Math.round((parcel.proposed_value/parcel.assessed_total - 1)*100))}% vs current)` : "") : null;
+
     $id("r-parcel-body").innerHTML = [
       dr("APN / Account", parcel.apn || "—"),
       dr("Owner of Record", parcel.owner_name || "—"),
+      parcel.dba ? dr("DBA / Trade Name", parcel.dba) : "",
       dr("Owner Mailing", parcel.owner_mailing || "—"),
+      dr("Ownership Since", yearsStr),
       dr("Legal Description", parcel.legal_description || "—"),
       dr("Use / Class", [parcel.use_description, parcel.property_class].filter(Boolean).join(" · ") || "—"),
       dr("Year Built", parcel.year_built || "—"),
-      dr("Building SF", parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + " SF" : "—"),
+      parcel.building_sf ? dr("Building SF", Number(parcel.building_sf).toLocaleString() + " SF") : "",
+      parcel.floor_count ? dr("Floors", parcel.floor_count) : "",
       dr("Assessed — Land", parcel.assessed_land ? fmtMoney(parcel.assessed_land) : "—"),
       dr("Assessed — Improvement", parcel.assessed_improvement ? fmtMoney(parcel.assessed_improvement) : "—"),
       dr("Total Assessed Value", parcel.assessed_total ? fmtMoney(parcel.assessed_total) : "—"),
+      proposedStr ? dr("Proposed Value (Next Cycle)", proposedStr, "amber") : "",
+      dr("Property Tax Amount", taxStr),
+      parcel.water_service ? dr("Water Service", parcel.water_service) : "",
+      parcel.sewer_service ? dr("Sewer Service", parcel.sewer_service) : "",
       `<div class="dr"><span class="dl">Tax Delinquency</span>${taxStatus}</div>`,
       `<div class="dr"><span class="dl">Owner Presence</span>${absentee}</div>`,
-    ].join("") +
+    ].filter(Boolean).join("") +
     buildAssessmentChart(parcel) +
     `<div style="font-size:0.72rem;color:var(--text3);margin-top:10px">
       Source: <a href="${parcel.dcad_direct_url || parcel.source_url || '#'}" target="_blank">Dallas Central Appraisal District</a>
@@ -809,6 +870,9 @@ function renderReport(d, tier) {
        </div>`;
   }
 
+  // Investment intelligence pills
+  renderIntelPills(parcel, flood, demo, d.listing || {});
+
   // Animate assessment bars after DOM is set
   animateAssessmentBars();
 
@@ -825,6 +889,89 @@ function renderReport(d, tier) {
     const addr2 = d.resolved_address || d.input || "";
     $id("r-upsell-btn").href = PRO_LINK + "?client_reference_id=" + encodeURIComponent(addr2);
   }
+}
+
+// ─── Investment Intelligence Pills ───────────────────────────────────────────
+function renderIntelPills(parcel, flood, demo, listing) {
+  const pills = [];
+
+  // Years owned
+  if (parcel.years_owned != null) {
+    const y = parcel.years_owned;
+    pills.push({ text: `Owned ${y} year${y !== 1 ? 's' : ''}`, color: y >= 7 ? "amber" : y >= 3 ? "blue" : "green" });
+  }
+
+  // Owner type
+  const owner = (parcel.owner_name || "").toUpperCase();
+  const isEntity = /\b(LLC|LP|INC|CORP|TRUST|HOLDINGS|PROPERTIES|GROUP)\b/.test(owner);
+  if (isEntity) pills.push({ text: "Entity / LLC Owner", color: "purple" });
+  else if (owner) pills.push({ text: "Individual Owner", color: "green" });
+
+  // Absentee
+  if (parcel.absentee_owner) {
+    const city = parcel.owner_city || "";
+    pills.push({ text: `Absentee — ${city || "Out of Area"}`, color: "amber" });
+  } else if (parcel.owner_name) {
+    pills.push({ text: "Local Owner", color: "green" });
+  }
+
+  // Out of state
+  if (parcel.out_of_state_owner) {
+    pills.push({ text: `Out-of-State (${parcel.owner_state || "?"})`, color: "red" });
+  }
+
+  // Flood zone
+  if (flood.zone === "X") pills.push({ text: "No Flood Risk (Zone X)", color: "green" });
+  else if (flood.zone && flood.zone !== "—") pills.push({ text: `Flood Zone ${flood.zone}`, color: "red" });
+
+  // Tax delinquency
+  if (parcel.tax_delinquent) pills.push({ text: "Tax Delinquent", color: "red" });
+  else if (parcel.apn) pills.push({ text: "Taxes Current", color: "green" });
+
+  // Value trend
+  const yoy = parcel.assessed_yoy_pct;
+  if (yoy != null && yoy !== 0) {
+    const trending = yoy > 0 ? "Value Rising" : "Value Declining";
+    const badge = `${trending} (${yoy > 0 ? '+' : ''}${yoy}% YoY)`;
+    pills.push({ text: badge, color: yoy > 0 ? "green" : "amber" });
+  }
+
+  // Proposed value
+  if (parcel.proposed_value && parcel.assessed_total) {
+    const pct = Math.round((parcel.proposed_value / parcel.assessed_total - 1) * 100);
+    if (Math.abs(pct) >= 3) {
+      pills.push({ text: `Assessment ${pct > 0 ? '▲' : '▼'}${Math.abs(pct)}% Next Cycle`, color: pct > 5 ? "red" : "amber" });
+    }
+  }
+
+  // Listing signals
+  if (listing.days_on_market >= 30) pills.push({ text: `${listing.days_on_market} Days on Market`, color: "amber" });
+  if (listing.price_reduced) pills.push({ text: "Price Reduced", color: "amber" });
+  if (listing.cap_rate) pills.push({ text: `Cap Rate ${listing.cap_rate}`, color: "blue" });
+
+  // Demographics
+  const mhi = demo.median_household_income;
+  if (mhi >= 75000) pills.push({ text: "Above-Median Income Area", color: "green" });
+  else if (mhi && mhi < 45000) pills.push({ text: "Below-Median Income Area", color: "amber" });
+
+  if (!pills.length) return;
+
+  const colorMap = {
+    green: "rgba(34,197,94,0.12);color:#22c55e;border-color:rgba(34,197,94,0.3)",
+    red:   "rgba(239,68,68,0.12);color:#ef4444;border-color:rgba(239,68,68,0.3)",
+    amber: "rgba(245,158,11,0.12);color:#f59e0b;border-color:rgba(245,158,11,0.3)",
+    blue:  "rgba(59,130,246,0.12);color:#60a5fa;border-color:rgba(59,130,246,0.3)",
+    purple:"rgba(168,85,247,0.12);color:#a855f7;border-color:rgba(168,85,247,0.3)",
+  };
+
+  $id("r-intel-pills-inner").innerHTML = pills.map(p => {
+    const style = colorMap[p.color] || colorMap.blue;
+    return `<span style="background:${style.split(';')[0]};${style.split(';')[1]};border:1px solid transparent;${style.split(';')[2]};
+      padding:5px 12px;border-radius:100px;font-size:0.75rem;font-weight:700;
+      white-space:nowrap">${p.text}</span>`;
+  }).join("");
+
+  $id("r-intel-pills").style.display = "block";
 }
 
 // ─── Assessment Breakdown Chart ──────────────────────────────────────────────
