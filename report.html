@@ -903,6 +903,11 @@
       ? `<a href="${parcel.source_url}" target="_blank">${parcel.source || 'County Appraisal District'}</a>`
       : (parcel.source || 'County Appraisal District');
 
+    // Permit + assessor links
+    const perm = data.permit_portal || {};
+    const permLink = perm.permit ? `<a href="${perm.permit}" target="_blank" style="color:var(--accent)">View Permit Records →</a>` : (perm.note || 'Search city portal');
+    const assessLink = perm.assessor ? `<a href="${perm.assessor}" target="_blank" style="color:var(--accent)">Open Assessor Portal →</a>` : 'N/A';
+
     const absenteeBadge = parcel.absentee_owner ? '<span class="badge absentee">ABSENTEE</span>' : '';
     const oosBadge = parcel.out_of_state_owner ? '<span class="badge out-of-state">OUT-OF-STATE</span>' : '';
     const delinqCls = parcel.tax_delinquent ? 'red' : 'green';
@@ -919,7 +924,9 @@
       row('Assessed Improvement', parcel.assessed_improvement ? fmt(parcel.assessed_improvement) : 'N/A') +
       row('County Assessed (Tax)', parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A') +
       (est.available ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">Est. Market Range <span style="color:var(--text3);font-size:0.7em;cursor:help" title="${(est.methodology||'').replace(/"/g,"'")}">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${est.range_fmt}</span></div>` : '') +
-      row('Tax Delinquency', delinqTxt, delinqCls);
+      row('Tax Delinquency', delinqTxt, delinqCls) +
+      row('Permit Records', permLink) +
+      row('Assessor Portal', assessLink);
 
     // Flood
     const fzone = flood.zone || '';

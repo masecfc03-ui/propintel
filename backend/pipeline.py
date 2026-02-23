@@ -133,6 +133,10 @@ def run(input_str: str, tier: str = "starter") -> dict:
     # ── Market value estimate (assessed-based range, all tiers) ───────────────
     report["market_estimate"] = _estimate_market_value(parcel_data)
 
+    # ── Permit portal link ────────────────────────────────────────────────────
+    city_name = (geo.get("city") or "").strip().upper()
+    report["permit_portal"] = _get_permit_portal(city_name, geo.get("state", ""))
+
     # ── Step 4: Pro-only enrichment ───────────────────────────────────────────
     if tier == "pro":
         parcel_data = report["parcel"]
@@ -200,6 +204,38 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["flags"] = _build_flags(report)
 
     return report
+
+
+def _get_permit_portal(city: str, state: str) -> dict:
+    """Return permit portal + assessor URLs for known TX cities."""
+    TX_PORTALS = {
+        "DALLAS":        {"permit": "https://developdallas.dallascityhall.com/", "assessor": "https://www.dallascad.org/"},
+        "FORT WORTH":    {"permit": "https://fortworthtexas.gov/departments/development-services/permits", "assessor": "https://www.tad.org/"},
+        "GARLAND":       {"permit": "https://www.garlandtx.gov/175/Permits", "assessor": "https://www.dallascad.org/"},
+        "PLANO":         {"permit": "https://www.plano.gov/1226/Permits", "assessor": "https://www.collincad.org/"},
+        "IRVING":        {"permit": "https://www.cityofirving.org/government/departments/development-services", "assessor": "https://www.dallascad.org/"},
+        "ARLINGTON":     {"permit": "https://www.arlingtontx.gov/city_hall/departments/planning_development_services", "assessor": "https://www.tad.org/"},
+        "FRISCO":        {"permit": "https://www.friscotexas.gov/1003/Permits", "assessor": "https://www.collincad.org/"},
+        "MCKINNEY":      {"permit": "https://www.mckinneytexas.org/permits", "assessor": "https://www.collincad.org/"},
+        "MESQUITE":      {"permit": "https://www.cityofmesquite.com/299/Permits", "assessor": "https://www.dallascad.org/"},
+        "RICHARDSON":    {"permit": "https://www.cor.net/departments/development-services", "assessor": "https://www.dallascad.org/"},
+        "CARROLLTON":    {"permit": "https://www.cityofcarrollton.com/government/departments/development-services", "assessor": "https://www.dallascad.org/"},
+        "KAUFMAN":       {"permit": "https://www.kaufmantx.org/", "assessor": "https://www.kaufmancad.org/"},
+        "TERRELL":       {"permit": "https://www.terrellonline.com/", "assessor": "https://www.kaufmancad.org/"},
+        "HOUSTON":       {"permit": "https://www.houstonpermittingcenter.org/", "assessor": "https://hcad.org/"},
+        "AUSTIN":        {"permit": "https://austintexas.gov/permits", "assessor": "https://traviscad.org/"},
+        "SAN ANTONIO":   {"permit": "https://saonlinepermits.sanantonio.gov/", "assessor": "https://bexar.org/"},
+    }
+    portal = TX_PORTALS.get(city)
+    if portal:
+        return {"city": city.title(), "state": state, **portal}
+    # Generic fallback
+    return {
+        "city": city.title(), "state": state,
+        "permit": None,
+        "assessor": None,
+        "note": "Search '{}  building permits' for city portal".format(city.title()),
+    }
 
 
 def _estimate_market_value(parcel: dict) -> dict:
