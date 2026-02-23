@@ -9,11 +9,17 @@ Usage:
   python3 test_paid_flow.py --address "123 Main"  # custom address
 """
 import sys
+import ssl
 import json
 import time
 import urllib.request
 import urllib.error
 import argparse
+
+# macOS Python 3.9 ships without CA certs — use unverified context
+_SSL_CTX = ssl.create_default_context()
+_SSL_CTX.check_hostname = False
+_SSL_CTX.verify_mode    = ssl.CERT_NONE
 
 # ── CONFIG ───────────────────────────────────────────────────────────────────
 PROD_BASE  = "https://propintel-htij.onrender.com"
@@ -45,7 +51,7 @@ def _req(url, data=None, headers=None, method=None):
     meth = method or ("POST" if body else "GET")
     req  = urllib.request.Request(url, data=body, headers=req_headers, method=meth)
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        with urllib.request.urlopen(req, timeout=120, context=_SSL_CTX) as resp:
             raw = resp.read().decode()
             try:
                 return resp.status, json.loads(raw)
