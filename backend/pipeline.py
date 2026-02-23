@@ -9,7 +9,7 @@ from scrapers.geocode import geocode
 from scrapers.fema import get_flood_zone
 from scrapers.census import get_demographics
 from scrapers.dcad import search_by_address as dcad_by_address
-from scrapers.regrid import search_by_point as regrid_by_point, search_by_address as regrid_by_address
+from scrapers.regrid import search_by_point as regrid_by_point, search_by_address as regrid_by_address, search_nearby as regrid_nearby
 from scrapers.txsos import search_by_address as txsos_address
 from scrapers.listing import parse_listing, is_address, detect_source
 from scrapers.datazapp import parse_owner_name
@@ -89,6 +89,10 @@ def run(input_str: str, tier: str = "starter") -> dict:
         elif lat and lng:
             tasks["regrid"] = ex.submit(regrid_by_point, lat, lng)
 
+        # Nearby comparables via Regrid bounding box (free, same API key)
+        if lat and lng:
+            tasks["nearby"] = ex.submit(regrid_nearby, lat, lng, 0.3, 8)
+
         # DCAD supplemental fetch for TX addresses (Dallas County extra fields: tax district, school, etc.)
         # geocode doesn't always return county — use state + zip prefix as proxy
         geo_state = geo.get("state", "").upper()
@@ -129,6 +133,7 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["flood"] = results.get("fema", {})
     report["demographics"] = results.get("census", {})
     report["businesses"] = results.get("txsos", [])
+    report["nearby"] = [p for p in (results.get("nearby") or []) if p and not p.get("error")]
 
     # ── Market value estimate (assessed-based range, all tiers) ───────────────
     report["market_estimate"] = _estimate_market_value(parcel_data)

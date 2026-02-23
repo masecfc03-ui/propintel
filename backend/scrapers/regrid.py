@@ -287,3 +287,64 @@ def search_by_apn(apn, state=None, county=None):
         return {"error": "APN not found", "source": "Regrid"}
 
     return _parse_parcel(features[0]) or {"error": "Parse failed", "source": "Regrid"}
+
+
+def search_nearby(lat, lng, radius_miles=0.3, limit=8, same_use=True):
+    """
+    Find nearby parcels within radius_miles using bounding box.
+    Used to build a basic comparable sales/value table.
+    
+    Returns list of parsed parcel dicts (excluding the subject parcel itself).
+    """
+    if not REGRID_TOKEN:
+        return []
+
+    # Convert miles to approximate degrees (at ~32°N latitude)
+    deg_per_mile = 1 / 69.0
+    delta = radius_miles * deg_per_mile
+
+    min_lng = lng - delta * 1.15  # longitude degrees are shorter at 32°N
+    max_lng = lng + delta * 1.15
+    min_lat = lat - delta
+    max_lat = lat + delta
+
+    try:
+        resp = requests.get(
+            "{}/parcels/bbox".format(BASE_URL),
+            params=_params(bbox="{},{},{},{}".format(min_lng, min_lat, max_lng, max_lat), limit=limit + 1),
+            headers=HEADERS,
+            timeout=20,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.exceptions.Timeout:
+        return []
+    except requests.exceptions.HTTPError as e:
+        return []
+    except Exception:
+        return []
+
+    features = data.get("parcels", {}).get("features", [])
+    results = []
+    for feat in features:
+        parsed = _parse_parcel(feat)
+        if not parsed:
+            continue
+        # Skip parcels without assessed value (not useful as comps)
+        if not parsed.get("assessed_total"):
+            continue
+        # Skip the subject property itself (exact coords match)
+        props = feat.get("properties", {})
+        fields = props.get("fields", {})
+        try:
+            feat_lat = feat["geometry"]["coordinates"][0][0][1]
+            feat_lng = feat["geometry"]["coordinates"][0][0][0]
+            if abs(feat_lat - lat) < 0.0001 and abs(feat_lng - lng) < 0.0001:
+                continue
+        except Exception:
+            pass
+        results.append(parsed)
+        if len(results) >= limit:
+            break
+
+    return results
