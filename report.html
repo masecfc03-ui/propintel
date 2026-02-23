@@ -6,6 +6,11 @@
   <title>PropIntel Report</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- Leaflet.js — property map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js — data visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -355,27 +360,84 @@
       .contact-grid { grid-template-columns: 1fr; }
       .deal-grid { grid-template-columns: 1fr 1fr; }
     }
+    /* ── PROPERTY MAP ── */
+    .map-section { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: var(--shadow); }
+    #prop-map { height: 280px; }
+    .street-view-wrap { height: 280px; position: relative; background: #0f172a; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+    .sv-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+    .sv-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: background 0.15s; }
+    .sv-btn:hover { background: rgba(255,255,255,0.2); }
+    .map-tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+    @media (max-width: 600px) { .map-section { grid-template-columns: 1fr; } .street-view-wrap { height: 200px; } #prop-map { height: 220px; } }
+
+    /* ── INVESTMENT SUMMARY (PRO) ── */
+    .inv-summary {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      border-radius: 14px; padding: 28px; margin-bottom: 20px;
+      color: white;
+    }
+    .inv-sum-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .inv-sum-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); }
+    .inv-verdict { display: flex; align-items: center; gap: 8px; }
+    .inv-verdict-badge { font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px; }
+    .inv-verdict-badge.investigate { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+    .inv-verdict-badge.strong { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+    .inv-verdict-badge.pass { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .inv-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .inv-metric { background: rgba(255,255,255,0.07); border-radius: 10px; padding: 14px; border: 1px solid rgba(255,255,255,0.08); }
+    .inv-metric-label { font-size: 0.66rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .inv-metric-val { font-size: 1.15rem; font-weight: 800; color: white; letter-spacing: -0.3px; }
+    .inv-metric-sub { font-size: 0.68rem; color: rgba(255,255,255,0.4); margin-top: 3px; }
+    .inv-signals { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+    .inv-signal { font-size: 0.68rem; font-weight: 600; padding: 3px 9px; border-radius: 12px; }
+    .inv-signal.green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+    .inv-signal.amber { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+    .inv-signal.red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+    @media (max-width: 700px) { .inv-metrics { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ── PROPERTY PROFILE GRID ── */
+    .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .profile-tile { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+    .profile-tile-val { font-size: 1.1rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
+    .profile-tile-label { font-size: 0.68rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+
+    /* ── VALUE CHART ── */
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .chart-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+    .chart-title { font-size: 0.72rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .chart-canvas-wrap { position: relative; height: 160px; }
+    @media (max-width: 600px) { .chart-row { grid-template-columns: 1fr; } }
+
+    /* ── NEIGHBORHOOD SCORE CARDS ── */
+    .nbhd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .nbhd-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .nbhd-card-icon { font-size: 1.4rem; margin-bottom: 6px; }
+    .nbhd-card-val { font-size: 1.3rem; font-weight: 800; color: var(--text); }
+    .nbhd-card-label { font-size: 0.7rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+    .nbhd-card-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .nbhd-card-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+    /* ── OWNER EQUITY BLOCK ── */
+    .equity-row { display: flex; align-items: stretch; gap: 12px; margin-top: 14px; }
+    .equity-card { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .equity-val { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+    .equity-label { font-size: 0.68rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 3px; }
+    .equity-note { font-size: 0.72rem; color: var(--text3); margin-top: 6px; line-height: 1.4; }
+
     @media print {
       .topbar { display: none; }
       .upsell-card { display: none; }
       .no-print { display: none !important; }
       body { background: white; }
       .section-card { box-shadow: none; break-inside: avoid; }
-      /* Show annotation print views, hide edit inputs */
       #wl-annotations input,
       #wl-annotations textarea { display: none !important; }
       #wl-annotations .annotation-print { display: block !important; }
-      #wl-annotations .section-card {
-        border: 1px solid #e2e8f0 !important;
-        background: #f8fafc !important;
-      }
+      #wl-annotations .section-card { border: 1px solid #e2e8f0 !important; background: #f8fafc !important; }
+      .street-view-wrap { display: none; }
+      #prop-map { height: 200px; }
     }
-    .annotation-print {
-      display: none;
-      font-size: 0.9rem;
-      color: #0f172a;
-      line-height: 1.6;
-    }
+    .annotation-print { display: none; font-size: 0.9rem; color: #0f172a; line-height: 1.6; }
   </style>
 </head>
 <body>
@@ -482,6 +544,29 @@
     <!-- Score Cards -->
     <div class="score-row" id="score-row"></div>
 
+    <!-- Property Map -->
+    <div class="map-section" id="map-section" style="display:none">
+      <div style="position:relative">
+        <div class="map-tag">Satellite</div>
+        <div id="prop-map"></div>
+      </div>
+      <div class="street-view-wrap" id="sv-wrap">
+        <div class="sv-label">Street View</div>
+        <a id="sv-btn" href="#" target="_blank" class="sv-btn">🌐 Open in Google Maps</a>
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.35);margin-top:4px">Opens in new tab</div>
+      </div>
+    </div>
+
+    <!-- Investment Summary (PRO) -->
+    <div class="inv-summary" id="inv-summary" style="display:none">
+      <div class="inv-sum-header">
+        <div class="inv-sum-title">Investment Summary</div>
+        <div class="inv-verdict" id="inv-verdict"></div>
+      </div>
+      <div class="inv-metrics" id="inv-metrics"></div>
+      <div class="inv-signals" id="inv-signals"></div>
+    </div>
+
     <!-- Key Flags -->
     <div class="section-card" id="flags-section" style="display:none">
       <div class="sec-head">
@@ -508,7 +593,25 @@
         <div class="sec-title">🏠 Parcel & Ownership</div>
         <div class="sec-src" id="parcel-src"></div>
       </div>
-      <div class="sec-body" id="parcel-body"></div>
+      <div class="sec-body">
+        <!-- Property profile tiles -->
+        <div class="profile-grid" id="profile-grid"></div>
+        <!-- Value breakdown charts -->
+        <div class="chart-row" id="value-chart-row" style="display:none">
+          <div class="chart-box">
+            <div class="chart-title">Value Breakdown</div>
+            <div class="chart-canvas-wrap"><canvas id="chart-value"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <div class="chart-title">Market Range vs Assessed</div>
+            <div class="chart-canvas-wrap"><canvas id="chart-market"></canvas></div>
+          </div>
+        </div>
+        <!-- Ownership equity -->
+        <div class="equity-row" id="equity-row" style="display:none"></div>
+        <!-- Data rows -->
+        <div id="parcel-body"></div>
+      </div>
     </div>
 
     <!-- Flood Zone -->
@@ -521,12 +624,15 @@
     </div>
 
     <!-- Demographics -->
-    <div class="section-card">
+    <div class="section-card" id="demo-section">
       <div class="sec-head">
-        <div class="sec-title">👥 Demographics</div>
+        <div class="sec-title">📍 Neighborhood Profile</div>
         <div class="sec-src"><a href="https://data.census.gov" target="_blank">U.S. Census Bureau — ACS 5-Year</a></div>
       </div>
-      <div class="sec-body" id="demo-body"></div>
+      <div class="sec-body">
+        <div class="nbhd-grid" id="nbhd-grid" style="margin-bottom:14px"></div>
+        <div id="demo-body"></div>
+      </div>
     </div>
 
     <!-- Business Registrations -->
@@ -944,6 +1050,163 @@
             <button class="loi-btn" onclick="window.print()">🖨 Print / PDF</button>
           </div>`;
       }
+    }
+
+    // ── PROPERTY MAP ──
+    if (geo.lat && geo.lng) {
+      const mapEl = document.getElementById('map-section');
+      mapEl.style.display = '';
+      setTimeout(() => {
+        const map = L.map('prop-map', { zoomControl: true, attributionControl: false });
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19
+        }).addTo(map);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        map.setView([geo.lat, geo.lng], 17);
+        const pin = L.divIcon({
+          html: '<div style="width:18px;height:18px;background:#ef4444;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>',
+          iconSize: [18, 18], iconAnchor: [9, 9], className: ''
+        });
+        L.marker([geo.lat, geo.lng], { icon: pin }).addTo(map);
+      }, 100);
+      // Street View button
+      const svBtn = document.getElementById('sv-btn');
+      svBtn.href = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${geo.lat},${geo.lng}`;
+      // Try to load satellite street view thumbnail
+      const svImg = `https://maps.googleapis.com/maps/api/streetview?size=480x280&location=${geo.lat},${geo.lng}&fov=90&pitch=0&key=`;
+      const svWrap = document.getElementById('sv-wrap');
+      // Show address thumbnail without key (OpenStreetMap Nominatim)
+      svWrap.style.backgroundImage = `url(https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=480&height=280&center=lonlat:${geo.lng},${geo.lat}&zoom=17&marker=lonlat:${geo.lng},${geo.lat};color:%23ef4444;size:medium&apiKey=)`;
+      svWrap.style.backgroundSize = 'cover';
+    }
+
+    // ── PROPERTY PROFILE TILES ──
+    const profileTiles = [];
+    if (parcel.building_sf) profileTiles.push({ val: Number(parcel.building_sf).toLocaleString(), label: 'Building SF' });
+    if (parcel.lot_acres) profileTiles.push({ val: parseFloat(parcel.lot_acres).toFixed(2) + ' ac', label: 'Lot Size' });
+    if (parcel.year_built) profileTiles.push({ val: parcel.year_built, label: 'Year Built' });
+    if (parcel.zoning) profileTiles.push({ val: parcel.zoning, label: 'Zoning' });
+    if (parcel.use_description) profileTiles.push({ val: parcel.use_description.split(' ').slice(0,2).join(' '), label: 'Use Type' });
+    if (parcel.county) profileTiles.push({ val: parcel.county.charAt(0).toUpperCase() + parcel.county.slice(1), label: 'County' });
+    if (profileTiles.length) {
+      document.getElementById('profile-grid').innerHTML = profileTiles.map(t =>
+        `<div class="profile-tile"><div class="profile-tile-val">${t.val}</div><div class="profile-tile-label">${t.label}</div></div>`
+      ).join('');
+    }
+
+    // ── VALUE CHARTS ──
+    if (parcel.assessed_land && parcel.assessed_improvement) {
+      document.getElementById('value-chart-row').style.display = '';
+      // Pie: land vs improvement
+      new Chart(document.getElementById('chart-value'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Land', 'Improvement'],
+          datasets: [{ data: [parcel.assessed_land, parcel.assessed_improvement],
+            backgroundColor: ['#3b82f6', '#0f172a'], borderWidth: 0 }]
+        },
+        options: {
+          plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: 'Inter' }, color: '#475569' } } },
+          cutout: '65%', maintainAspectRatio: false
+        }
+      });
+      // Bar: assessed vs market range
+      if (est.available) {
+        new Chart(document.getElementById('chart-market'), {
+          type: 'bar',
+          data: {
+            labels: ['County Assessed', 'Market Low', 'Market High'],
+            datasets: [{ data: [est.assessed, est.market_low, est.market_high],
+              backgroundColor: ['#94a3b8', '#3b82f6', '#1d4ed8'],
+              borderRadius: 6, borderWidth: 0 }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: { y: { ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k', font: { size: 10, family: 'Inter' }, color: '#94a3b8' }, grid: { color: '#f1f5f9' } }, x: { ticks: { font: { size: 10, family: 'Inter' }, color: '#94a3b8' }, grid: { display: false } } },
+            maintainAspectRatio: false
+          }
+        });
+      }
+    }
+
+    // ── OWNERSHIP EQUITY ESTIMATE ──
+    if (parcel.assessed_total) {
+      const equityRow = document.getElementById('equity-row');
+      equityRow.style.display = 'flex';
+      const yrsHeld = parcel.year_built ? (new Date().getFullYear() - Number(parcel.year_built)) : null;
+      const estEquity = est.available ? `${fmt(est.market_low)} – ${fmt(est.market_high)}` : 'N/A';
+      equityRow.innerHTML = `
+        <div class="equity-card">
+          <div class="equity-val">${estEquity}</div>
+          <div class="equity-label">Estimated Market Value</div>
+          <div class="equity-note">${est.methodology || 'Based on county assessed × DFW market multiplier'}</div>
+        </div>
+        ${yrsHeld ? `<div class="equity-card">
+          <div class="equity-val">${yrsHeld} yrs</div>
+          <div class="equity-label">Property Age</div>
+          <div class="equity-note">Built ${parcel.year_built}. ${yrsHeld > 30 ? 'Older structure — potential capex needs.' : yrsHeld > 15 ? 'Mid-age — inspect mechanicals.' : 'Relatively new construction.'}</div>
+        </div>` : ''}
+        ${parcel.absentee_owner ? `<div class="equity-card" style="border-color:#fde68a;background:#fffbeb">
+          <div class="equity-val" style="color:#d97706">Absentee</div>
+          <div class="equity-label">Owner Type</div>
+          <div class="equity-note">Owner mails from ${parcel.owner_city || 'different address'}. May be open to offers.</div>
+        </div>` : ''}`;
+    }
+
+    // ── NEIGHBORHOOD CARDS ──
+    const nbhdCards = [];
+    if (demo.median_household_income_fmt) nbhdCards.push({ icon: '💰', val: demo.median_household_income_fmt, label: 'Median Income', pct: Math.min(100, Math.round((demo.median_household_income || 0) / 120000 * 100)), color: '#3b82f6' });
+    if (demo.owner_occupied_pct) nbhdCards.push({ icon: '🏡', val: demo.owner_occupied_pct + '%', label: 'Owner-Occupied', pct: demo.owner_occupied_pct, color: '#22c55e' });
+    if (demo.median_age) nbhdCards.push({ icon: '👥', val: demo.median_age + ' yrs', label: 'Median Age', pct: Math.min(100, Math.round(demo.median_age / 65 * 100)), color: '#8b5cf6' });
+    if (demo.population) nbhdCards.push({ icon: '📊', val: Number(demo.population).toLocaleString(), label: 'Population', pct: null, color: '#f59e0b' });
+    if (nbhdCards.length) {
+      document.getElementById('nbhd-grid').innerHTML = nbhdCards.map(c => `
+        <div class="nbhd-card">
+          <div class="nbhd-card-icon">${c.icon}</div>
+          <div class="nbhd-card-val">${c.val}</div>
+          <div class="nbhd-card-label">${c.label}</div>
+          ${c.pct !== null ? `<div class="nbhd-card-bar"><div class="nbhd-card-fill" style="width:${c.pct}%;background:${c.color}"></div></div>` : ''}
+        </div>`).join('');
+    }
+
+    // ── INVESTMENT SUMMARY (PRO) ──
+    if (isPro) {
+      document.getElementById('inv-summary').style.display = '';
+      const score = (motiv && motiv.score !== undefined) ? motiv.score : null;
+      const fRisk = fzone && fzone !== 'X' && (fzone.startsWith('A') || fzone.startsWith('V'));
+      const isAbsentee = parcel.absentee_owner;
+      const isDelinq = parcel.tax_delinquent;
+
+      // Verdict
+      let verdictClass = 'investigate', verdictText = 'INVESTIGATE';
+      if (score !== null && score >= 65 && isAbsentee && !fRisk) { verdictClass = 'strong'; verdictText = 'STRONG LEAD'; }
+      else if (score !== null && score < 30 && !isDelinq && !isAbsentee) { verdictClass = 'pass'; verdictText = 'LOW PRIORITY'; }
+      document.getElementById('inv-verdict').innerHTML = `<span class="inv-verdict-badge ${verdictClass}">${verdictText}</span>`;
+
+      // Key metrics
+      const metrics = [
+        { label: 'County Assessed', val: est.assessed_fmt || (parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A'), sub: 'Official tax record' },
+        { label: 'Est. Market Range', val: est.available ? est.range_fmt : 'N/A', sub: est.property_type || '' },
+        { label: 'Motivation Score', val: score !== null ? score + '/100' : 'N/A', sub: (motiv && motiv.tier) || '' },
+        { label: 'Flood Zone', val: fzone || 'N/A', sub: fzone === 'X' ? 'No risk' : fRisk ? 'High risk' : 'Moderate' },
+      ];
+      document.getElementById('inv-metrics').innerHTML = metrics.map(m =>
+        `<div class="inv-metric"><div class="inv-metric-label">${m.label}</div><div class="inv-metric-val">${m.val}</div><div class="inv-metric-sub">${m.sub}</div></div>`
+      ).join('');
+
+      // Signals
+      const signals = [];
+      if (isAbsentee) signals.push({ cls: 'amber', text: '📍 Absentee owner' });
+      if (parcel.out_of_state_owner) signals.push({ cls: 'amber', text: '✈️ Out-of-state owner' });
+      if (isDelinq) signals.push({ cls: 'red', text: '⚠️ Tax delinquent' });
+      if (!fRisk) signals.push({ cls: 'green', text: '✓ Zone X — no flood risk' });
+      if (fRisk) signals.push({ cls: 'red', text: '🌊 Flood risk: ' + fzone });
+      if (score !== null && score >= 65) signals.push({ cls: 'amber', text: '🔥 High motivation signal' });
+      if (parcel.assessed_total && est.available && est.market_low > parcel.assessed_total) signals.push({ cls: 'green', text: '📈 Market above assessed' });
+      if (biz.length) signals.push({ cls: 'green', text: '🏪 ' + biz.length + ' active business(es) registered' });
+      document.getElementById('inv-signals').innerHTML = signals.map(s =>
+        `<span class="inv-signal ${s.cls}">${s.text}</span>`
+      ).join('');
     }
 
     // Branding
