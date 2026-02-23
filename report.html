@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PropIntel Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #1a1a1a; --bg2: #242424; --bg3: #2e2e2e;
+      --border: rgba(255,255,255,0.08);
+      --accent: #3b82f6; --green: #22c55e; --red: #ef4444; --amber: #f59e0b;
+      --text: #ffffff; --text2: #a0a0a0; --text3: #666;
+      --sample: #f59e0b;
+    }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    a { color: var(--accent); }
+
+    /* LOADING */
+    #loading { display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; gap: 16px; }
+    .spinner { font-size: 2.5rem; animation: spin 1.5s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ERROR */
+    #error-state { display: none; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; gap: 16px; padding: 24px; }
+
+    /* REPORT */
+    #report { display: none; max-width: 860px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    .report-header { display: flex; align-items: center; justify-content: space-between;
+      padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+    .report-logo { font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .report-meta { text-align: right; color: var(--text3); font-size: 0.78rem; }
+    .tier-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-left: 8px; }
+    .tier-starter { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+    .tier-pro { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+
+    .subject-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; margin-bottom: 24px; }
+    .subject-label { font-size: 0.72rem; color: var(--accent); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .subject-address { font-size: 1.3rem; font-weight: 800; margin-bottom: 12px; }
+    .subject-meta { display: flex; flex-wrap: wrap; gap: 16px; }
+    .subject-pill { background: var(--bg3); border-radius: 8px; padding: 6px 12px;
+      font-size: 0.8rem; color: var(--text2); }
+
+    .section { margin-bottom: 20px; }
+    .section-header { display: flex; align-items: center; gap: 10px;
+      padding: 16px 20px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 14px 14px 0 0; cursor: pointer; }
+    .section-icon { font-size: 1.1rem; }
+    .section-title { font-size: 0.92rem; font-weight: 700; flex: 1; }
+    .section-source { font-size: 0.72rem; color: var(--text3); }
+    .section-body { background: var(--bg2); border: 1px solid var(--border); border-top: none;
+      border-radius: 0 0 14px 14px; padding: 20px; }
+
+    .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .data-row { display: flex; flex-direction: column; gap: 3px; }
+    .data-label { font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-value { font-size: 0.92rem; font-weight: 600; }
+    .data-source { font-size: 0.68rem; color: var(--text3); margin-top: 2px; }
+
+    .zone-badge { display: inline-block; padding: 6px 16px; border-radius: 30px;
+      font-size: 1rem; font-weight: 800; margin-bottom: 8px; }
+    .zone-x { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .zone-risk { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .zone-unknown { background: rgba(100,100,100,0.2); color: #a0a0a0; border: 1px solid rgba(100,100,100,0.3); }
+
+    .flags-list { display: flex; flex-direction: column; gap: 10px; }
+    .flag { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px;
+      border-radius: 10px; font-size: 0.85rem; }
+    .flag-green { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); }
+    .flag-red { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
+    .flag-yellow { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); }
+
+    .source-cite { font-size: 0.72rem; color: var(--text3); margin-top: 6px; }
+
+    .fallback-box { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 10px; padding: 14px; font-size: 0.85rem; color: var(--text2); }
+
+    .disclaimer { margin-top: 40px; padding: 20px; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 12px;
+      font-size: 0.75rem; color: var(--text3); line-height: 1.6; }
+
+    .upsell-box { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.08));
+      border: 1px solid rgba(59,130,246,0.25); border-radius: 16px; padding: 28px;
+      text-align: center; margin-top: 32px; }
+    .upsell-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+    .upsell-desc { color: var(--text2); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.6; }
+    .upsell-btn { display: inline-block; background: var(--accent); color: #fff;
+      border-radius: 50px; padding: 12px 28px; font-weight: 700; font-size: 0.9rem;
+      text-decoration: none; }
+
+    @media (max-width: 600px) { .data-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner">🔍</div>
+  <div style="font-size:1.2rem;font-weight:700">Generating your report...</div>
+  <div id="loading-status" style="color:#a0a0a0;font-size:0.88rem">Pulling public records...</div>
+  <div style="color:#555;font-size:0.76rem;margin-top:8px">Geocoding · FEMA NFHL · Census ACS · County Records</div>
+</div>
+
+<!-- ERROR -->
+<div id="error-state">
+  <div style="font-size:2rem">⚠️</div>
+  <div style="font-size:1.1rem;font-weight:700">Could not generate report</div>
+  <div id="error-msg" style="color:#a0a0a0;font-size:0.88rem;max-width:400px"></div>
+  <a href="/" style="margin-top:16px;color:#3b82f6;font-size:0.88rem">← Back to PropIntel</a>
+</div>
+
+<!-- REPORT -->
+<div id="report">
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="report-logo">
+      🏢 PropIntel <span id="tier-badge" class="tier-badge tier-starter">STARTER</span>
+    </div>
+    <div class="report-meta">
+      <div id="report-id-display"></div>
+      <div id="report-date"></div>
+      <div style="margin-top:4px"><a href="/" style="font-size:0.75rem;color:#555">← Back to search</a></div>
+    </div>
+  </div>
+
+  <!-- SUBJECT PROPERTY -->
+  <div class="subject-box">
+    <div class="subject-label">Subject Property</div>
+    <div class="subject-address" id="r-address">—</div>
+    <div class="subject-meta">
+      <div class="subject-pill" id="r-coords">Geocoding...</div>
+      <div class="subject-pill" id="r-county">Dallas County, TX</div>
+      <div class="subject-pill" id="r-zip">ZIP —</div>
+    </div>
+  </div>
+
+  <!-- FEMA FLOOD ZONE -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">🌊</span>
+      <span class="section-title">FEMA Flood Zone</span>
+      <span class="section-source">FEMA NFHL REST API</span>
+    </div>
+    <div class="section-body">
+      <div id="r-fema-zone" class="zone-badge zone-unknown">Loading...</div>
+      <div id="r-fema-desc" style="color:var(--text2);font-size:0.88rem;margin:8px 0"></div>
+      <div class="data-grid" style="margin-top:16px">
+        <div class="data-row">
+          <div class="data-label">FIRM Panel</div>
+          <div class="data-value" id="r-firm">—</div>
+        </div>
+        <div class="data-row">
+          <div class="data-label">Flood Insurance Required</div>
+          <div class="data-value" id="r-flood-req">—</div>
+        </div>
+      </div>
+      <div class="source-cite">Source: <a href="https://msc.fema.gov/portal/home" target="_blank">FEMA National Flood Hazard Layer (NFHL)</a></div>
+    </div>
+  </div>
+
+  <!-- CENSUS DEMOGRAPHICS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">👥</span>
+      <span class="section-title">Demographics</span>
+      <span class="section-source">U.S. Census Bureau, ACS 5-Year</span>
+    </div>
+    <div class="section-body">
+      <div class="data-grid">
+        <div class="data-row">
+          <div class="data-label">ZIP Code</div>
+          <div class="data-value" id="r-demo-zip">—</div>
+        </div>
+        <div class="data-row">
+          <div class="data-label">Population</div>
+          <div class="data-value" id="r-pop">—</div>
+        </div>
+        <div class="data-row">
+          <div class="data-label">Median Household Income</div>
+          <div class="data-value" id="r-mhi">—</div>
+        </div>
+        <div class="data-row">
+          <div class="data-label">Owner-Occupied Units</div>
+          <div class="data-value" id="r-owner-occ">—</div>
+        </div>
+        <div class="data-row">
+          <div class="data-label">Median Age</div>
+          <div class="data-value" id="r-age">—</div>
+        </div>
+        <div class="data-row">
+          <div class="data-label">Unemployment Rate</div>
+          <div class="data-value" id="r-unemp">—</div>
+        </div>
+      </div>
+      <div class="source-cite" style="margin-top:14px">Source: <a id="r-census-url" href="#" target="_blank">U.S. Census Bureau ACS 5-Year Estimates</a></div>
+    </div>
+  </div>
+
+  <!-- PARCEL / DCAD -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">📋</span>
+      <span class="section-title">Parcel & Ownership</span>
+      <span class="section-source">Dallas Central Appraisal District</span>
+    </div>
+    <div class="section-body" id="r-parcel-body">
+      <div class="fallback-box">
+        ℹ️ DCAD parcel data requires direct lookup. <a id="r-dcad-link" href="https://www.dcad.org/property-search/" target="_blank">Search DCAD →</a>
+        <div style="margin-top:6px;font-size:0.78rem;color:#555">Retrieve: owner name, APN, assessed value, deed history, and tax status.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLAGS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-icon">🚩</span>
+      <span class="section-title">Public Record Flags</span>
+      <span class="section-source">Automated analysis</span>
+    </div>
+    <div class="section-body">
+      <div class="flags-list" id="r-flags">
+        <div style="color:var(--text3);font-size:0.85rem">Loading flags...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRO UPSELL (starter only) -->
+  <div class="upsell-box" id="r-upsell" style="display:none">
+    <div class="upsell-title">Unlock the Full Intel Report</div>
+    <div class="upsell-desc">
+      Your Starter report covers public records. The Pro report adds:<br>
+      <strong>Owner skip trace · LLC pierce · Motivation score · Comparable sales ·
+      Lien search · Permit history · Tenant verification · Environmental flags · Pre-filled LOI</strong>
+    </div>
+    <a id="r-upsell-btn" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank" class="upsell-btn">
+      Upgrade to Pro — $29.99 →
+    </a>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> This report contains only verified public record data pulled from government sources.
+    All data points are hyperlinked to their source. This report does <strong>not</strong> include: verified rent roll,
+    actual NOI confirmation, cap rate validation, financial projections, Phase I ESA, or full title search.
+    PropIntel is not a licensed broker, appraiser, attorney, or environmental professional.
+    This report does not constitute investment advice. Verify all data before making investment decisions.
+    &copy; 2026 PropIntel · propertyvalueintel.com
+  </div>
+</div>
+
+<script>
+const API_URL = "https://propintel-htij.onrender.com";
+const STARTER_LINK = "https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00";
+const PRO_LINK = "https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01";
+
+function getParam(key) {
+  return new URLSearchParams(window.location.search).get(key);
+}
+
+function showError(msg) {
+  document.getElementById("loading").style.display = "none";
+  const e = document.getElementById("error-state");
+  e.style.display = "flex";
+  document.getElementById("error-msg").textContent = msg;
+}
+
+function fmt(val, suffix) {
+  if (val === null || val === undefined || val === "") return "—";
+  return val + (suffix || "");
+}
+
+async function generateReport() {
+  // Get address from URL param or localStorage
+  let address = getParam("address") || localStorage.getItem("propintel_address");
+  const tier = getParam("tier") || "starter";
+
+  if (!address) {
+    showError("No property address found. Please go back and enter an address.");
+    return;
+  }
+
+  document.getElementById("loading-status").textContent = "Geocoding " + address + "...";
+
+  try {
+    const resp = await fetch(API_URL + "/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ input: address, tier: tier, format: "json" })
+    });
+
+    if (!resp.ok) throw new Error("API returned " + resp.status);
+    const d = await resp.json();
+
+    renderReport(d, tier);
+  } catch(e) {
+    showError("Failed to generate report: " + e.message + ". Please try again.");
+  }
+}
+
+function renderReport(d, tier) {
+  // Hide loading, show report
+  document.getElementById("loading").style.display = "none";
+  const report = document.getElementById("report");
+  report.style.display = "block";
+
+  const geo = d.geo || {};
+  const flood = d.flood || {};
+  const demo = d.demographics || {};
+  const parcel = d.parcel || {};
+  const flags = d.flags || [];
+
+  // Header
+  const badge = document.getElementById("tier-badge");
+  if (tier === "pro") { badge.textContent = "PRO"; badge.className = "tier-badge tier-pro"; }
+  document.getElementById("report-id-display").textContent = "Report #" + (d.report_id || "—");
+  document.getElementById("report-date").textContent = new Date().toLocaleDateString("en-US", {month:"long",day:"numeric",year:"numeric"});
+
+  // Subject property
+  document.getElementById("r-address").textContent = geo.matched_address || d.resolved_address || d.input || "—";
+  document.getElementById("r-coords").textContent = geo.lat ? geo.lat.toFixed(5) + ", " + geo.lng.toFixed(5) : "Geocode pending";
+  document.getElementById("r-county").textContent = (geo.county || "Dallas County") + ", TX";
+  document.getElementById("r-zip").textContent = "ZIP " + (geo.zip || "—");
+
+  // FEMA
+  const zone = flood.zone || "Unknown";
+  const zoneBadge = document.getElementById("r-fema-zone");
+  zoneBadge.textContent = "Zone " + zone;
+  if (zone === "X") { zoneBadge.className = "zone-badge zone-x"; }
+  else if (["AE","A","VE","AH","AO"].includes(zone)) { zoneBadge.className = "zone-badge zone-risk"; }
+  else { zoneBadge.className = "zone-badge zone-unknown"; }
+  document.getElementById("r-fema-desc").textContent = flood.description || "—";
+  document.getElementById("r-firm").textContent = flood.firm_panel || "—";
+  document.getElementById("r-flood-req").textContent = flood.flood_insurance_required ? "⚠️ Yes" : "✅ No";
+
+  // Demographics
+  document.getElementById("r-demo-zip").textContent = demo.zip || "—";
+  document.getElementById("r-pop").textContent = demo.population ? demo.population.toLocaleString() : "—";
+  document.getElementById("r-mhi").textContent = demo.median_household_income_fmt || (demo.median_household_income ? "$" + demo.median_household_income.toLocaleString() : "—");
+  document.getElementById("r-owner-occ").textContent = demo.owner_occupied_pct ? demo.owner_occupied_pct + "%" : "—";
+  document.getElementById("r-age").textContent = demo.median_age ? demo.median_age + " yrs" : "—";
+  document.getElementById("r-unemp").textContent = demo.unemployment_rate ? demo.unemployment_rate + "%" : "—";
+  if (demo.source_url) document.getElementById("r-census-url").href = demo.source_url;
+
+  // Parcel
+  if (parcel.owner_name) {
+    document.getElementById("r-parcel-body").innerHTML =
+      '<div class="data-grid">' +
+      '<div class="data-row"><div class="data-label">Owner</div><div class="data-value">' + parcel.owner_name + '</div></div>' +
+      '<div class="data-row"><div class="data-label">APN</div><div class="data-value">' + (parcel.apn || "—") + '</div></div>' +
+      '<div class="data-row"><div class="data-label">Assessed Value</div><div class="data-value">' + (parcel.assessed_total ? "$" + parcel.assessed_total.toLocaleString() : "—") + '</div></div>' +
+      '<div class="data-row"><div class="data-label">Tax Status</div><div class="data-value">' + (parcel.tax_delinquent ? "⚠️ Delinquent" : "✅ Current") + '</div></div>' +
+      '</div>' +
+      '<div class="source-cite" style="margin-top:14px">Source: <a href="https://www.dcad.org/property-search/" target="_blank">Dallas Central Appraisal District</a></div>';
+  } else {
+    const link = parcel.manual_url || "https://www.dcad.org/property-search/?situs=" + encodeURIComponent(d.input || "");
+    document.getElementById("r-dcad-link").href = link;
+  }
+
+  // Flags
+  const flagsEl = document.getElementById("r-flags");
+  if (flags.length === 0) {
+    flagsEl.innerHTML = '<div style="color:var(--text3);font-size:0.85rem">No flags detected.</div>';
+  } else {
+    flagsEl.innerHTML = flags.map(f =>
+      '<div class="flag flag-' + (f.type || "green") + '">' + f.text + '</div>'
+    ).join("");
+  }
+
+  // Upsell
+  if (tier !== "pro") {
+    const upsell = document.getElementById("r-upsell");
+    upsell.style.display = "block";
+    const addr = d.resolved_address || d.input || "";
+    document.getElementById("r-upsell-btn").href = PRO_LINK + "?client_reference_id=" + encodeURIComponent(addr);
+  }
+}
+
+generateReport();
+</script>
+</body>
+</html>
