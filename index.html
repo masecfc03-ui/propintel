@@ -641,19 +641,25 @@
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="logo">
-    <div class="logo-icon">🔍</div>
-    PropIntel
+  <a href="index.html" class="logo">
+    <svg width="108" height="28" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:28px;width:auto">
+      <rect width="40" height="40" rx="10" fill="#2563EB"/>
+      <rect x="11" y="20" width="5" height="10" rx="1" fill="white" opacity="0.85"/>
+      <rect x="17.5" y="15" width="5" height="15" rx="1" fill="white"/>
+      <rect x="24" y="22" width="5" height="8" rx="1" fill="white" opacity="0.7"/>
+      <circle cx="30" cy="10" r="3.5" fill="#93C5FD"/>
+      <text x="50" y="27" font-family="Inter,-apple-system,system-ui,sans-serif" font-size="19" font-weight="800" letter-spacing="-0.5" fill="#0F172A">Prop<tspan fill="#2563EB">Intel</tspan></text>
+    </svg>
   </a>
   <ul class="nav-links">
     <li><a href="#how">How It Works</a></li>
     <li><a href="#data">What's Included</a></li>
     <li><a href="#pricing">Pricing</a></li>
-    <li><a href="report-pro.html">Sample Report</a></li>
+    <li><a href="demo.html" style="color:var(--accent);font-weight:600">See a Sample Report</a></li>
   </ul>
   <div class="nav-right">
     <a href="admin.html" class="nav-link-plain" style="display:none" id="admin-link">Admin</a>
-    <a href="#analyze" class="nav-cta">Get a Report</a>
+    <a href="demo.html" class="nav-cta">See Sample Report</a>
   </div>
 </nav>
 
@@ -942,7 +948,7 @@
   <div class="section-inner">
     <div class="section-label">Live Preview</div>
     <div class="section-title">See what your report looks like</div>
-    <p class="section-desc">Every report includes source citations, risk flags, and shareable links. <a href="report-pro.html" style="color:var(--accent);font-weight:600">View a full sample →</a></p>
+    <p class="section-desc">Every report includes source citations, risk flags, and shareable links. <a href="demo.html" style="color:var(--accent);font-weight:600">View a full sample →</a></p>
 
     <div class="preview-wrap">
       <div class="preview-bar">
@@ -1116,9 +1122,12 @@
 <!-- CTA BOTTOM -->
 <section class="cta-section">
   <div class="section-inner">
-    <h2>Run your first report free</h2>
-    <p>Enter any address above and get a free preview. Full report in seconds.</p>
-    <a href="#analyze" class="cta-btn">Analyze a Property →</a>
+    <h2>See exactly what you're buying</h2>
+    <p>A real report. A real Dallas property. Every data point sourced and verified. Takes 10 seconds to see.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px">
+      <a href="demo.html" class="cta-btn">View Sample Report →</a>
+      <a href="#analyze" style="display:inline-block;background:rgba(255,255,255,0.12);color:white;padding:14px 28px;border-radius:8px;font-size:0.9375rem;font-weight:700;text-decoration:none;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">Try It Yourself</a>
+    </div>
   </div>
 </section>
 
@@ -1127,7 +1136,7 @@
   <div class="footer-inner">
     <span class="footer-left">© 2026 PropIntel · propertyvalueintel.com · All data from verified public records.</span>
     <div class="footer-links">
-      <a href="report-pro.html">Sample Report</a>
+      <a href="demo.html">Sample Report</a>
       <a href="#pricing">Pricing</a>
       <a href="mailto:mason@mathislandco.com">Support</a>
       <a href="admin.html" id="footer-admin" style="display:none">Admin</a>
