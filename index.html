@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>PropIntel — Property Intelligence Reports</title>
-<meta name="description" content="Full property intelligence in 30 seconds. Owner identity, motivation score, FEMA flood zone, sold comps, deal analyzer — verified public records, beautifully presented."/>
+<meta name="description" content="The data professionals can't easily find — owner phone & email via skip trace, 5-signal motivation score, sold comps with $/SF analysis, and DSCR deal analyzer. Any US property, 30 seconds."/>
 <link rel="canonical" href="https://propertyvalueintel.com"/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://propertyvalueintel.com"/>
@@ -568,6 +568,15 @@ nav {
   font-size: 0.62rem; font-weight: 700; color: var(--g3);
   text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px;
 }
+/* difficulty badge */
+.tile-diff {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 8px; margin-bottom: 14px;
+}
+.diff-hard { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+.diff-medium { background: rgba(245,158,11,0.1); color: var(--amber-l); border: 1px solid rgba(245,158,11,0.2); }
+.diff-easy { background: rgba(96,165,250,0.06); color: var(--g3); border: 1px solid var(--border); }
 
 /* Score tile */
 .score-big {
@@ -591,6 +600,7 @@ nav {
 .t-red   { background: rgba(239,68,68,0.08); color: #fca5a5; border: 1px solid rgba(239,68,68,0.18); }
 .t-blue  { background: rgba(96,165,250,0.08); color: var(--blue-l); border: 1px solid rgba(96,165,250,0.18); }
 .t-green { background: rgba(34,197,94,0.08); color: var(--green-l); border: 1px solid rgba(34,197,94,0.18); }
+.t-violet{ background: rgba(167,139,250,0.08); color: var(--violet-l); border: 1px solid rgba(167,139,250,0.18); }
 
 /* Owner tile */
 .owner-row { margin-bottom: 14px; }
@@ -599,37 +609,59 @@ nav {
 .tile-heading {
   font-family: 'Cabinet Grotesk', sans-serif;
   font-size: 1.25rem; font-weight: 900; letter-spacing: -0.5px; line-height: 1.25;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
-/* Flood tile */
-.flood-big {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 6rem; font-weight: 900; line-height: 0.85;
-  letter-spacing: -6px; color: var(--green);
-  margin: 8px 0;
-  text-shadow: 0 0 60px rgba(34,197,94,0.3);
+/* Skip trace tile */
+.skip-contact-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 11px;
+  background: var(--bg2); border: 1px solid var(--border);
+  margin-bottom: 8px;
 }
-.flood-desc { font-size: 0.8rem; color: var(--g2); line-height: 1.5; margin-top: 12px; }
+.skip-icon {
+  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.skip-icon-phone { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.2); }
+.skip-icon-email { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.18); }
+.skip-detail { flex: 1; }
+.skip-type { font-size: 0.6rem; color: var(--g3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 2px; }
+.skip-val { font-size: 0.88rem; font-weight: 700; color: var(--g1); letter-spacing: 0.5px; }
+.skip-source { font-size: 0.6rem; color: var(--g3); margin-top: 1px; }
+.skip-blurred { filter: blur(5px); user-select: none; color: var(--white); }
 
-/* Value tile */
-.val-big {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 2.8rem; font-weight: 900; line-height: 1;
-  letter-spacing: -2.5px; margin: 8px 0 6px;
+/* Signal rows for motivation */
+.signal-mini { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+.signal-mini-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; border-radius: 9px; font-size: 0.78rem;
 }
-.val-range { font-size: 0.82rem; color: var(--g2); margin-top: 6px; line-height: 1.6; }
-.val-detail { font-size: 0.78rem; color: var(--g3); margin-top: 6px; }
+.signal-mini-row.on { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.18); }
+.signal-mini-row.off { background: var(--bg3); border: 1px solid var(--border); opacity: 0.45; }
+.signal-mini-name { color: var(--g1); font-weight: 600; }
+.signal-mini-pts { font-family: 'Cabinet Grotesk',sans-serif; font-weight: 900; font-size: 0.9rem; color: var(--amber); }
+.signal-mini-pts.off { color: var(--g4); }
 
-/* Pages tile */
-.pages-big {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 5.5rem; font-weight: 900; line-height: 1;
-  letter-spacing: -5px;
-  background: linear-gradient(135deg, var(--blue-l) 0%, var(--violet-l) 100%);
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+/* Deal tile */
+.dscr-scenario {
+  display: flex; flex-direction: column; gap: 8px; margin-top: 14px;
 }
-.pages-sub { font-size: 0.78rem; color: var(--g2); margin-top: 10px; line-height: 1.6; }
+.ds-row {
+  padding: 10px 14px; border-radius: 10px;
+  background: var(--bg2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ds-row.best { border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.07); }
+.ds-label { font-size: 0.72rem; color: var(--g2); font-weight: 500; }
+.ds-dscr {
+  font-family: 'Cabinet Grotesk',sans-serif;
+  font-weight: 900; font-size: 1.05rem; letter-spacing: -0.5px;
+}
+.ds-sub { font-size: 0.62rem; color: var(--g3); margin-top: 1px; }
+.dscr-good { color: var(--green-l); }
+.dscr-ok   { color: var(--blue-l); }
+.dscr-warn { color: var(--amber-l); }
 
 /* Comps tile */
 .comps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
@@ -648,6 +680,53 @@ nav {
   color: var(--white);
 }
 .comp-psf { font-size: 0.62rem; color: var(--g3); text-align: right; margin-top: 1px; }
+.val-big {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 2.8rem; font-weight: 900; line-height: 1; letter-spacing: -2.5px; margin: 8px 0 6px;
+}
+.val-range { font-size: 0.82rem; color: var(--g2); margin-top: 6px; line-height: 1.6; }
+
+/* ─── COMPARISON SECTION ─── */
+.compare-wrap {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-top: 56px;
+}
+@media(max-width:680px) { .compare-wrap { grid-template-columns: 1fr; } }
+.compare-col {
+  border-radius: var(--r-xl); padding: 32px;
+  border: 1px solid var(--border);
+}
+.compare-col.easy { background: var(--bg1); }
+.compare-col.hard {
+  background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, rgba(124,58,237,0.04) 100%);
+  border-color: rgba(96,165,250,0.2);
+  box-shadow: 0 0 40px rgba(37,99,235,0.06);
+}
+.compare-col-label {
+  font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 2px; margin-bottom: 6px;
+}
+.compare-col.easy .compare-col-label { color: var(--g3); }
+.compare-col.hard .compare-col-label { color: var(--blue-l); }
+.compare-col-title {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.05rem; font-weight: 900; letter-spacing: -0.5px;
+  margin-bottom: 20px; line-height: 1.3;
+}
+.compare-col.easy .compare-col-title { color: var(--g2); }
+.compare-items { display: flex; flex-direction: column; gap: 7px; }
+.compare-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.83rem; padding: 9px 12px; border-radius: 10px;
+  line-height: 1.4;
+}
+.compare-col.easy .compare-item { color: var(--g3); background: var(--bg2); border: 1px solid var(--border); }
+.compare-col.hard .compare-item { color: var(--g1); font-weight: 500; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); }
+.ci-icon { flex-shrink: 0; font-size: 0.75rem; margin-top: 1px; }
+.compare-note {
+  margin-top: 16px; font-size: 0.75rem; color: var(--g3); line-height: 1.6;
+  padding-top: 14px; border-top: 1px solid var(--border);
+}
 
 /* ═══════════════════════════════════════════
    HOW IT WORKS
@@ -1029,8 +1108,8 @@ footer {
             <div class="hc-cell-val">$1.69–2.01M</div>
           </div>
           <div class="hc-cell">
-            <div class="hc-cell-label">Flood Zone</div>
-            <div class="hc-cell-val" style="color:var(--green-l)">Zone X ✓</div>
+            <div class="hc-cell-label">Mobile Found</div>
+            <div class="hc-cell-val" style="color:var(--green-l);filter:blur(3.5px);user-select:none">+1 713 4••••91</div>
           </div>
           <div class="hc-cell">
             <div class="hc-cell-label">Building SF</div>
@@ -1078,133 +1157,181 @@ footer {
 
 <!-- FEATURES / BENTO -->
 <div class="section" id="features">
-  <div class="section-eyebrow reveal">Every data point that matters</div>
-  <h2 class="section-title reveal reveal-delay-1">Intelligence, not just data.</h2>
-  <p class="section-sub reveal reveal-delay-2">Built for agents and investors who need answers fast — not another bloated subscription portal with raw numbers and no context.</p>
+  <div class="section-eyebrow reveal">What PropIntel actually does</div>
+  <h2 class="section-title reveal reveal-delay-1">The data that takes<br>days to find. In 30 seconds.</h2>
+  <p class="section-sub reveal reveal-delay-2">Flood zones are on FEMA's website. Year built is on Zillow. What PropIntel gives you is what nobody else makes accessible — ranked by how hard it actually is to find.</p>
 
   <div class="bento">
 
-    <!-- Tile 1: Motivation Score -->
+    <!-- Tile 1 (7 cols): Skip Trace — HARDEST -->
+    <div class="tile tile-2 reveal">
+      <div class="tile-accent" style="width:280px;height:280px;top:-80px;right:-60px;background:rgba(239,68,68,0.12)"></div>
+      <div class="tile-diff diff-hard">🔴 Hardest to find</div>
+      <div class="tile-label">Skip Trace — Direct Contact</div>
+      <div class="tile-heading">We found the<br>decision-maker.</div>
+      <div style="font-size:0.8rem;color:var(--g2);margin-bottom:18px;line-height:1.6">
+        Owner is <strong style="color:var(--white)">ZAKI FAMILY PARTNERSHIP LP</strong> — an LLC mailing from Houston. No phone number on any public record. PropIntel found them anyway.
+      </div>
+      <div class="skip-contact-row">
+        <div class="skip-icon skip-icon-phone">📱</div>
+        <div class="skip-detail">
+          <div class="skip-type">Mobile Phone</div>
+          <div class="skip-val skip-blurred">+1 (713) 4••-••91</div>
+          <div class="skip-source">People Data Labs · Verified</div>
+        </div>
+        <span class="tag t-green" style="margin:0">Live</span>
+      </div>
+      <div class="skip-contact-row">
+        <div class="skip-icon skip-icon-email">✉️</div>
+        <div class="skip-detail">
+          <div class="skip-type">Email Address</div>
+          <div class="skip-val skip-blurred">mza••@zak•family.com</div>
+          <div class="skip-source">People Data Labs · Verified</div>
+        </div>
+        <span class="tag t-blue" style="margin:0">Live</span>
+      </div>
+    </div>
+
+    <!-- Tile 2 (5 cols): Motivation Score — HARD -->
+    <div class="tile tile-1 reveal reveal-delay-1">
+      <div class="tile-accent" style="width:240px;height:240px;top:-60px;left:-50px;background:rgba(245,158,11,0.18)"></div>
+      <div class="tile-diff diff-hard">🔴 Hard — 5-source composite</div>
+      <div class="tile-label">Seller Motivation Score</div>
+      <div class="score-big">55<span class="score-denom">/100</span></div>
+      <div class="score-bar"><div class="score-fill" data-width="55"></div></div>
+      <div class="signal-mini">
+        <div class="signal-mini-row on">
+          <span class="signal-mini-name">Absentee Owner</span>
+          <span class="signal-mini-pts">+25</span>
+        </div>
+        <div class="signal-mini-row on">
+          <span class="signal-mini-name">Out-of-State Mailing</span>
+          <span class="signal-mini-pts">+20</span>
+        </div>
+        <div class="signal-mini-row on">
+          <span class="signal-mini-name">LLC / Entity Owned</span>
+          <span class="signal-mini-pts">+10</span>
+        </div>
+        <div class="signal-mini-row off">
+          <span class="signal-mini-name">Long Hold (10+ yr)</span>
+          <span class="signal-mini-pts off">+0</span>
+        </div>
+        <div class="signal-mini-row off">
+          <span class="signal-mini-name">Tax Delinquency</span>
+          <span class="signal-mini-pts off">+0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 3 (5 cols): Deal Analyzer — HARD -->
     <div class="tile tile-1 reveal">
-      <div class="tile-accent" style="width:260px;height:260px;top:-80px;right:-60px;background:rgba(245,158,11,0.2)"></div>
-      <div class="tile-label">Seller Motivation</div>
-      <div class="score-big">72<span class="score-denom">/100</span></div>
-      <div class="score-bar"><div class="score-fill" data-width="72"></div></div>
-      <div style="font-size:0.78rem;color:var(--g2);line-height:1.6;margin-bottom:14px">
-        Out-of-state LP owner. No sale in 11 years. Mails to Houston.
-      </div>
-      <div class="tags">
-        <span class="tag t-amber">Absentee Owner</span>
-        <span class="tag t-red">Out of State</span>
-        <span class="tag t-blue">LLC / Entity</span>
+      <div class="tile-accent" style="width:220px;height:220px;bottom:-60px;right:-40px;background:rgba(37,99,235,0.15)"></div>
+      <div class="tile-diff diff-hard">🔴 Hard — financial modeling</div>
+      <div class="tile-label">Deal Analyzer</div>
+      <div class="tile-heading">DSCR at three<br>purchase prices.</div>
+      <div class="dscr-scenario">
+        <div class="ds-row">
+          <div>
+            <div class="ds-label">At assessed ($1.61M)</div>
+            <div class="ds-sub">Down: $401K · P&I: $7,892/mo</div>
+          </div>
+          <div style="text-align:right">
+            <div class="ds-dscr dscr-good">1.42×</div>
+            <div class="ds-sub" style="color:var(--green-l)">Lender approved ✓</div>
+          </div>
+        </div>
+        <div class="ds-row best">
+          <div>
+            <div class="ds-label">At market low ($1.69M) ★</div>
+            <div class="ds-sub">Down: $422K · P&I: $8,303/mo</div>
+          </div>
+          <div style="text-align:right">
+            <div class="ds-dscr dscr-ok">1.35×</div>
+            <div class="ds-sub" style="color:var(--blue-l)">Lender approved ✓</div>
+          </div>
+        </div>
+        <div class="ds-row">
+          <div>
+            <div class="ds-label">At market high ($2.01M)</div>
+            <div class="ds-sub">Down: $502K · P&I: $9,878/mo</div>
+          </div>
+          <div style="text-align:right">
+            <div class="ds-dscr dscr-warn">1.13×</div>
+            <div class="ds-sub" style="color:var(--amber-l)">Below 1.25 ⚠</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Tile 2: Owner Intel -->
+    <!-- Tile 4 (7 cols): Sold Comps — MEDIUM-HARD -->
     <div class="tile tile-2 reveal reveal-delay-1">
-      <div class="tile-accent" style="width:300px;height:300px;bottom:-100px;left:-80px;background:rgba(96,165,250,0.1)"></div>
-      <div class="tile-label">Owner Intelligence</div>
-      <div class="tile-heading">Verified owner identity,<br>mailing address & entity type.</div>
-      <div class="owner-row">
-        <div class="owner-key">Owner of Record</div>
-        <div class="owner-val">ZAKI FAMILY PARTNERSHIP LP</div>
-      </div>
-      <div class="owner-row">
-        <div class="owner-key">Mailing Address</div>
-        <div class="owner-val">8901 Post Oak Blvd, Houston TX 77056</div>
-      </div>
-      <div class="owner-row" style="margin-bottom:0">
-        <div class="owner-key">Owner Type</div>
-        <div class="owner-val">Limited Partnership · Out-of-State · Absentee</div>
-      </div>
-    </div>
-
-    <!-- Tile 3: Flood Zone -->
-    <div class="tile tile-3 reveal">
-      <div class="tile-label">FEMA Flood Zone</div>
-      <div class="flood-big">X</div>
-      <div class="flood-desc">Minimal flood hazard. Outside the 500-year floodplain. No mandatory insurance.</div>
-      <div class="tags" style="margin-top:14px"><span class="tag t-green">Low Risk</span></div>
-    </div>
-
-    <!-- Tile 4: Valuation -->
-    <div class="tile tile-4 reveal reveal-delay-1">
-      <div class="tile-accent" style="width:200px;height:200px;top:-60px;right:-40px;background:rgba(37,99,235,0.15)"></div>
-      <div class="tile-label">Valuation</div>
-      <div class="val-big">$1.61M</div>
-      <div style="font-size:0.65rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Tax Assessed Value</div>
-      <div class="val-range">Market estimate: <strong style="color:var(--white)">$1.69M – $2.01M</strong></div>
-      <div class="val-detail">5,920 SF · Built 1987 · Commercial / Retail</div>
-      <div class="tags" style="margin-top:14px">
-        <span class="tag t-blue">$272 / SF assessed</span>
-      </div>
-    </div>
-
-    <!-- Tile 5: Report depth -->
-    <div class="tile tile-5 reveal reveal-delay-2">
-      <div class="tile-accent" style="width:200px;height:200px;bottom:-60px;right:-50px;background:rgba(124,58,237,0.2)"></div>
-      <div class="tile-label">Report Depth</div>
-      <div class="pages-big">13+</div>
-      <div class="pages-sub">Pages per Pro report. Comps, equity, ownership history, deal analysis, demographics, skip trace, and more.</div>
-    </div>
-
-    <!-- Tile 6: Sold Comps -->
-    <div class="tile tile-6 reveal">
-      <div class="tile-label" style="margin-bottom:20px">Sold Comparables — 90 Day / 6 Month / 12 Month Windows</div>
+      <div class="tile-accent" style="width:260px;height:260px;bottom:-80px;left:-60px;background:rgba(124,58,237,0.1)"></div>
+      <div class="tile-diff diff-medium">🟠 Medium-hard — requires MLS or ATTOM access</div>
+      <div class="tile-label">Sold Comps — 90d / 6mo / 12mo</div>
       <div class="comps-grid">
         <div>
           <div class="comp-row">
-            <div class="comp-info">
-              <div class="comp-addr">4612 Greenville Ave</div>
-              <div class="comp-meta">5,200 SF · Sold Jun 2023</div>
-            </div>
-            <div style="text-align:right">
-              <div class="comp-price">$1.72M</div>
-              <div class="comp-psf">$331/SF</div>
-            </div>
+            <div class="comp-info"><div class="comp-addr">4612 Greenville Ave</div><div class="comp-meta">5,200 SF · Jun 2023</div></div>
+            <div style="text-align:right"><div class="comp-price">$1.72M</div><div class="comp-psf">$331/SF</div></div>
           </div>
           <div class="comp-row">
-            <div class="comp-info">
-              <div class="comp-addr">3901 Greenville Ave</div>
-              <div class="comp-meta">5,500 SF · Sold Oct 2022</div>
-            </div>
-            <div style="text-align:right">
-              <div class="comp-price">$1.88M</div>
-              <div class="comp-psf">$342/SF</div>
-            </div>
+            <div class="comp-info"><div class="comp-addr">3901 Greenville Ave</div><div class="comp-meta">5,500 SF · Oct 2022</div></div>
+            <div style="text-align:right"><div class="comp-price">$1.88M</div><div class="comp-psf">$342/SF</div></div>
           </div>
         </div>
         <div>
           <div class="comp-row">
-            <div class="comp-info">
-              <div class="comp-addr">5001 Greenville Ave</div>
-              <div class="comp-meta">6,100 SF · Sold Mar 2023</div>
-            </div>
-            <div style="text-align:right">
-              <div class="comp-price">$2.05M</div>
-              <div class="comp-psf">$336/SF</div>
-            </div>
+            <div class="comp-info"><div class="comp-addr">5001 Greenville Ave</div><div class="comp-meta">6,100 SF · Mar 2023</div></div>
+            <div style="text-align:right"><div class="comp-price">$2.05M</div><div class="comp-psf">$336/SF</div></div>
           </div>
           <div class="comp-row">
-            <div class="comp-info">
-              <div class="comp-addr">4318 Lovers Ln</div>
-              <div class="comp-meta">4,800 SF · Sold Jan 2024</div>
-            </div>
-            <div style="text-align:right">
-              <div class="comp-price">$1.55M</div>
-              <div class="comp-psf">$323/SF</div>
-            </div>
+            <div class="comp-info"><div class="comp-addr">4318 Lovers Ln</div><div class="comp-meta">4,800 SF · Jan 2024</div></div>
+            <div style="text-align:right"><div class="comp-price">$1.55M</div><div class="comp-psf">$323/SF</div></div>
           </div>
         </div>
       </div>
       <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:24px;flex-wrap:wrap">
-        <div><div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Avg $/SF (12mo)</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px">$333</div></div>
-        <div><div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Implied Market Value</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px">$1.97M</div></div>
-        <div><div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Discount to Market</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px;color:var(--green-l)">−18%</div></div>
+        <div><div style="font-size:0.6rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Avg $/SF</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px">$333</div></div>
+        <div><div style="font-size:0.6rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Implied Value</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px">$1.97M</div></div>
+        <div><div style="font-size:0.6rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">vs. Assessed</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px;color:var(--green-l)">+22.5%</div></div>
+        <div><div style="font-size:0.6rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px">Comps found</div><div style="font-family:'Cabinet Grotesk',sans-serif;font-size:1.3rem;font-weight:900;letter-spacing:-1px">4</div></div>
       </div>
     </div>
 
   </div>
+
+  <!-- COMPARISON: easy vs hard -->
+  <div class="compare-wrap">
+    <div class="compare-col easy reveal">
+      <div class="compare-col-label">Anyone can find this</div>
+      <div class="compare-col-title">The basics — Zillow,<br>FEMA, county websites.</div>
+      <div class="compare-items">
+        <div class="compare-item"><span class="ci-icon">🌐</span>Year built &amp; square footage</div>
+        <div class="compare-item"><span class="ci-icon">🌐</span>Tax assessed value</div>
+        <div class="compare-item"><span class="ci-icon">🌐</span>FEMA flood zone designation</div>
+        <div class="compare-item"><span class="ci-icon">🌐</span>Owner name from county records</div>
+        <div class="compare-item"><span class="ci-icon">🌐</span>Lot size and property type</div>
+      </div>
+      <div class="compare-note">PropIntel includes all of this too — but it's not why you pay $29.99.</div>
+    </div>
+    <div class="compare-col hard reveal reveal-delay-1">
+      <div class="compare-col-label">Only on PropIntel</div>
+      <div class="compare-col-title">The hard data — what<br>professionals pay for.</div>
+      <div class="compare-items">
+        <div class="compare-item"><span class="ci-icon" style="color:var(--red)">✦</span>Owner's direct phone number + email (skip trace)</div>
+        <div class="compare-item"><span class="ci-icon" style="color:var(--red)">✦</span>Motivation score — 5-signal composite from verified sources</div>
+        <div class="compare-item"><span class="ci-icon" style="color:var(--amber)">✦</span>Sold comps with $/SF normalization — 90d / 6mo / 12mo</div>
+        <div class="compare-item"><span class="ci-icon" style="color:var(--amber)">✦</span>Deal analyzer — DSCR, P&I, 3 acquisition scenarios</div>
+        <div class="compare-item"><span class="ci-icon" style="color:var(--amber)">✦</span>Mortgage balance &amp; equity position</div>
+        <div class="compare-item"><span class="ci-icon" style="color:var(--blue-l)">✦</span>Ownership history — acquisition date, prior sales</div>
+        <div class="compare-item"><span class="ci-icon" style="color:var(--blue-l)">✦</span>13-page PDF — shareable, client-ready</div>
+      </div>
+      <div class="compare-note" style="color:var(--g2);border-color:rgba(255,255,255,0.08)">
+        Individually, this data would cost $200–$500 per property across separate tools — if you could find it at all.
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <hr class="divider"/>
