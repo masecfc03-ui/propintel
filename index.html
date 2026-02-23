@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DealLens.ai — Instant Investment Reports for Real Estate</title>
+  <meta name="description" content="Paste any real estate listing. Get an institutional-grade investment report in 60 seconds." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #1a1a1a;
+      --bg2: #242424;
+      --bg3: #2e2e2e;
+      --border: rgba(255,255,255,0.08);
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --green: #22c55e;
+      --text: #ffffff;
+      --text2: #a0a0a0;
+      --text3: #666666;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 40px;
+      background: rgba(26,26,26,0.9);
+      backdrop-filter: blur(16px);
+    }
+
+    .logo {
+      font-size: 1.05rem; font-weight: 800;
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+    }
+    .logo-dot {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 32px; list-style: none;
+    }
+    .nav-links a {
+      color: var(--text2); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.demo { color: var(--green); font-weight: 600; }
+
+    .nav-cta {
+      background: var(--accent); color: white; border: none;
+      padding: 10px 24px; border-radius: 100px;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .nav-cta:hover { background: var(--accent-hover); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 140px 24px 100px;
+    }
+
+    .hero-label {
+      font-size: 0.78rem; font-weight: 600; color: var(--text2);
+      text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 32px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -2.5px;
+      max-width: 820px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--text2);
+      max-width: 500px;
+      margin-bottom: 56px;
+      font-weight: 400;
+      line-height: 1.7;
+    }
+
+    /* ─── INPUT ─── */
+    .input-group {
+      width: 100%; max-width: 620px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 6px 6px 24px;
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+    .input-group:focus-within { border-color: rgba(59,130,246,0.5); }
+
+    .input-group input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--text); font-size: 0.95rem; font-family: inherit;
+      padding: 10px 0;
+    }
+    .input-group input::placeholder { color: var(--text3); }
+
+    .input-btn {
+      background: var(--accent); color: white; border: none;
+      padding: 12px 26px; border-radius: 100px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      white-space: nowrap; transition: background 0.2s;
+    }
+    .input-btn:hover { background: var(--accent-hover); }
+
+    .input-hint {
+      color: var(--text3); font-size: 0.8rem;
+    }
+
+    /* ─── STATS ─── */
+    .stats-row {
+      display: flex; justify-content: center; align-items: center;
+      gap: 48px; padding: 64px 24px;
+      flex-wrap: wrap;
+    }
+    .stat-item { text-align: center; }
+    .stat-num { font-size: 2.4rem; font-weight: 900; letter-spacing: -1px; }
+    .stat-txt { font-size: 0.82rem; color: var(--text2); margin-top: 4px; }
+
+    /* ─── DIVIDER ─── */
+    hr { border: none; border-top: 1px solid var(--border); }
+
+    /* ─── SECTION ─── */
+    .section { padding: 100px 24px; }
+    .section-inner { max-width: 1060px; margin: 0 auto; }
+    .section-center { text-align: center; }
+
+    .label {
+      font-size: 0.75rem; font-weight: 700; color: var(--text2);
+      text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 1rem; color: var(--text2);
+      max-width: 480px; margin-bottom: 64px;
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    .step {
+      background: var(--bg2); padding: 40px 36px;
+    }
+    .step:first-child { border-radius: 20px 0 0 20px; }
+    .step:last-child { border-radius: 0 20px 20px 0; }
+    .step-num {
+      font-size: 0.72rem; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;
+    }
+    .step h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 12px; }
+    .step p { font-size: 0.88rem; color: var(--text2); line-height: 1.65; }
+
+    /* ─── REPORT DEMO ─── */
+    .report-shell {
+      background: var(--bg2); border-radius: 20px;
+      overflow: hidden; border: 1px solid var(--border);
+    }
+    .report-bar {
+      background: var(--bg3); padding: 14px 20px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.r { background: #ef4444; }
+    .dot.y { background: #f59e0b; }
+    .dot.g { background: #22c55e; }
+    .url-bar {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 6px 16px; border-radius: 8px;
+      font-size: 0.75rem; color: var(--text3); font-family: monospace;
+      flex: 1; max-width: 420px;
+    }
+    .report-body { padding: 36px; }
+
+    .r-title { font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+    .r-addr { color: var(--text2); font-size: 0.88rem; margin-bottom: 28px; }
+
+    .r-metrics {
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      gap: 12px; margin-bottom: 28px;
+    }
+    .r-metric {
+      background: var(--bg3); border-radius: 12px; padding: 16px;
+    }
+    .r-mlabel { font-size: 0.68rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .r-mval { font-size: 1.25rem; font-weight: 800; }
+    .r-mval.green { color: var(--green); }
+    .r-mval.blue { color: var(--accent); }
+    .r-msub { font-size: 0.68rem; color: var(--text3); margin-top: 2px; }
+
+    .r-flags {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 20px;
+    }
+    .r-flag {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: 0.83rem; color: var(--text2);
+    }
+
+    .r-verdict {
+      background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 12px; padding: 18px 20px;
+      display: flex; gap: 14px; align-items: center;
+    }
+    .r-verdict-label { font-size: 0.7rem; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .r-verdict-text { font-size: 0.85rem; color: var(--text2); }
+
+    /* ─── WHO ─── */
+    .who-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2px; margin-top: 0;
+    }
+    .who-card {
+      background: var(--bg2); padding: 36px;
+      transition: background 0.2s;
+    }
+    .who-card:hover { background: var(--bg3); }
+    .who-card:nth-child(1) { border-radius: 20px 0 0 0; }
+    .who-card:nth-child(3) { border-radius: 0 20px 0 0; }
+    .who-card:nth-child(4) { border-radius: 0 0 0 20px; }
+    .who-card:nth-child(6) { border-radius: 0 0 20px 0; }
+    .who-icon { font-size: 1.6rem; margin-bottom: 14px; }
+    .who-title { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .who-desc { font-size: 0.83rem; color: var(--text2); line-height: 1.55; }
+
+    /* ─── PRICING ─── */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; max-width: 980px; margin: 0 auto;
+    }
+    .price-card {
+      background: var(--bg2); border-radius: 20px;
+      padding: 40px 36px; border: 1px solid var(--border);
+      position: relative; transition: transform 0.2s;
+    }
+    .price-card:hover { transform: translateY(-4px); }
+    .price-card.featured {
+      background: var(--bg2);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 20px 60px rgba(59,130,246,0.15);
+    }
+    .popular-pill {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: white;
+      padding: 4px 18px; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 700; white-space: nowrap;
+    }
+    .p-tier { font-size: 0.75rem; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .p-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; }
+    .p-desc { font-size: 0.85rem; color: var(--text2); margin-bottom: 28px; }
+    .p-price {
+      display: flex; align-items: baseline; gap: 3px; margin-bottom: 32px;
+    }
+    .p-dollar { font-size: 1.4rem; font-weight: 700; color: var(--text2); }
+    .p-num { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+    .p-per { font-size: 0.85rem; color: var(--text2); align-self: flex-end; padding-bottom: 6px; }
+    .p-features { list-style: none; margin-bottom: 36px; }
+    .p-features li {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 9px 0; font-size: 0.86rem; color: var(--text2);
+      border-bottom: 1px solid var(--border);
+    }
+    .p-features li:last-child { border-bottom: none; }
+    .p-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .p-source { font-size: 0.72rem; color: var(--text3); margin-left: auto; flex-shrink: 0; }
+    .p-btn {
+      display: block; width: 100%; padding: 14px;
+      border-radius: 100px; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; text-align: center; text-decoration: none;
+      border: none; transition: all 0.2s;
+    }
+    .p-btn.outline {
+      background: none; border: 1px solid var(--border); color: var(--text);
+    }
+    .p-btn.outline:hover { border-color: var(--text2); }
+    .p-btn.primary { background: var(--accent); color: white; }
+    .p-btn.primary:hover { background: var(--accent-hover); }
+
+    /* ─── FAQ ─── */
+    .faq { max-width: 680px; margin: 0 auto; }
+    .faq-item { border-bottom: 1px solid var(--border); padding: 24px 0; }
+    .faq-q { font-size: 1rem; font-weight: 600; margin-bottom: 10px; }
+    .faq-a { font-size: 0.88rem; color: var(--text2); line-height: 1.7; }
+
+    /* ─── BOTTOM CTA ─── */
+    .cta-section {
+      padding: 120px 24px;
+      text-align: center;
+    }
+    .cta-section h2 { margin-bottom: 16px; }
+    .cta-section p { color: var(--text2); max-width: 440px; margin: 0 auto 48px; }
+    .cta-input-row {
+      display: flex; gap: 10px; max-width: 540px; margin: 0 auto;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 100px; padding: 6px 6px 6px 24px;
+    }
+    .cta-input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--text); font-size: 0.92rem; font-family: inherit;
+    }
+    .cta-input::placeholder { color: var(--text3); }
+    .cta-btn {
+      background: var(--accent); color: white; border: none;
+      padding: 12px 26px; border-radius: 100px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      transition: background 0.2s; white-space: nowrap;
+    }
+    .cta-btn:hover { background: var(--accent-hover); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { font-size: 0.95rem; font-weight: 800; }
+    .footer-links { display: flex; gap: 24px; list-style: none; }
+    .footer-links a { color: var(--text3); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text2); }
+    .footer-copy { color: var(--text3); font-size: 0.78rem; }
+
+    @media (max-width: 900px) {
+      .r-metrics { grid-template-columns: repeat(3, 1fr); }
+      .steps, .who-grid, .pricing-grid { grid-template-columns: 1fr; gap: 12px; }
+      .step, .who-card { border-radius: 16px !important; }
+      .price-card { border-radius: 16px; }
+      nav { padding: 16px 20px; }
+      .nav-links { display: none; }
+    }
+
+    @media print {
+      body { background: white; color: #0f172a; }
+      nav, .cta-section, footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-dot">🔍</div>
+    DealLens.ai
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="report-pro.html" class="demo">📄 Live Demo</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="#pricing" class="nav-cta">Get a Report</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label">AI-Powered Real Estate Intelligence</div>
+  <h1>See through<br>any deal.<br><em>In 60 seconds.</em></h1>
+  <p class="hero-sub">Paste any listing URL or property address. Get a full public record report — sourced, cited, and instantly downloadable.</p>
+
+  <div class="input-group">
+    <input type="text" placeholder="Paste a LoopNet, Crexi, or Zillow URL — or any address" />
+    <button class="input-btn">Analyze →</button>
+  </div>
+  <p class="input-hint">Works with LoopNet · Crexi · Zillow · Realtor.com · any address</p>
+</section>
+
+<hr />
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-item">
+    <div class="stat-num">60s</div>
+    <div class="stat-txt">Average delivery</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">40+</div>
+    <div class="stat-txt">Data points per report</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">100%</div>
+    <div class="stat-txt">Public record sourced</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">$0</div>
+    <div class="stat-txt">Software to install</div>
+  </div>
+</div>
+
+<hr />
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-inner">
+    <div class="label" style="text-align:center">How It Works</div>
+    <h2 style="text-align:center;max-width:520px;margin:0 auto 12px">Three steps from listing to decision.</h2>
+    <p class="section-desc" style="text-align:center;margin:0 auto 48px">No spreadsheets. No analyst. No waiting days for a model to come back.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">Step 01</div>
+        <h3>Paste any listing</h3>
+        <p>Drop in a URL from LoopNet, Crexi, Zillow, or Realtor.com — or just type an address. We handle the rest.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">Step 02</div>
+        <h3>Choose your depth</h3>
+        <p>Public Record ($9.99) pulls every verifiable government data point. Full Intel ($29.99) adds owner skip trace, comps, liens, and a pre-filled LOI.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">Step 03</div>
+        <h3>Download your report</h3>
+        <p>Receive a formatted PDF instantly — every data point cited by source. No estimates. No AI-generated numbers. Only facts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr />
+
+<!-- SAMPLE REPORT -->
+<section class="section" id="sample">
+  <div class="section-inner">
+    <div class="label">Live Example</div>
+    <h2 style="max-width:600px;margin-bottom:12px">This is what your report looks like.</h2>
+    <p class="section-desc" style="margin-bottom:40px">Real data. Every number cited. The same depth a CRE analyst charges $500 to produce.</p>
+
+    <div class="report-shell">
+      <div class="report-bar">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <div class="url-bar">loopnet.com/Listing/3229-3249-Forest-Ln-Garland-TX/32972360/</div>
+      </div>
+      <div class="report-body">
+        <div class="r-title">Forest Jupiter Plaza — Strip Center</div>
+        <div class="r-addr">3229–3249 Forest Ln, Garland TX 75042 · 9,640 SF · 6 Suites · APN: 26629500010010700</div>
+        <div class="r-metrics">
+          <div class="r-metric"><div class="r-mlabel">Ask Price</div><div class="r-mval">$2.58M</div><div class="r-msub">$267/SF</div></div>
+          <div class="r-metric"><div class="r-mlabel">Cap Rate</div><div class="r-mval green">7.22%</div><div class="r-msub">Stated</div></div>
+          <div class="r-metric"><div class="r-mlabel">Assessed</div><div class="r-mval">$2.26M</div><div class="r-msub">DCAD 2025</div></div>
+          <div class="r-metric"><div class="r-mlabel">Tax Bill</div><div class="r-mval">$54K</div><div class="r-msub">Annual</div></div>
+          <div class="r-metric"><div class="r-mlabel">Flood Zone</div><div class="r-mval green" style="font-size:0.9rem">Zone X</div><div class="r-msub">FEMA</div></div>
+          <div class="r-metric"><div class="r-mlabel">Motivation</div><div class="r-mval" style="color:#f59e0b">70/100</div><div class="r-msub">HIGH</div></div>
+        </div>
+        <div class="r-flags">
+          <div class="r-flag">✅ <span>No tax delinquency — current per DCAD</span></div>
+          <div class="r-flag">✅ <span>Zone X flood designation — no flood insurance required</span></div>
+          <div class="r-flag">⚠️ <span>Suite 3243 — forfeited TX SOS entity (at-risk tenant)</span></div>
+          <div class="r-flag">⚠️ <span>Absentee owner 8.3 mi from property — motivation signal</span></div>
+          <div class="r-flag">📜 <span>Last deed: March 2018 at $1,950,000 (7.9 yrs held)</span></div>
+          <div class="r-flag">🚗 <span>Forest Ln AADT: 18,400 vehicles/day (TxDOT 2023)</span></div>
+        </div>
+        <div class="r-verdict">
+          <span style="font-size:1.8rem">🎯</span>
+          <div>
+            <div class="r-verdict-label">AI Verdict — Full Intel Report</div>
+            <div class="r-verdict-text">LOI target $2.35–2.40M (7.6–8.0% cap). Owner skip traced: (214) 555-0182 · jsmith@domain.com. 1 UCC-1 equipment lien — does not encumber title. Request rent roll + T-12 before committing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:24px">
+      <a href="report-pro.html" style="color:var(--accent);font-size:0.88rem;font-weight:600;text-decoration:none">View the full Pro sample report →</a>
+      &nbsp;&nbsp;
+      <a href="report-starter.html" style="color:var(--text2);font-size:0.88rem;font-weight:500;text-decoration:none">View Starter sample →</a>
+    </div>
+  </div>
+</section>
+
+<hr />
+
+<!-- WHO -->
+<section class="section">
+  <div class="section-inner">
+    <div class="label" style="text-align:center">Who Uses DealLens</div>
+    <h2 style="text-align:center;margin-bottom:12px">Built for investors who move fast.</h2>
+    <p class="section-desc" style="text-align:center;margin:0 auto 48px">Any property type. Any state. If it has a listing or an address, DealLens can analyze it.</p>
+    <div class="who-grid">
+      <div class="who-card"><div class="who-icon">🏢</div><div class="who-title">CRE Investors</div><div class="who-desc">Strip centers, retail, industrial, office — instant public record underwriting on any commercial asset.</div></div>
+      <div class="who-card"><div class="who-icon">🏘️</div><div class="who-title">Multifamily Buyers</div><div class="who-desc">Tax records, deed history, flood zone, demographics, and tenant verification in one report.</div></div>
+      <div class="who-card"><div class="who-icon">🌾</div><div class="who-title">Land Investors</div><div class="who-desc">Owner skip trace, motivation scoring, county parcel data, and comparable deed sales for any land parcel.</div></div>
+      <div class="who-card"><div class="who-icon">🏠</div><div class="who-title">SFR / Fix &amp; Flip</div><div class="who-desc">Deed history, permit records, flood zone, and seller motivation — everything before you make an offer.</div></div>
+      <div class="who-card"><div class="who-icon">📊</div><div class="who-title">Brokers &amp; Agents</div><div class="who-desc">Send clients a sourced deal brief in 60 seconds. Stand out from every other broker in the room.</div></div>
+      <div class="who-card"><div class="who-icon">💼</div><div class="who-title">Syndicators</div><div class="who-desc">Screen 20 deals in an hour. Build the full memo on the one that makes the cut.</div></div>
+    </div>
+  </div>
+</section>
+
+<hr />
+
+<!-- PRICING -->
+<section class="section section-center" id="pricing">
+  <div class="section-inner">
+    <div class="label">Pricing</div>
+    <h2>Pay per report. No subscription required.</h2>
+    <p class="section-desc" style="margin:0 auto 64px">Buy one report. See what you get. Upgrade when you're ready.</p>
+
+    <div class="pricing-grid">
+
+      <!-- STARTER -->
+      <div class="price-card">
+        <div class="p-tier">Public Record</div>
+        <div class="p-name">Starter</div>
+        <div class="p-desc">Every verifiable public record on a property. Sourced. Cited. Instant.</div>
+        <div class="p-price">
+          <span class="p-dollar">$</span>
+          <span class="p-num">9</span>
+          <span class="p-per">.99 / report</span>
+        </div>
+        <ul class="p-features">
+          <li><span class="p-check">✓</span> Parcel data — owner, APN, legal description <span class="p-source">DCAD</span></li>
+          <li><span class="p-check">✓</span> Assessed value, tax bill &amp; delinquency status <span class="p-source">DCAD</span></li>
+          <li><span class="p-check">✓</span> Full deed &amp; sales history w/ recorded prices <span class="p-source">County Clerk</span></li>
+          <li><span class="p-check">✓</span> AADT traffic count (nearest station) <span class="p-source">TxDOT</span></li>
+          <li><span class="p-check">✓</span> FEMA flood zone &amp; FIRM panel <span class="p-source">FEMA</span></li>
+          <li><span class="p-check">✓</span> Zoning code &amp; permitted uses <span class="p-source">City GIS</span></li>
+          <li><span class="p-check">✓</span> Demographics — pop, MHI, growth (ZIP) <span class="p-source">Census ACS</span></li>
+          <li><span class="p-check">✓</span> Active business registrations by suite <span class="p-source">TX SOS</span></li>
+          <li><span class="p-check">✓</span> Listing facts only — price, SF, cap rate, broker <span class="p-source">LoopNet</span></li>
+          <li><span class="p-check">✓</span> Every data point hyperlinked to its source</li>
+        </ul>
+        <a href="report-starter.html" class="p-btn outline">See Sample Report →</a>
+      </div>
+
+      <!-- PRO -->
+      <div class="price-card featured">
+        <div class="popular-pill">⚡ Most Popular</div>
+        <div class="p-tier">Full Intel</div>
+        <div class="p-name">Pro</div>
+        <div class="p-desc">Everything in Starter plus owner contact data, motivation scoring, comps, liens, and a pre-filled LOI.</div>
+        <div class="p-price">
+          <span class="p-dollar">$</span>
+          <span class="p-num">29</span>
+          <span class="p-per">.99 / report</span>
+        </div>
+        <ul class="p-features">
+          <li><span class="p-check">✓</span> Everything in Starter</li>
+          <li><span class="p-check">✓</span> Owner skip trace — phone &amp; email <span class="p-source">DataZapp</span></li>
+          <li><span class="p-check">✓</span> LLC pierce — registered agent &amp; members <span class="p-source">TX SOS</span></li>
+          <li><span class="p-check">✓</span> Owner distance + years held <span class="p-source">DCAD + Deed</span></li>
+          <li><span class="p-check">✓</span> Motivation score — verified data only <span class="p-source">0–100</span></li>
+          <li><span class="p-check">✓</span> Comparable recorded deed sales (1 mi) <span class="p-source">County Clerk</span></li>
+          <li><span class="p-check">✓</span> Lien search — mechanic's liens, UCC, tax <span class="p-source">County Clerk</span></li>
+          <li><span class="p-check">✓</span> Permit history — all permits on parcel <span class="p-source">City Records</span></li>
+          <li><span class="p-check">✓</span> Tenant verification by suite <span class="p-source">TX SOS</span></li>
+          <li><span class="p-check">✓</span> Environmental flags — EPA, TCEQ UST <span class="p-source">EPA ECHO</span></li>
+          <li><span class="p-check">✓</span> Pre-filled LOI template with property data</li>
+        </ul>
+        <a href="report-pro.html" class="p-btn primary">See Sample Report →</a>
+      </div>
+
+      <!-- ENTERPRISE -->
+      <div class="price-card">
+        <div class="p-tier">Unlimited</div>
+        <div class="p-name">Enterprise</div>
+        <div class="p-desc">For investors running serious deal volume. Unlimited Pro reports plus bulk county lead lists.</div>
+        <div class="p-price">
+          <span class="p-dollar">$</span>
+          <span class="p-num">199</span>
+          <span class="p-per">/mo</span>
+        </div>
+        <ul class="p-features">
+          <li><span class="p-check">✓</span> Unlimited Pro reports</li>
+          <li><span class="p-check">✓</span> Full county parcel lists — every parcel</li>
+          <li><span class="p-check">✓</span> Bulk motivation scoring across portfolios</li>
+          <li><span class="p-check">✓</span> Weekly market updates for your MSAs</li>
+          <li><span class="p-check">✓</span> JSON API for system integration</li>
+          <li><span class="p-check">✓</span> Priority support</li>
+        </ul>
+        <button class="p-btn outline">Talk to Us →</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr />
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="section-inner section-center">
+    <div class="label">FAQ</div>
+    <h2 style="margin-bottom:48px">Common questions.</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <div class="faq-q">What types of properties does DealLens work on?</div>
+        <div class="faq-a">Any property type — strip centers, multifamily, land, SFR, industrial, office. If it has a listing URL or an address, DealLens can analyze it.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Where does the data come from?</div>
+        <div class="faq-a">Every data point comes from a verifiable public source: county assessor records (DCAD), county clerk deed records, TxDOT traffic data, FEMA flood maps, Census Bureau, Texas Secretary of State, city GIS, and EPA databases. Pro tier adds DataZapp skip trace. Every field in the report is hyperlinked to its source.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Are there any estimated or AI-generated numbers in the report?</div>
+        <div class="faq-a">No. That's the entire point. Every number is a verified public record fact. The only "estimates" are items marked clearly as sample values in the demo — live reports pull real-time data. We do not generate projected NOI, DSCR, or cap rates without a verified rent roll.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How long does a report take?</div>
+        <div class="faq-a">Starter reports deliver in under 60 seconds. Pro reports take 90–120 seconds due to the parcel pull and skip trace. Enterprise bulk runs are queued and delivered by email.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What format is the report?</div>
+        <div class="faq-a">Reports are delivered as formatted PDFs. Enterprise customers also receive JSON output via API for integration into their own systems.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Does this replace due diligence?</div>
+        <div class="faq-a">No. DealLens is your first-pass filter — it cuts 2–3 hours of public record research down to 60 seconds. It does not replace a full title search, Phase I ESA, rent roll review, or appraisal. We say that clearly in every report.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr />
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Run your first deal right now.</h2>
+  <p>Paste a listing. Get a report. Make a decision in 60 seconds.</p>
+  <div class="cta-input-row">
+    <input class="cta-input" type="text" placeholder="Paste a listing URL or property address..." />
+    <button class="cta-btn">Analyze →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🔍 DealLens.ai</div>
+  <ul class="footer-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="report-pro.html">Demo</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="mailto:hello@deallens.ai">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 DealLens.ai</div>
+</footer>
+
+<script>
+const API_URL = "https://feels-interim-tractor-luxury.trycloudflare.com";
+
+function getSelectedTier() {
+  // Default pro — user can pick on pricing section
+  return window._selectedTier || "starter";
+}
+
+async function runAnalysis(inputVal, tier) {
+  if (!inputVal || inputVal.trim().length < 5) return;
+  const overlay = document.getElementById("analysis-overlay");
+  overlay.style.display = "flex";
+  overlay.querySelector(".ol-status").textContent = "Geocoding address...";
+
+  try {
+    const resp = await fetch(API_URL + "/api/analyze", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({input: inputVal.trim(), tier: tier, format: "html"})
+    });
+
+    overlay.querySelector(".ol-status").textContent = "Generating report...";
+
+    if (!resp.ok) throw new Error("API error " + resp.status);
+    const html = await resp.text();
+
+    // Open report in new window
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
+    overlay.style.display = "none";
+
+  } catch(e) {
+    overlay.querySelector(".ol-status").textContent = "Error: " + e.message;
+    setTimeout(() => { overlay.style.display = "none"; }, 3000);
+  }
+}
+
+document.querySelectorAll(".input-btn, .cta-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const inp = btn.closest(".input-group, .cta-input-row")?.querySelector("input");
+    if (inp) runAnalysis(inp.value, getSelectedTier());
+  });
+});
+
+document.querySelectorAll("input").forEach(inp => {
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Enter") runAnalysis(inp.value, getSelectedTier());
+  });
+});
+
+// Set tier on pricing card click
+document.querySelectorAll(".p-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const card = btn.closest(".price-card");
+    const tier = card?.querySelector(".p-tier")?.textContent?.toLowerCase();
+    if (tier?.includes("public") || tier?.includes("starter")) {
+      window._selectedTier = "starter";
+    } else if (tier?.includes("full") || tier?.includes("pro")) {
+      window._selectedTier = "pro";
+    }
+  });
+});
+</script>
+
+<!-- ANALYSIS OVERLAY -->
+<div id="analysis-overlay" style="display:none;position:fixed;inset:0;background:rgba(26,26,26,0.92);
+  backdrop-filter:blur(12px);z-index:999;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+  <div style="font-size:2.5rem;margin-bottom:20px;animation:spin 1.5s linear infinite">🔍</div>
+  <div style="font-size:1.2rem;font-weight:700;margin-bottom:8px">Analyzing property...</div>
+  <div class="ol-status" style="color:#94a3b8;font-size:0.9rem">Pulling public records...</div>
+  <div style="margin-top:24px;color:#64748b;font-size:0.78rem">Geocoding · FEMA · Census · County Records</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+</body>
+</html>

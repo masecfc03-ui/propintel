@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DealLens.ai · Public Record Report — Forest Jupiter Plaza</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #070c18; --bg2: #0d1425; --bg3: #111c35;
+      --border: rgba(255,255,255,0.07); --accent: #3b82f6; --accent2: #60a5fa;
+      --green: #10b981; --green-dim: rgba(16,185,129,0.12);
+      --yellow: #f59e0b; --yellow-dim: rgba(245,158,11,0.12);
+      --red: #ef4444; --red-dim: rgba(239,68,68,0.12);
+      --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+      --sample: #f59e0b;
+    }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    /* NAV */
+    .topbar {
+      background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 14px 32px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar-logo { font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); }
+    .topbar-logo .icon { background: var(--accent); border-radius: 6px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-right a { color: var(--text2); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+    .topbar-right a:hover { color: var(--text); }
+    .btn-upgrade {
+      background: var(--accent); color: white; border: none; padding: 8px 18px;
+      border-radius: 7px; font-size: 0.82rem; font-weight: 700; cursor: pointer; text-decoration: none;
+    }
+
+    /* WATERMARK */
+    .watermark-wrap { position: relative; }
+    .watermark {
+      position: fixed; top: 80px; right: -32px;
+      background: var(--yellow); color: #000; font-size: 0.7rem; font-weight: 800;
+      padding: 5px 36px; transform: rotate(45deg); letter-spacing: 1px;
+      text-transform: uppercase; z-index: 100; pointer-events: none;
+    }
+
+    /* REPORT CONTAINER */
+    .report { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* HEADER */
+    .report-header {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+      padding: 32px; margin-bottom: 24px;
+    }
+    .report-meta {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
+    }
+    .report-tier-badge {
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
+      color: var(--accent2); padding: 4px 14px; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    }
+    .report-ts { color: var(--text3); font-size: 0.78rem; }
+    .report-prop-name { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .report-addr { color: var(--text2); font-size: 0.95rem; margin-bottom: 16px; }
+    .report-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+    .tag {
+      background: var(--bg3); border: 1px solid var(--border); padding: 5px 12px;
+      border-radius: 6px; font-size: 0.78rem; color: var(--text2); font-weight: 500;
+    }
+
+    /* SECTION */
+    .section {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+      margin-bottom: 20px; overflow: hidden;
+    }
+    .section-head {
+      padding: 16px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .section-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+    .section-source {
+      font-size: 0.72rem; color: var(--text3); font-weight: 500;
+    }
+    .section-source a { color: var(--accent2); text-decoration: none; }
+    .section-source a:hover { text-decoration: underline; }
+    .section-body { padding: 24px; }
+
+    /* ROWS */
+    .data-row {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 11px 0; border-bottom: 1px solid var(--border); gap: 16px;
+      flex-wrap: wrap;
+    }
+    .data-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .data-label { font-size: 0.82rem; color: var(--text3); font-weight: 500; min-width: 180px; }
+    .data-val { font-size: 0.92rem; font-weight: 600; text-align: right; }
+    .data-val.sample { color: var(--sample); }
+    .sample-badge {
+      display: inline-block; background: var(--yellow-dim); border: 1px solid rgba(245,158,11,0.3);
+      color: var(--yellow); padding: 1px 6px; border-radius: 4px; font-size: 0.65rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; vertical-align: middle;
+    }
+    .data-val.green { color: var(--green); }
+    .data-val.red { color: var(--red); }
+
+    /* TABLE */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table th {
+      text-align: left; color: var(--text3); font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px;
+      border-bottom: 1px solid var(--border); background: var(--bg3);
+    }
+    .data-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--text2); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table td.val { font-weight: 600; color: var(--text); }
+    .data-table td.sample { color: var(--sample); font-weight: 600; }
+    .data-table td.green { color: var(--green); font-weight: 600; }
+    .data-table td.red { color: var(--red); font-weight: 600; }
+
+    /* FLAGS */
+    .flag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .flag-item {
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px; display: flex; gap: 10px; align-items: flex-start;
+    }
+    .flag-item.green { border-color: rgba(16,185,129,0.25); background: var(--green-dim); }
+    .flag-item.yellow { border-color: rgba(245,158,11,0.25); background: var(--yellow-dim); }
+    .flag-item.red { border-color: rgba(239,68,68,0.25); background: var(--red-dim); }
+    .flag-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .flag-text { font-size: 0.83rem; color: var(--text2); line-height: 1.4; }
+    .flag-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+    /* DISCLAIMER */
+    .disclaimer {
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px 24px; margin-top: 24px;
+    }
+    .disclaimer-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 8px; }
+    .disclaimer p { font-size: 0.82rem; color: var(--text3); line-height: 1.6; }
+
+    /* UPGRADE BOX */
+    .upgrade-box {
+      background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(99,102,241,0.06));
+      border: 1px solid rgba(59,130,246,0.3); border-radius: 14px;
+      padding: 28px 32px; text-align: center; margin-top: 24px;
+    }
+    .upgrade-box h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+    .upgrade-box p { color: var(--text2); font-size: 0.88rem; margin-bottom: 20px; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .upgrade-items { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
+    .upgrade-item {
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+      color: var(--accent2); padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+    }
+    .upgrade-btn {
+      display: inline-block; background: var(--accent); color: white;
+      padding: 12px 28px; border-radius: 9px; font-size: 0.95rem; font-weight: 700;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .upgrade-btn:hover { background: #2563eb; }
+
+    @media (max-width: 600px) {
+      .flag-grid { grid-template-columns: 1fr; }
+      .data-label { min-width: 120px; }
+      .data-val { text-align: left; }
+    }
+
+    @media print {
+      body { background: white; color: #0f172a; }
+      .topbar, .watermark, .upgrade-box { display: none; }
+      .section, .report-header { background: white; border-color: #e2e8f0; }
+      .section-head { background: #f8fafc; }
+      .data-table th { background: #f1f5f9; color: #475569; }
+      .data-table td { color: #334155; }
+      .flag-item { background: #f8fafc; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <div class="icon">🔍</div> DealLens.ai
+  </a>
+  <div class="topbar-right">
+    <a href="index.html">← Back to Site</a>
+    <a href="report-pro.html">View Pro Sample</a>
+    <a href="#" onclick="window.print()" style="color:var(--text2)">⬇ Print / PDF</a>
+    <a href="report-pro.html" class="btn-upgrade">Upgrade to Pro — $29.99</a>
+  </div>
+</div>
+
+<div class="watermark">Sample Report</div>
+
+<div class="report">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="report-meta">
+      <div class="report-tier-badge">🔍 Public Record Report · $9.99</div>
+      <div class="report-ts">Generated: February 23, 2026 · 11:34 PM CST</div>
+    </div>
+    <div class="report-prop-name">Forest Jupiter Plaza</div>
+    <div class="report-addr">3229–3249 Forest Ln, Garland TX 75042 · Dallas County</div>
+    <div class="report-tags">
+      <span class="tag">Strip Center</span>
+      <span class="tag">9,640 SF</span>
+      <span class="tag">6 Suites</span>
+      <span class="tag">APN: 26629500010010700</span>
+      <span class="tag">ZIP 75042</span>
+    </div>
+  </div>
+
+  <!-- SECTION 1: LISTING FACTS -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">📋 Listing Facts</div>
+      <div class="section-source">Source: <a href="https://www.loopnet.com/Listing/3229-3249-Forest-Ln-Garland-TX/32972360/" target="_blank">LoopNet Listing #32972360</a></div>
+    </div>
+    <div class="section-body">
+      <div class="data-row"><span class="data-label">Asking Price</span><span class="data-val">$2,578,000</span></div>
+      <div class="data-row"><span class="data-label">Price Per SF</span><span class="data-val">$267.43 / SF</span></div>
+      <div class="data-row"><span class="data-label">Stated Cap Rate (as listed)</span><span class="data-val">7.00% – 7.22%</span></div>
+      <div class="data-row"><span class="data-label">Building SF</span><span class="data-val">9,640 SF</span></div>
+      <div class="data-row"><span class="data-label">Number of Suites</span><span class="data-val">6</span></div>
+      <div class="data-row"><span class="data-label">Property Type</span><span class="data-val">Strip Center / Retail</span></div>
+      <div class="data-row"><span class="data-label">Listing Broker</span><span class="data-val">United Shinryu Brokerage LLC</span></div>
+      <div class="data-row"><span class="data-label">Broker Address</span><span class="data-val">2828 E Trinity Mls Rd, Carrollton TX 75006</span></div>
+      <div class="data-row"><span class="data-label">Days on Market</span><span class="data-val sample">47 days <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Listing URL</span><span class="data-val" style="font-size:0.78rem"><a href="https://www.loopnet.com/Listing/3229-3249-Forest-Ln-Garland-TX/32972360/" target="_blank" style="color:var(--accent2)">loopnet.com/…/32972360</a></span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: PARCEL & OWNERSHIP -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">🏛 Parcel &amp; Ownership Record</div>
+      <div class="section-source">Source: <a href="https://www.dcad.org/property-search" target="_blank">Dallas Central Appraisal District (dcad.org)</a></div>
+    </div>
+    <div class="section-body">
+      <div class="data-row"><span class="data-label">APN / Parcel ID</span><span class="data-val">26629500010010700</span></div>
+      <div class="data-row"><span class="data-label">Owner of Record</span><span class="data-val sample">FOREST JUPITER PROPERTIES LLC <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Owner Mailing Address</span><span class="data-val sample">PO BOX 12345, DALLAS TX 75201 <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Legal Description</span><span class="data-val sample">LOT 1, BLK A, FOREST JUPITER ADDITION <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Property Class</span><span class="data-val sample">Commercial Real Property <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Year Built</span><span class="data-val sample">1988 <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Building SF (Appraiser)</span><span class="data-val sample">9,640 SF <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Land SF / Acreage</span><span class="data-val sample">43,560 SF (1.00 ac) <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">2025 Assessed Value — Land</span><span class="data-val sample">$412,000 <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">2025 Assessed Value — Improvement</span><span class="data-val sample">$1,847,000 <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">2025 Total Assessed Value</span><span class="data-val sample">$2,259,000 <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Exemptions</span><span class="data-val">None</span></div>
+      <div class="data-row"><span class="data-label">Estimated Annual Tax Bill</span><span class="data-val sample">$54,216 (est. 2.40% combined rate) <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Tax Delinquency Status</span><span class="data-val green">Current — No Delinquency</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: DEED & SALES HISTORY -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">📜 Deed &amp; Sales History</div>
+      <div class="section-source">Source: <a href="https://www.dallascounty.org/departments/countyclerk/real-property.php" target="_blank">Dallas County Clerk — Real Property Records</a></div>
+    </div>
+    <div class="section-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date Recorded</th>
+            <th>Grantor (Seller)</th>
+            <th>Grantee (Buyer)</th>
+            <th>Recorded Price</th>
+            <th>Instrument</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="sample">03/15/2018 <span class="sample-badge">sample</span></td>
+            <td class="sample">PRIOR OWNER LLC</td>
+            <td class="sample">FOREST JUPITER PROPERTIES LLC</td>
+            <td class="sample val">$1,950,000</td>
+            <td class="sample">Warranty Deed</td>
+          </tr>
+          <tr>
+            <td class="sample">07/22/2009 <span class="sample-badge">sample</span></td>
+            <td class="sample">FOREST JUPITER DEV INC</td>
+            <td class="sample">PRIOR OWNER LLC</td>
+            <td class="sample val">$1,100,000</td>
+            <td class="sample">Warranty Deed</td>
+          </tr>
+          <tr>
+            <td class="sample">11/04/1992 <span class="sample-badge">sample</span></td>
+            <td class="sample">ORIGINAL DEVELOPER CORP</td>
+            <td class="sample">FOREST JUPITER DEV INC</td>
+            <td class="sample val">$340,000</td>
+            <td class="sample">Warranty Deed</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="color:var(--text3);font-size:0.75rem;margin-top:12px;">All deed transfers pulled from Dallas County Clerk public records. Recorded prices reflect instrument amounts — verify for arm's-length transaction status.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 4: TRAFFIC COUNT -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">🚗 Traffic Count (AADT)</div>
+      <div class="section-source">Source: <a href="https://www.txdot.gov/data-maps/traffic-count-maps.html" target="_blank">TxDOT STARS II — txdot.gov</a></div>
+    </div>
+    <div class="section-body">
+      <div class="data-row"><span class="data-label">Road Segment</span><span class="data-val">Forest Ln at Jupiter Rd, Garland TX</span></div>
+      <div class="data-row"><span class="data-label">AADT (Annual Avg Daily Traffic)</span><span class="data-val sample">18,400 vehicles/day <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">TxDOT Station ID</span><span class="data-val sample">Station #1247 <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Count Year</span><span class="data-val sample">2023 <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Road Classification</span><span class="data-val">Minor Arterial</span></div>
+      <div class="data-row"><span class="data-label">Verify Count At</span><span class="data-val" style="font-size:0.78rem"><a href="https://www.txdot.gov/data-maps/traffic-count-maps.html" target="_blank" style="color:var(--accent2)">txdot.gov → STARS II GIS Tool</a></span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: FLOOD ZONE -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">🌊 FEMA Flood Zone</div>
+      <div class="section-source">Source: <a href="https://msc.fema.gov/portal/home" target="_blank">FEMA Map Service Center — msc.fema.gov</a></div>
+    </div>
+    <div class="section-body">
+      <div class="data-row"><span class="data-label">Flood Zone Designation</span><span class="data-val green">Zone X — Minimal Flood Hazard</span></div>
+      <div class="data-row"><span class="data-label">FIRM Panel Number</span><span class="data-val sample">48113C0285J <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Effective Date</span><span class="data-val sample">September 25, 2009 <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Base Flood Elevation</span><span class="data-val">N/A (Zone X)</span></div>
+      <div class="data-row"><span class="data-label">Flood Insurance Required?</span><span class="data-val green">No (Zone X — not in special flood hazard area)</span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: ZONING -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">🏗 Zoning</div>
+      <div class="section-source">Source: <a href="https://www.garlandtx.gov/1224/GIS-Maps" target="_blank">City of Garland GIS — garlandtx.gov</a></div>
+    </div>
+    <div class="section-body">
+      <div class="data-row"><span class="data-label">Zoning Code</span><span class="data-val sample">C-2 Community Business District <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Permitted Uses</span><span class="data-val" style="font-size:0.85rem;text-align:right">Retail, Restaurant, Personal Services, Medical Office, Financial Institutions</span></div>
+      <div class="data-row"><span class="data-label">Overlay Districts</span><span class="data-val">None</span></div>
+      <div class="data-row"><span class="data-label">Min. Parking Ratio</span><span class="data-val sample">4.0 spaces / 1,000 SF <span class="sample-badge">sample</span></span></div>
+      <div class="data-row"><span class="data-label">Verify Zoning At</span><span class="data-val" style="font-size:0.78rem"><a href="https://www.garlandtx.gov/1224/GIS-Maps" target="_blank" style="color:var(--accent2)">garlandtx.gov → GIS Maps</a></span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: DEMOGRAPHICS -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">👥 Demographics — ZIP 75042</div>
+      <div class="section-source">Source: <a href="https://data.census.gov/" target="_blank">U.S. Census Bureau, ACS 5-Year Estimates 2023</a></div>
+    </div>
+    <div class="section-body">
+      <div class="data-row"><span class="data-label">Population (ZIP 75042)</span><span class="data-val">39,148</span></div>
+      <div class="data-row"><span class="data-label">Median Household Income</span><span class="data-val">$64,266</span></div>
+      <div class="data-row"><span class="data-label">Population Growth (2020–2023)</span><span class="data-val green">+2.1%</span></div>
+      <div class="data-row"><span class="data-label">Owner-Occupied Housing</span><span class="data-val">51.3%</span></div>
+      <div class="data-row"><span class="data-label">Median Age</span><span class="data-val">32.4 years</span></div>
+      <div class="data-row"><span class="data-label">Garland City Population</span><span class="data-val">245,298</span></div>
+      <div class="data-row"><span class="data-label">Garland City MHI</span><span class="data-val">$74,717</span></div>
+      <div class="data-row"><span class="data-label">Source URL</span><span class="data-val" style="font-size:0.78rem"><a href="https://datausa.io/profile/geo/garland-tx" target="_blank" style="color:var(--accent2)">datausa.io/profile/geo/garland-tx</a></span></div>
+    </div>
+  </div>
+
+  <!-- SECTION 8: BUSINESS REGISTRATIONS -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">🏪 Active Business Registrations at Address</div>
+      <div class="section-source">Source: <a href="https://www.sos.state.tx.us/corp/businesssearch.shtml" target="_blank">Texas Secretary of State — sos.state.tx.us</a></div>
+    </div>
+    <div class="section-body">
+      <table class="data-table">
+        <thead>
+          <tr><th>Suite</th><th>Business Name</th><th>TX SOS Status</th><th>Active Since</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>3229</td><td class="sample">JADE NAILS &amp; SPA LLC</td><td class="green sample">Active</td><td class="sample">04/2019</td></tr>
+          <tr><td>3231</td><td class="sample">GOLDEN STAR RESTAURANT LLC</td><td class="green sample">Active</td><td class="sample">11/2017</td></tr>
+          <tr><td>3235</td><td class="sample">FAMILY DENTAL OF GARLAND PC</td><td class="green sample">Active</td><td class="sample">01/2015</td></tr>
+          <tr><td>3239</td><td style="color:var(--text3)">No active registration found</td><td class="yellow">⚠ Unverified / Possible Vacancy</td><td>—</td></tr>
+          <tr><td>3243</td><td class="sample">METRO TAX SERVICES LLC</td><td class="red sample">Forfeited — 2023</td><td class="sample">03/2016</td></tr>
+          <tr><td>3249</td><td class="sample">GREAT CLIPS INC (FRANCHISEE)</td><td class="green sample">Active</td><td class="sample">08/2012</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--text3);font-size:0.75rem;margin-top:12px;">⚠ Active TX SOS registration does not confirm current physical occupancy. Field verify all suites. One forfeited entity and one unverified suite identified — potential vacancy indicators.</p>
+    </div>
+  </div>
+
+  <!-- PUBLIC RECORD FLAGS -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">🚦 Public Record Flags</div>
+      <div class="section-source">Compiled from sources above</div>
+    </div>
+    <div class="section-body">
+      <div class="flag-grid">
+        <div class="flag-item green"><span class="flag-icon">✅</span><div class="flag-text"><strong>No Tax Delinquency</strong>Property taxes current per DCAD records (Source: DCAD)</div></div>
+        <div class="flag-item green"><span class="flag-icon">✅</span><div class="flag-text"><strong>Zone X — Low Flood Risk</strong>Outside special flood hazard area, no flood insurance required (Source: FEMA)</div></div>
+        <div class="flag-item green"><span class="flag-icon">✅</span><div class="flag-text"><strong>Commercial Zoning Confirmed</strong>C-2 permits retail, restaurant, medical — no zoning risk for existing use (Source: City GIS)</div></div>
+        <div class="flag-item green"><span class="flag-icon">✅</span><div class="flag-text"><strong>Strong Trade Area Demographics</strong>Garland MHI $74.7K, ZIP 75042 growing +2.1% (Source: Census ACS 2023)</div></div>
+        <div class="flag-item yellow"><span class="flag-icon">⚠️</span><div class="flag-text"><strong>Possible Vacancy — Suite 3239</strong>No TX SOS business registration found at this suite address (Source: TX SOS)</div></div>
+        <div class="flag-item yellow"><span class="flag-icon">⚠️</span><div class="flag-text"><strong>Forfeited Entity — Suite 3243</strong>Metro Tax Services LLC forfeited in 2023 — tenant status unconfirmed (Source: TX SOS)</div></div>
+        <div class="flag-item yellow"><span class="flag-icon">⚠️</span><div class="flag-text"><strong>Traffic Count Unverified</strong>AADT sample only — confirm exact count via TxDOT STARS II before underwriting (Source: TxDOT)</div></div>
+        <div class="flag-item yellow"><span class="flag-icon">⚠️</span><div class="flag-text"><strong>Assessment vs. Ask Gap</strong>DCAD assessed $2.26M vs. $2.578M ask — 14% premium over appraised value (Source: DCAD)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
+    <div class="disclaimer-title">Report Limitations &amp; Methodology</div>
+    <p>This report contains only verified public record data. Values marked <span style="color:var(--sample);font-weight:600">[SAMPLE]</span> are illustrative of data format — live reports pull real-time data from the cited sources. This report does <strong>not</strong> include: rent roll, verified NOI, DSCR calculation, cap rate verification, financial projections, owner contact data, comparable sales, lien search, or motivation scoring. No estimated values are presented as factual. All data points are hyperlinked to their source. DealLens.ai is not a licensed broker, appraiser, or attorney. This report does not constitute investment advice. Verify all data before making investment decisions.</p>
+  </div>
+
+  <!-- UPGRADE BOX -->
+  <div class="upgrade-box">
+    <h3>Need owner contact data, comps, liens &amp; a motivation score?</h3>
+    <p>The Pro report adds everything this one doesn't — skip traced phone &amp; email, LLC pierce, recorded comp sales, lien search, permit history, tenant verification, environmental flags, and a pre-filled LOI.</p>
+    <div class="upgrade-items">
+      <span class="upgrade-item">📞 Owner Phone + Email</span>
+      <span class="upgrade-item">🏢 LLC Pierce</span>
+      <span class="upgrade-item">📊 Motivation Score (0–100)</span>
+      <span class="upgrade-item">🏠 Recorded Comp Sales</span>
+      <span class="upgrade-item">⚖️ Lien Search</span>
+      <span class="upgrade-item">📋 Pre-Filled LOI</span>
+    </div>
+    <a href="report-pro.html" class="upgrade-btn">See Pro Sample Report →</a>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.env.*
+!.env.example
+backend/reports_cache/
+backend/__pycache__/
+backend/scrapers/__pycache__/
+backend/report/__pycache__/
+node_modules/
+.DS_Store
+*.log
