@@ -131,60 +131,178 @@
     .nav-cta:hover { background: var(--accent-hover); }
 
     /* ─── HERO ─── */
+    /* ── PAINTED LANDSCAPE HERO ── */
+    @keyframes skyShift {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.88; }
+    }
+    @keyframes cloudDrift {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(60px); }
+    }
+    @keyframes fogPulse {
+      0%,100% { opacity: 0.18; }
+      50% { opacity: 0.28; }
+    }
+    @keyframes heroFadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     .hero {
-      padding: 130px 24px 80px;
+      position: relative;
+      min-height: 820px;
       display: flex; flex-direction: column;
-      align-items: center; text-align: center;
-      background: var(--white);
+      align-items: center; justify-content: flex-start;
+      text-align: center;
+      overflow: hidden;
+      padding: 0 24px 80px;
+    }
+
+    /* Sky gradient — warm Texas golden hour */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background: linear-gradient(
+        180deg,
+        #fde68a 0%,
+        #fbbf24 8%,
+        #f97316 18%,
+        #fb923c 28%,
+        #fcd34d 42%,
+        #fef3c7 58%,
+        #fefce8 72%,
+        #ffffff 100%
+      );
+      animation: skyShift 12s ease-in-out infinite;
+    }
+
+    /* Sun glow */
+    .hero-sun {
+      position: absolute; z-index: 1;
+      width: 320px; height: 320px;
+      top: -60px; left: 50%; transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(255,251,235,0.9) 0%, rgba(253,230,138,0.5) 35%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Birds */
+    .hero-birds {
+      position: absolute; z-index: 2;
+      top: 12%; left: 30%;
+      pointer-events: none; opacity: 0.45;
+      animation: cloudDrift 40s linear infinite;
+    }
+
+    /* Far hills — soft sage, slightly blurred */
+    .hero-hills-far {
+      position: absolute; z-index: 3;
+      bottom: 38%; left: 0; right: 0; width: 100%;
+      filter: blur(2px);
+      opacity: 0.7;
+    }
+
+    /* Mid hills — deeper green-brown */
+    .hero-hills-mid {
+      position: absolute; z-index: 4;
+      bottom: 24%; left: 0; right: 0; width: 100%;
+      filter: blur(0.5px);
+    }
+
+    /* Near hills / rolling ground */
+    .hero-hills-near {
+      position: absolute; z-index: 5;
+      bottom: 10%; left: 0; right: 0; width: 100%;
+    }
+
+    /* Dark foreground strip */
+    .hero-ground {
+      position: absolute; z-index: 6;
+      bottom: 0; left: 0; right: 0;
+      height: 12%;
+      background: linear-gradient(180deg, #451a03 0%, #1c0a00 100%);
+    }
+
+    /* Atmospheric fog layer */
+    .hero-fog {
+      position: absolute; z-index: 7;
+      inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 80% 40% at 50% 60%, rgba(255,251,235,0.35) 0%, transparent 70%);
+      animation: fogPulse 8s ease-in-out infinite;
+    }
+
+    /* Fade to white at bottom — connects to content */
+    .hero-fade {
+      position: absolute; z-index: 8;
+      bottom: 0; left: 0; right: 0; height: 38%;
+      background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.7) 50%, #ffffff 100%);
+      pointer-events: none;
+    }
+
+    /* Content sits above landscape */
+    .hero-content {
+      position: relative; z-index: 10;
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding-top: 100px;
+      animation: heroFadeUp 1s ease-out 0.3s both;
     }
 
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      background: var(--accent-light);
-      border: 1px solid rgba(37,99,235,0.2);
-      color: var(--accent);
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0,0,0,0.1);
+      color: #92400e;
       padding: 5px 14px; border-radius: 100px;
       font-size: 0.775rem; font-weight: 600;
       letter-spacing: 0.2px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
     .hero-badge-dot {
       width: 6px; height: 6px; border-radius: 50%;
-      background: var(--accent);
+      background: #f97316;
     }
 
     .hero h1 {
-      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
       font-weight: 800;
       line-height: 1.1;
       letter-spacing: -2px;
-      max-width: 780px;
-      margin-bottom: 20px;
-      color: var(--text);
+      max-width: 800px;
+      margin-bottom: 18px;
+      color: #1c0a00;
+      text-shadow: 0 1px 20px rgba(255,255,255,0.6);
     }
 
     .hero h1 strong {
-      color: var(--accent);
-      font-weight: 800;
+      color: #c2410c;
+      font-weight: 900;
     }
 
     .hero-sub {
       font-size: 1.05rem;
-      color: var(--text2);
-      max-width: 520px;
-      margin-bottom: 48px;
+      color: #44403c;
+      max-width: 500px;
+      margin-bottom: 40px;
       line-height: 1.7;
       font-weight: 400;
+      text-shadow: 0 1px 8px rgba(255,255,255,0.8);
     }
 
     /* ─── ANALYZE FORM ─── */
     .form-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      position: relative; z-index: 10;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.6);
+      border-radius: 20px;
       padding: 28px 32px;
       width: 100%; max-width: 620px;
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 8px 40px rgba(124,45,18,0.12), 0 1px 3px rgba(0,0,0,0.06);
+      margin-top: 8px;
     }
 
     .form-label {
@@ -707,16 +825,60 @@
 
 <!-- HERO -->
 <section class="hero" id="analyze">
-  <div class="hero-badge">
-    <span class="hero-badge-dot"></span>
-    Residential · Commercial · Land · Any property type
+
+  <!-- Painted landscape layers -->
+  <div class="hero-sun"></div>
+
+  <!-- Birds — tiny SVG dots drifting -->
+  <svg class="hero-birds" width="120" height="40" viewBox="0 0 120 40" fill="none">
+    <path d="M10 20 Q14 14 18 20" stroke="#451a03" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+    <path d="M30 12 Q35 6 40 12" stroke="#451a03" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+    <path d="M60 25 Q64 19 68 25" stroke="#451a03" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.4"/>
+    <path d="M90 8 Q95 2 100 8" stroke="#451a03" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.35"/>
+    <path d="M50 32 Q53 28 56 32" stroke="#451a03" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.3"/>
+  </svg>
+
+  <!-- Far hills — soft sage green, blurred -->
+  <svg class="hero-hills-far" viewBox="0 0 1440 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 180 C120 120, 200 80, 360 100 C520 120, 580 60, 720 80 C860 100, 960 50, 1100 70 C1240 90, 1350 110, 1440 90 L1440 200 L0 200 Z"
+      fill="#a7f3d0" opacity="0.55"/>
+    <path d="M0 190 C180 140, 300 110, 480 130 C660 150, 720 100, 900 115 C1080 130, 1200 105, 1440 120 L1440 200 L0 200 Z"
+      fill="#6ee7b7" opacity="0.4"/>
+  </svg>
+
+  <!-- Mid hills — warm green-brown -->
+  <svg class="hero-hills-mid" viewBox="0 0 1440 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 200 C80 140, 180 100, 320 120 C460 140, 520 80, 680 100 C840 120, 920 70, 1080 90 C1240 110, 1360 140, 1440 120 L1440 220 L0 220 Z"
+      fill="#78350f" opacity="0.45"/>
+    <path d="M0 210 C200 160, 380 130, 560 150 C740 170, 820 120, 1000 140 C1180 160, 1320 150, 1440 135 L1440 220 L0 220 Z"
+      fill="#92400e" opacity="0.35"/>
+  </svg>
+
+  <!-- Near rolling hills — richer warm brown -->
+  <svg class="hero-hills-near" viewBox="0 0 1440 240" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 200 C60 160, 140 120, 280 140 C420 160, 480 110, 620 125 C760 140, 860 100, 1020 115 C1180 130, 1300 155, 1440 130 L1440 240 L0 240 Z"
+      fill="#7c2d12"/>
+    <path d="M0 215 C100 175, 260 150, 440 165 C620 180, 720 145, 900 158 C1080 171, 1260 165, 1440 148 L1440 240 L0 240 Z"
+      fill="#6b2100" opacity="0.7"/>
+  </svg>
+
+  <div class="hero-ground"></div>
+  <div class="hero-fog"></div>
+  <div class="hero-fade"></div>
+
+  <!-- Content -->
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Residential · Commercial · Land · Any property type
+    </div>
+
+    <h1>The new standard in<br /><strong>property intelligence</strong></h1>
+
+    <p class="hero-sub">
+      Any address. Full public record intel in 30 seconds — owner identity, assessed value, NOI estimate, flood zone, investment verdict.
+    </p>
   </div>
-
-  <h1>The property report<br />your clients <strong>expect</strong></h1>
-
-  <p class="hero-sub">
-    Agents use it to impress buyers and sellers. Investors use it to underwrite deals. Any address — residential, commercial, land — full public record intelligence in under 30 seconds.
-  </p>
 
   <div class="form-card">
     <label class="form-label">Property Address</label>
