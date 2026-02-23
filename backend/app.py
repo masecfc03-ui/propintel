@@ -53,11 +53,12 @@ PRICE_TO_TIER = {
 def health():
     return jsonify({
         "status": "ok",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "ts": datetime.utcnow().isoformat(),
         "webhook": bool(STRIPE_WEBHOOK_SECRET),
         "email": bool(os.environ.get("SENDGRID_API_KEY") or os.environ.get("SMTP_USER")),
-        "datazapp": bool(os.environ.get("DATAZAPP_API_KEY")),
+        "skip_trace": bool(os.environ.get("PDL_API_KEY") or os.environ.get("DATAZAPP_API_KEY")),
+        "skip_trace_provider": "pdl" if os.environ.get("PDL_API_KEY") else ("datazapp" if os.environ.get("DATAZAPP_API_KEY") else "none"),
     })
 
 

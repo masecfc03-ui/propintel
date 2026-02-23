@@ -11,7 +11,8 @@ from scrapers.census import get_demographics
 from scrapers.dcad import search_by_address, search_by_apn
 from scrapers.txsos import search_by_address as txsos_address
 from scrapers.listing import parse_listing, is_address, detect_source
-from scrapers.datazapp import skip_trace, parse_owner_name
+from scrapers.datazapp import parse_owner_name
+from scrapers import pdl as pdl_skip
 from motivation import score as motivation_score
 
 
@@ -130,9 +131,8 @@ def run(input_str: str, tier: str = "starter") -> dict:
         owner_zip = parcel_data.get("owner_zip", "")
 
         if is_entity:
-            # For entities, try to skip trace the entity name
-            from scrapers.datazapp import skip_trace_entity
-            report["skip_trace"] = skip_trace_entity(
+            # Entities → PDL entity fallback (PDL is person-focused; returns a note)
+            report["skip_trace"] = pdl_skip.skip_trace_entity(
                 entity_name=owner_name,
                 mailing_address=owner_mail_addr,
                 mailing_city=owner_city,
@@ -140,7 +140,8 @@ def run(input_str: str, tier: str = "starter") -> dict:
                 mailing_zip=owner_zip,
             )
         elif first or last:
-            report["skip_trace"] = skip_trace(
+            # Individual owner → PDL person enrichment
+            report["skip_trace"] = pdl_skip.skip_trace(
                 first_name=first,
                 last_name=last,
                 address=owner_mail_addr,
@@ -154,7 +155,7 @@ def run(input_str: str, tier: str = "starter") -> dict:
                 "phones": [],
                 "emails": [],
                 "note": "Owner name not available from DCAD — manual skip trace required.",
-                "source": "DataZapp",
+                "source": "People Data Labs",
             }
 
         # Lien search placeholder
