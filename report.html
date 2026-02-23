@@ -1023,9 +1023,9 @@
 
     // PRO sections
     if (isPro) {
-      // Skip trace / Owner contact
+      // Skip trace / Owner contact — always show section for PRO, with clear status
+      document.getElementById('contact-section').style.display = '';
       if (skip.status === 'hit' || (skip.phones && skip.phones.length)) {
-        document.getElementById('contact-section').style.display = '';
         const phones = (skip.phones || []).filter(p => p && p !== 'N/A');
         const emails = (skip.emails || []).filter(e => e && e !== 'N/A');
         const dnc = skip.dnc || [];
@@ -1047,6 +1047,19 @@
             </div>
           </div>
           ${skip.note ? `<p style="font-size:0.72rem;color:var(--text3);margin-top:10px">${skip.note}</p>` : ''}`;
+      } else {
+        // Skip trace failed — show clear reason, not blank
+        const skipReason = skip.status === 'entity'
+          ? 'This property is owned by an entity (LLC/Corp). Direct phone skip trace requires a corporate registry lookup — contact info may be available via the TX SOS registered agent above.'
+          : skip.status === 'no_hit'
+          ? (skip.note || 'No contact data found for this owner in the skip trace database.')
+          : skip.status === 'disabled'
+          ? 'Owner contact skip trace requires DataZapp API key. Once activated, this section shows direct phone numbers and emails for the owner.'
+          : 'Skip trace returned no results for this owner.';
+        document.getElementById('contact-body').innerHTML = `
+          <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px 16px;color:var(--text2);font-size:0.85rem;line-height:1.5">
+            ${skipReason}
+          </div>`;
       }
 
       // Motivation Score
