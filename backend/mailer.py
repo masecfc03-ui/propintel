@@ -16,12 +16,14 @@ from email import encoders
 from typing import Optional
 
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
+MAILGUN_API_KEY = os.environ.get("MAILGUN_API_KEY", "")
+MAILGUN_DOMAIN = os.environ.get("MAILGUN_DOMAIN", "mathislandco.com")
 SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
 SMTP_USER = os.environ.get("SMTP_USER", "")
 SMTP_PASS = os.environ.get("SMTP_PASS", "")
 
-FROM_EMAIL = os.environ.get("PROPINTEL_FROM_EMAIL", "reports@propertyvalueintel.com")
+FROM_EMAIL = os.environ.get("PROPINTEL_FROM_EMAIL", "mason@mathislandco.com")
 FROM_NAME = "PropIntel Reports"
 REPORT_BASE_URL = os.environ.get("REPORT_BASE_URL", "https://masecfc03-ui.github.io/propintel")
 
@@ -40,7 +42,13 @@ def send_report(to_email: str, to_name: str, address: str,
     subject = f"PropIntel {'Pro' if tier == 'pro' else 'Starter'} Report — {address}"
     html_body = _build_email_body(to_name, address, tier, report_html, report_id, order_id)
 
-    # Try SendGrid first
+    # Try Mailgun first (already configured)
+    if MAILGUN_API_KEY and MAILGUN_DOMAIN:
+        result = _send_mailgun(to_email, to_name, subject, html_body)
+        if result["success"]:
+            return result
+
+    # Try SendGrid
     if SENDGRID_API_KEY:
         result = _send_sendgrid(to_email, to_name, subject, html_body)
         if result["success"]:
@@ -170,6 +178,48 @@ def _get_features(tier: str) -> list:
     features = starter + pro_extra if tier == "pro" else starter
     return [f'<div class="feat"><span>{icon}</span><span>{label}</span></div>'
             for icon, label in features]
+
+
+def _send_mailgun(to_email: str, to_name: str, subject: str, html_body: str) -> dict:
+    """Send via Mailgun API (mathislandco.com domain)."""
+    import urllib.request
+    import urllib.parse
+    import urllib.error
+    import base64
+
+    url = "https://api.mailgun.net/v3/{}/messages".format(MAILGUN_DOMAIN)
+    from_addr = "{} <{}>".format(FROM_NAME, FROM_EMAIL)
+    to_addr = "{} <{}>".format(to_name or "", to_email) if to_name else to_email
+
+    data = urllib.parse.urlencode({
+        "from": from_addr,
+        "to": to_addr,
+        "subject": subject,
+        "html": html_body,
+    }).encode("utf-8")
+
+    credentials = base64.b64encode("api:{}".format(MAILGUN_API_KEY).encode()).decode()
+    req = urllib.request.Request(
+        url,
+        data=data,
+        headers={
+            "Authorization": "Basic {}".format(credentials),
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status in (200, 202):
+                return {"success": True, "method": "mailgun"}
+            return {"success": False, "method": "mailgun",
+                    "error": "Mailgun returned {}".format(resp.status)}
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="ignore")
+        return {"success": False, "method": "mailgun",
+                "error": "{}: {}".format(e.code, body[:200])}
+    except Exception as e:
+        return {"success": False, "method": "mailgun", "error": str(e)}
 
 
 def _send_sendgrid(to_email: str, to_name: str, subject: str, html_body: str) -> dict:
