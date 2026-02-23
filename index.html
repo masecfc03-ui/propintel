@@ -1,1562 +1,915 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PropIntel — Instant Property Intelligence Reports</title>
-  <meta name="description" content="Agents and investors: get a full property intelligence report in seconds. Owner data, flood zone, assessed value, motivation score — verified public records, beautifully presented." />
-  <link rel="canonical" href="https://propertyvalueintel.com" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PropIntel — Property Intelligence Reports</title>
+<meta name="description" content="Full property intel in 30 seconds. Owner identity, flood zone, motivation score, deal analyzer — all from verified public records."/>
+<link rel="canonical" href="https://propertyvalueintel.com"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://propertyvalueintel.com"/>
+<meta property="og:title" content="PropIntel — Property Intelligence Reports"/>
+<meta property="og:description" content="Full property intel in 30 seconds. Owner identity, flood zone, motivation score, deal analyzer — verified public records."/>
+<meta property="og:image" content="https://propertyvalueintel.com/og-image.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PropIntel","url":"https://propertyvalueintel.com","description":"Instant property intelligence reports","applicationCategory":"BusinessApplication","offers":[{"@type":"Offer","name":"Starter","price":"9.99","priceCurrency":"USD"},{"@type":"Offer","name":"Pro","price":"29.99","priceCurrency":"USD"}]}</script>
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://propertyvalueintel.com" />
-  <meta property="og:title" content="PropIntel — Instant Property Intelligence Reports" />
-  <meta property="og:description" content="Get a full property intelligence report in under 30 seconds. Owner identity, flood zone, motivation score, deal analyzer — all from verified government records." />
-  <meta property="og:image" content="https://propertyvalueintel.com/og-image.png" />
-  <meta property="og:site_name" content="PropIntel" />
+<!-- Typography: Satoshi (Fontshare) + Inter fallback -->
+<link rel="preconnect" href="https://api.fontshare.com"/>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="PropIntel — Instant Property Intelligence Reports" />
-  <meta name="twitter:description" content="Full property intel in 30 seconds. Owner, flood zone, motivation score, deal analyzer — verified public records." />
-  <meta name="twitter:image" content="https://propertyvalueintel.com/og-image.png" />
+<style>
+/* ─────────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────────── */
+:root {
+  --bg:        #09090b;
+  --bg1:       #0f0f12;
+  --bg2:       #18181b;
+  --bg3:       #27272a;
+  --border:    rgba(255,255,255,0.07);
+  --border-hi: rgba(255,255,255,0.13);
+  --blue:      #2563eb;
+  --blue-l:    #3b82f6;
+  --blue-glow: rgba(37,99,235,0.18);
+  --green:     #22c55e;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
+  --white:     #fafafa;
+  --gray-1:    #e4e4e7;
+  --gray-2:    #a1a1aa;
+  --gray-3:    #52525b;
+  --r-sm:  10px;
+  --r-md:  16px;
+  --r-lg:  22px;
+  --r-xl:  28px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
 
-  <!-- Schema.org -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "PropIntel",
-    "url": "https://propertyvalueintel.com",
-    "description": "Instant property intelligence reports for real estate agents and investors. Owner data, FEMA flood zone, assessed value, and seller motivation score from verified government records.",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "Web",
-    "offers": [
-      {
-        "@type": "Offer",
-        "name": "Public Record Report",
-        "price": "9.99",
-        "priceCurrency": "USD"
-      },
-      {
-        "@type": "Offer",
-        "name": "Full Intel Report",
-        "price": "29.99",
-        "priceCurrency": "USD"
-      }
-    ]
-  }
-  </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─── GRAIN TEXTURE ─── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+}
 
-    :root {
-      --white: #ffffff;
-      --bg: #f8fafc;
-      --bg2: #f1f5f9;
-      --border: #e2e8f0;
-      --border-light: #f1f5f9;
-      --accent: #2563eb;
-      --accent-light: #eff6ff;
-      --accent-hover: #1d4ed8;
-      --green: #16a34a;
-      --green-light: #f0fdf4;
-      --text: #0f172a;
-      --text2: #475569;
-      --text3: #94a3b8;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
-      --shadow-lg: 0 20px 40px rgba(0,0,0,0.08), 0 8px 16px rgba(0,0,0,0.04);
-      --radius: 12px;
-    }
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 max(24px, calc(50vw - 620px));
+  background: rgba(9,9,11,0.8);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 800; font-size: 1.05rem;
+  color: var(--white); text-decoration: none;
+  letter-spacing: -0.5px;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--blue-l);
+  box-shadow: 0 0 8px var(--blue-l);
+}
+.nav-links {
+  display: flex; align-items: center; gap: 28px; list-style: none;
+}
+.nav-links a {
+  color: var(--gray-2); text-decoration: none;
+  font-size: 0.82rem; font-weight: 500;
+  transition: color 0.15s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-cta {
+  background: var(--white); color: #000;
+  border: none; padding: 8px 18px; border-radius: 8px;
+  font-size: 0.82rem; font-weight: 700; cursor: pointer;
+  text-decoration: none; letter-spacing: -0.2px;
+  transition: opacity 0.15s;
+}
+.nav-cta:hover { opacity: 0.85; }
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  nav { padding: 0 20px; }
+}
 
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--white);
-      color: var(--text);
-      line-height: 1.6;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
+/* ─── HERO ─── */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 24px 80px;
+  overflow: hidden;
+}
+/* Radial glow */
+.hero::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(37,99,235,0.14) 0%, transparent 70%);
+  pointer-events: none;
+}
+/* Subtle grid lines */
+.hero-grid {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 20%, transparent 80%);
+  pointer-events: none;
+}
 
-    /* ─── NAV ─── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px;
-      height: 64px;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
+.hero-inner { position: relative; z-index: 1; max-width: 760px; }
 
-    .logo {
-      font-size: 1rem; font-weight: 800;
-      display: flex; align-items: center; gap: 9px;
-      text-decoration: none; color: var(--text);
-      letter-spacing: -0.3px;
-    }
-    .logo-icon {
-      width: 30px; height: 30px; border-radius: 8px;
-      background: var(--accent);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; color: white;
-    }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(37,99,235,0.12); border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 0.72rem; font-weight: 600; color: var(--blue-l);
+  letter-spacing: 0.3px; text-transform: uppercase;
+  margin-bottom: 28px;
+  animation: fadeUp 0.6s ease both;
+}
+.hero-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--blue-l);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
 
-    .nav-links {
-      display: flex; align-items: center; gap: 32px; list-style: none;
-    }
-    .nav-links a {
-      color: var(--text2); text-decoration: none;
-      font-size: 0.875rem; font-weight: 500;
-      transition: color 0.15s;
-    }
-    .nav-links a:hover { color: var(--text); }
+h1 {
+  font-family: 'Satoshi', sans-serif;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -3px;
+  margin-bottom: 24px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--blue-l) 0%, #7c3aed 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 
-    .nav-right { display: flex; align-items: center; gap: 12px; }
-    .nav-link-plain {
-      color: var(--text2); text-decoration: none;
-      font-size: 0.875rem; font-weight: 500;
-    }
-    .nav-cta {
-      background: var(--accent); color: white; border: none;
-      padding: 9px 20px; border-radius: 8px;
-      font-size: 0.875rem; font-weight: 600; cursor: pointer;
-      text-decoration: none; transition: background 0.15s;
-      letter-spacing: -0.1px;
-    }
-    .nav-cta:hover { background: var(--accent-hover); }
+.hero-sub {
+  font-size: 1.05rem; color: var(--gray-2); line-height: 1.7;
+  max-width: 520px; margin: 0 auto 40px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
 
-    /* ─── HERO ─── */
-    /* ── PAINTED LANDSCAPE HERO ── */
-    @keyframes skyShift {
-      0%,100% { opacity: 1; }
-      50% { opacity: 0.88; }
-    }
-    @keyframes cloudDrift {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(60px); }
-    }
-    @keyframes fogPulse {
-      0%,100% { opacity: 0.18; }
-      50% { opacity: 0.28; }
-    }
-    @keyframes heroFadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+/* Address input */
+.analyze-form {
+  display: flex; gap: 10px;
+  max-width: 540px; margin: 0 auto;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+.analyze-input {
+  flex: 1; background: var(--bg2);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--r-sm);
+  padding: 14px 18px;
+  font-size: 0.9rem; color: var(--white);
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.analyze-input::placeholder { color: var(--gray-3); }
+.analyze-input:focus {
+  border-color: var(--blue-l);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+.analyze-btn {
+  background: var(--blue); color: white;
+  border: none; padding: 14px 24px; border-radius: var(--r-sm);
+  font-size: 0.88rem; font-weight: 700; cursor: pointer;
+  white-space: nowrap; letter-spacing: -0.2px;
+  transition: background 0.15s, transform 0.1s;
+  font-family: 'Inter', sans-serif;
+}
+.analyze-btn:hover { background: #1d4ed8; }
+.analyze-btn:active { transform: scale(0.98); }
+.analyze-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .hero {
-      position: relative;
-      min-height: 820px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-start;
-      text-align: center;
-      overflow: hidden;
-      padding: 0 24px 80px;
-    }
+.hero-note {
+  margin-top: 16px;
+  font-size: 0.72rem; color: var(--gray-3);
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+.hero-note a { color: var(--gray-2); text-decoration: none; }
 
-    /* Sky gradient — warm Texas golden hour */
-    .hero::before {
-      content: '';
-      position: absolute; inset: 0; z-index: 0;
-      background: linear-gradient(
-        180deg,
-        #fde68a 0%,
-        #fbbf24 8%,
-        #f97316 18%,
-        #fb923c 28%,
-        #fcd34d 42%,
-        #fef3c7 58%,
-        #fefce8 72%,
-        #ffffff 100%
-      );
-      animation: skyShift 12s ease-in-out infinite;
-    }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-    /* Sun glow */
-    .hero-sun {
-      position: absolute; z-index: 1;
-      width: 320px; height: 320px;
-      top: -60px; left: 50%; transform: translateX(-50%);
-      background: radial-gradient(circle, rgba(255,251,235,0.9) 0%, rgba(253,230,138,0.5) 35%, transparent 70%);
-      pointer-events: none;
-    }
+/* ─── RESULT PREVIEW (shown inline) ─── */
+#result-wrap {
+  display: none;
+  max-width: 820px; margin: 40px auto 0;
+  animation: fadeUp 0.4s ease both;
+}
+#result-wrap.visible { display: block; }
+.result-header {
+  font-size: 0.72rem; color: var(--gray-3); margin-bottom: 12px;
+  text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+}
+#result-address {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 1.2rem; font-weight: 700; margin-bottom: 20px;
+  letter-spacing: -0.5px;
+}
+#result-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;
+  margin-bottom: 20px;
+}
+.result-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 16px;
+}
+.result-card-label {
+  font-size: 0.65rem; color: var(--gray-3); text-transform: uppercase;
+  letter-spacing: 1px; font-weight: 600; margin-bottom: 6px;
+}
+.result-card-val {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 0.95rem; font-weight: 700; color: var(--white);
+}
+.result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.result-btn {
+  padding: 11px 22px; border-radius: 9px;
+  font-size: 0.85rem; font-weight: 700; cursor: pointer;
+  text-decoration: none; border: none;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.15s;
+}
+.result-btn-primary { background: var(--blue); color: white; }
+.result-btn-secondary { background: var(--bg3); color: var(--white); border: 1px solid var(--border-hi); }
+.result-btn:hover { opacity: 0.85; }
 
-    /* Birds */
-    .hero-birds {
-      position: absolute; z-index: 2;
-      top: 12%; left: 30%;
-      pointer-events: none; opacity: 0.45;
-      animation: cloudDrift 40s linear infinite;
-    }
+/* ─── SECTION WRAPPER ─── */
+.section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 100px 24px;
+}
+.section-eyebrow {
+  font-size: 0.7rem; font-weight: 700; color: var(--blue-l);
+  text-transform: uppercase; letter-spacing: 2.5px;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'Satoshi', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900; letter-spacing: -1.5px; line-height: 1.1;
+  margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 0.95rem; color: var(--gray-2); line-height: 1.7;
+  max-width: 480px;
+}
 
-    /* Far hills — soft sage, slightly blurred */
-    .hero-hills-far {
-      position: absolute; z-index: 3;
-      bottom: 38%; left: 0; right: 0; width: 100%;
-      filter: blur(2px);
-      opacity: 0.7;
-    }
+/* ─── BENTO GRID ─── */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: auto;
+  gap: 14px;
+  margin-top: 48px;
+}
 
-    /* Mid hills — deeper green-brown */
-    .hero-hills-mid {
-      position: absolute; z-index: 4;
-      bottom: 24%; left: 0; right: 0; width: 100%;
-      filter: blur(0.5px);
-    }
+.tile {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 28px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.tile:hover {
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+}
+/* Grid placement */
+.tile-1 { grid-column: span 5; }
+.tile-2 { grid-column: span 7; }
+.tile-3 { grid-column: span 4; }
+.tile-4 { grid-column: span 4; }
+.tile-5 { grid-column: span 4; }
+.tile-6 { grid-column: span 12; }
+@media (max-width: 900px) {
+  .bento { grid-template-columns: 1fr 1fr; }
+  .tile-1,.tile-2,.tile-3,.tile-4,.tile-5,.tile-6 { grid-column: span 2; }
+}
+@media (max-width: 560px) {
+  .bento { grid-template-columns: 1fr; }
+  .tile-1,.tile-2,.tile-3,.tile-4,.tile-5,.tile-6 { grid-column: span 1; }
+}
 
-    /* Near hills / rolling ground */
-    .hero-hills-near {
-      position: absolute; z-index: 5;
-      bottom: 10%; left: 0; right: 0; width: 100%;
-    }
+.tile-label {
+  font-size: 0.65rem; font-weight: 700; color: var(--gray-3);
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;
+}
+.tile-heading {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px;
+  margin-bottom: 8px; line-height: 1.3;
+}
+.tile-body { font-size: 0.82rem; color: var(--gray-2); line-height: 1.6; }
 
-    /* Dark foreground strip */
-    .hero-ground {
-      position: absolute; z-index: 6;
-      bottom: 0; left: 0; right: 0;
-      height: 12%;
-      background: linear-gradient(180deg, #451a03 0%, #1c0a00 100%);
-    }
+/* Score bar */
+.score-row { display: flex; align-items: center; gap: 12px; margin: 16px 0 8px; }
+.score-val {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 3rem; font-weight: 900; line-height: 1; letter-spacing: -2px;
+}
+.score-meta { font-size: 0.78rem; color: var(--gray-2); }
+.score-meta strong { color: var(--amber); font-weight: 700; }
+.score-bar {
+  width: 100%; height: 6px; background: var(--bg3);
+  border-radius: 3px; overflow: hidden; margin-top: 12px;
+}
+.score-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--amber), var(--red));
+  width: 72%;
+  transition: width 1s ease;
+}
 
-    /* Atmospheric fog layer */
-    .hero-fog {
-      position: absolute; z-index: 7;
-      inset: 0; pointer-events: none;
-      background: radial-gradient(ellipse 80% 40% at 50% 60%, rgba(255,251,235,0.35) 0%, transparent 70%);
-      animation: fogPulse 8s ease-in-out infinite;
-    }
+/* Tag chips */
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.tag {
+  font-size: 0.68rem; font-weight: 700; padding: 4px 10px;
+  border-radius: 20px; letter-spacing: 0.2px;
+}
+.tag-amber { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+.tag-red   { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+.tag-blue  { background: rgba(59,130,246,0.1); color: var(--blue-l); border: 1px solid rgba(59,130,246,0.2); }
+.tag-green { background: rgba(34,197,94,0.1); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
 
-    /* Fade to white at bottom — connects to content */
-    .hero-fade {
-      position: absolute; z-index: 8;
-      bottom: 0; left: 0; right: 0; height: 38%;
-      background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.7) 50%, #ffffff 100%);
-      pointer-events: none;
-    }
+/* Owner tile */
+.owner-field { margin-bottom: 12px; }
+.owner-field-label { font-size: 0.62rem; color: var(--gray-3); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 3px; }
+.owner-field-val { font-size: 0.88rem; font-weight: 600; color: var(--gray-1); }
 
-    /* Content sits above landscape */
-    .hero-content {
-      position: relative; z-index: 10;
-      display: flex; flex-direction: column;
-      align-items: center;
-      padding-top: 100px;
-      animation: heroFadeUp 1s ease-out 0.3s both;
-    }
+/* Comps mini table */
+.comp-row {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 8px; padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.78rem; align-items: center;
+}
+.comp-row:last-child { border-bottom: none; }
+.comp-addr { color: var(--gray-1); font-weight: 500; }
+.comp-sf { color: var(--gray-3); font-size: 0.7rem; }
+.comp-price { font-family: 'Satoshi', sans-serif; font-weight: 800; color: var(--white); }
 
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(0,0,0,0.1);
-      color: #92400e;
-      padding: 5px 14px; border-radius: 100px;
-      font-size: 0.775rem; font-weight: 600;
-      letter-spacing: 0.2px;
-      margin-bottom: 24px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
-    .hero-badge-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #f97316;
-    }
+/* Flood tile */
+.flood-zone-big {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 5rem; font-weight: 900; line-height: 1;
+  letter-spacing: -4px; color: var(--green);
+  margin: 12px 0 8px;
+}
 
-    .hero h1 {
-      font-size: clamp(2.4rem, 6vw, 4.2rem);
-      font-weight: 800;
-      line-height: 1.1;
-      letter-spacing: -2px;
-      max-width: 800px;
-      margin-bottom: 18px;
-      color: #1c0a00;
-      text-shadow: 0 1px 20px rgba(255,255,255,0.6);
-    }
+/* Page count tile */
+.page-count {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 6rem; font-weight: 900; line-height: 1;
+  letter-spacing: -5px; color: var(--blue-l);
+}
+.page-subtitle { font-size: 0.8rem; color: var(--gray-2); margin-top: 8px; }
 
-    .hero h1 strong {
-      color: #c2410c;
-      font-weight: 900;
-    }
+/* Corner glow accent */
+.tile-glow {
+  position: absolute; border-radius: 50%;
+  pointer-events: none; filter: blur(60px); opacity: 0.15;
+}
 
-    .hero-sub {
-      font-size: 1.05rem;
-      color: #44403c;
-      max-width: 500px;
-      margin-bottom: 40px;
-      line-height: 1.7;
-      font-weight: 400;
-      text-shadow: 0 1px 8px rgba(255,255,255,0.8);
-    }
+/* ─── HOW IT WORKS ─── */
+.steps-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; margin-top: 48px;
+  border: 1px solid var(--border); border-radius: var(--r-xl);
+  overflow: hidden;
+}
+@media (max-width: 700px) { .steps-grid { grid-template-columns: 1fr; } }
+.step-tile {
+  background: var(--bg1); padding: 36px 32px;
+  position: relative;
+}
+.step-tile:not(:last-child) { border-right: 1px solid var(--border); }
+@media (max-width: 700px) {
+  .step-tile:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
+}
+.step-num {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 3.5rem; font-weight: 900; line-height: 1;
+  letter-spacing: -3px; color: var(--bg3);
+  margin-bottom: 20px;
+}
+.step-title {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 1.1rem; font-weight: 800; letter-spacing: -0.3px;
+  margin-bottom: 10px;
+}
+.step-desc { font-size: 0.83rem; color: var(--gray-2); line-height: 1.65; }
 
-    /* ─── ANALYZE FORM ─── */
-    .form-card {
-      position: relative; z-index: 10;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.6);
-      border-radius: 20px;
-      padding: 28px 32px;
-      width: 100%; max-width: 620px;
-      box-shadow: 0 8px 40px rgba(124,45,18,0.12), 0 1px 3px rgba(0,0,0,0.06);
-      margin-top: 8px;
-    }
+/* ─── PRICING ─── */
+.pricing-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-top: 48px; max-width: 720px;
+}
+@media (max-width: 600px) { .pricing-grid { grid-template-columns: 1fr; } }
 
-    .form-label {
-      font-size: 0.775rem; font-weight: 600;
-      color: var(--text3); text-transform: uppercase;
-      letter-spacing: 0.8px; margin-bottom: 10px;
-      display: block;
-    }
+.price-card {
+  background: var(--bg1); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 36px;
+  transition: border-color 0.2s;
+}
+.price-card.featured {
+  border-color: rgba(59,130,246,0.4);
+  background: linear-gradient(135deg, rgba(37,99,235,0.06) 0%, var(--bg1) 100%);
+}
+.price-card:hover { border-color: var(--border-hi); }
+.price-card.featured:hover { border-color: rgba(59,130,246,0.6); }
 
-    .form-row {
-      display: flex; gap: 10px; margin-bottom: 12px;
-    }
+.price-name {
+  font-size: 0.72rem; font-weight: 700; color: var(--gray-3);
+  text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px;
+}
+.price-val {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 2.8rem; font-weight: 900; letter-spacing: -2px; line-height: 1;
+  margin-bottom: 6px;
+}
+.price-per { font-size: 0.8rem; color: var(--gray-3); margin-bottom: 24px; }
+.price-features { list-style: none; margin-bottom: 28px; }
+.price-features li {
+  font-size: 0.82rem; color: var(--gray-2); padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.price-features li:last-child { border-bottom: none; }
+.price-features li::before { content: '✓'; color: var(--green); font-weight: 800; font-size: 0.75rem; }
+.price-btn {
+  display: block; width: 100%;
+  padding: 13px; border-radius: 10px;
+  font-size: 0.88rem; font-weight: 700; cursor: pointer;
+  text-align: center; text-decoration: none;
+  border: 1px solid var(--border-hi); color: var(--white);
+  background: var(--bg3);
+  transition: background 0.15s, border-color 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.price-btn.primary { background: var(--blue); border-color: transparent; }
+.price-btn:hover { opacity: 0.85; }
 
-    .form-input {
-      flex: 1;
-      padding: 12px 16px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9375rem;
-      font-family: inherit;
-      color: var(--text);
-      background: var(--white);
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .form-input::placeholder { color: var(--text3); }
-    .form-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    }
+/* ─── FAQ ─── */
+.faq-list { margin-top: 48px; max-width: 680px; }
+.faq-item {
+  border-bottom: 1px solid var(--border); padding: 24px 0;
+  cursor: pointer;
+}
+.faq-item:first-child { border-top: 1px solid var(--border); }
+.faq-q {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 0.95rem; font-weight: 700; letter-spacing: -0.2px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+}
+.faq-q::after { content: '+'; color: var(--gray-3); font-size: 1.2rem; flex-shrink: 0; }
+.faq-item.open .faq-q::after { content: '−'; }
+.faq-a {
+  font-size: 0.83rem; color: var(--gray-2); line-height: 1.7;
+  margin-top: 12px; display: none;
+}
+.faq-item.open .faq-a { display: block; }
 
-    .form-input-email {
-      width: 100%;
-      padding: 11px 16px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.875rem;
-      font-family: inherit;
-      color: var(--text);
-      background: var(--bg);
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      margin-bottom: 16px;
-    }
-    .form-input-email::placeholder { color: var(--text3); }
-    .form-input-email:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-      background: var(--white);
-    }
+/* ─── FOOTER ─── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 48px max(24px, calc(50vw - 620px));
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 16px;
+}
+.footer-logo {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 1rem; font-weight: 800; letter-spacing: -0.5px; color: var(--white);
+  text-decoration: none;
+}
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 0.78rem; color: var(--gray-3); text-decoration: none; }
+.footer-links a:hover { color: var(--gray-2); }
+.footer-copy { font-size: 0.75rem; color: var(--gray-3); }
 
-    .analyze-btn {
-      padding: 12px 24px;
-      background: var(--accent);
-      color: white; border: none;
-      border-radius: 8px;
-      font-size: 0.9375rem; font-weight: 600;
-      cursor: pointer; white-space: nowrap;
-      transition: background 0.15s;
-      font-family: inherit;
-      letter-spacing: -0.1px;
-    }
-    .analyze-btn:hover { background: var(--accent-hover); }
-    .analyze-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+/* ─── DIVIDER ─── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
-    .form-hint {
-      font-size: 0.775rem; color: var(--text3);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .form-hint-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text3); }
-
-    /* ─── TRUSTED BY ─── */
-    .trust-strip {
-      padding: 20px 24px 60px;
-      text-align: center;
-    }
-    .trust-label {
-      font-size: 0.75rem; font-weight: 600; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 1px;
-      margin-bottom: 16px;
-    }
-    .trust-sources {
-      display: flex; align-items: center; justify-content: center;
-      flex-wrap: wrap; gap: 8px;
-    }
-    .trust-pill {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 5px 12px;
-      font-size: 0.775rem; font-weight: 600; color: var(--text2);
-    }
-
-    /* ─── DIVIDER ─── */
-    .divider { height: 1px; background: var(--border); margin: 0 24px; }
-
-    /* ─── SECTIONS ─── */
-    .section { padding: 80px 24px; }
-    .section-inner { max-width: 1060px; margin: 0 auto; }
-    .section-label {
-      font-size: 0.75rem; font-weight: 700; color: var(--accent);
-      text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 12px;
-    }
-    .section-title {
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
-      font-weight: 800; letter-spacing: -1px; line-height: 1.15;
-      color: var(--text); margin-bottom: 16px;
-    }
-    .section-desc {
-      font-size: 1rem; color: var(--text2);
-      max-width: 520px; line-height: 1.7;
-    }
-
-    /* ─── HOW IT WORKS ─── */
-    .how-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 24px; margin-top: 52px;
-    }
-    .how-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      box-shadow: var(--shadow-sm);
-    }
-    .how-num {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: var(--accent-light);
-      color: var(--accent);
-      font-size: 0.85rem; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 18px;
-    }
-    .how-title {
-      font-size: 1rem; font-weight: 700; color: var(--text);
-      margin-bottom: 8px; letter-spacing: -0.3px;
-    }
-    .how-desc { font-size: 0.875rem; color: var(--text2); line-height: 1.6; }
-
-    /* ─── WHAT'S IN THE REPORT ─── */
-    .data-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 16px; margin-top: 48px;
-    }
-    .data-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 22px 24px;
-      box-shadow: var(--shadow-sm);
-    }
-    .data-card-head {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 14px;
-    }
-    .data-icon {
-      width: 34px; height: 34px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px;
-    }
-    .data-card-title {
-      font-size: 0.875rem; font-weight: 700; color: var(--text);
-      letter-spacing: -0.2px;
-    }
-    .data-card-src {
-      font-size: 0.7rem; font-weight: 600; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .data-items { list-style: none; }
-    .data-items li {
-      font-size: 0.825rem; color: var(--text2);
-      padding: 4px 0; display: flex; align-items: center; gap: 8px;
-    }
-    .data-items li::before {
-      content: ''; width: 5px; height: 5px; border-radius: 50%;
-      background: var(--border); flex-shrink: 0;
-    }
-    .pro-only {
-      display: inline-block; font-size: 0.65rem; font-weight: 700;
-      background: rgba(37,99,235,0.1); color: var(--accent);
-      padding: 1px 6px; border-radius: 4px; margin-left: 4px;
-    }
-
-    /* ─── REPORT PREVIEW MOCK ─── */
-    .preview-wrap {
-      margin-top: 52px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow-md);
-    }
-    .preview-bar {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 20px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .preview-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .preview-url {
-      flex: 1; background: var(--bg); border-radius: 6px;
-      padding: 5px 12px; font-size: 0.75rem; color: var(--text3);
-      margin-left: 8px;
-    }
-    .preview-body {
-      padding: 24px;
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-    }
-    .preview-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px 16px;
-    }
-    .preview-card-label { font-size: 0.65rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .preview-card-val { font-size: 1rem; font-weight: 700; color: var(--text); }
-    .preview-card-sub { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
-
-    /* ─── PRICING ─── */
-    .pricing-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 20px; margin-top: 52px;
-    }
-    .price-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 30px 28px;
-      box-shadow: var(--shadow-sm);
-      position: relative;
-    }
-    .price-card.featured {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent), var(--shadow-md);
-    }
-    .price-badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--accent); color: white;
-      padding: 3px 14px; border-radius: 100px;
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px;
-      white-space: nowrap;
-    }
-    .price-tier {
-      font-size: 0.78rem; font-weight: 700; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px;
-    }
-    .price-amount {
-      display: flex; align-items: baseline; gap: 2px; margin-bottom: 6px;
-    }
-    .p-dollar { font-size: 1.2rem; font-weight: 700; color: var(--text2); margin-top: 4px; }
-    .p-num { font-size: 3rem; font-weight: 800; letter-spacing: -2px; color: var(--text); line-height: 1; }
-    .p-per { font-size: 0.875rem; color: var(--text2); margin-left: 4px; }
-    .price-desc { font-size: 0.825rem; color: var(--text2); margin-bottom: 24px; line-height: 1.5; }
-    .price-divider { height: 1px; background: var(--border); margin: 20px 0; }
-    .price-features { list-style: none; margin-bottom: 28px; }
-    .price-features li {
-      font-size: 0.825rem; color: var(--text2);
-      padding: 6px 0; display: flex; align-items: flex-start; gap: 10px;
-    }
-    .p-check {
-      width: 16px; height: 16px; border-radius: 50%;
-      background: var(--green-light); color: var(--green);
-      font-size: 0.65rem; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; margin-top: 1px;
-    }
-    .p-source {
-      margin-left: auto; font-size: 0.68rem; font-weight: 600;
-      color: var(--text3); white-space: nowrap; padding-left: 4px;
-    }
-    .p-btn {
-      display: block; text-align: center;
-      padding: 13px 20px; border-radius: 8px;
-      font-size: 0.9rem; font-weight: 600;
-      text-decoration: none; cursor: pointer;
-      transition: all 0.15s; border: none; font-family: inherit;
-    }
-    .p-btn.primary {
-      background: var(--accent); color: white;
-    }
-    .p-btn.primary:hover { background: var(--accent-hover); }
-    .p-btn.outline {
-      background: white; color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .p-btn.outline:hover { border-color: var(--text2); }
-
-    /* ─── TESTIMONIALS ─── */
-    .testi-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 20px; margin-top: 48px;
-    }
-    .testi-card {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow-sm);
-    }
-    .testi-stars { color: #f59e0b; font-size: 0.85rem; margin-bottom: 12px; }
-    .testi-text {
-      font-size: 0.875rem; color: var(--text2);
-      line-height: 1.65; margin-bottom: 20px;
-    }
-    .testi-author { display: flex; align-items: center; gap: 10px; }
-    .testi-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: var(--accent-light); color: var(--accent);
-      font-size: 0.8rem; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .testi-name { font-size: 0.825rem; font-weight: 700; color: var(--text); }
-    .testi-role { font-size: 0.75rem; color: var(--text3); }
-
-    /* ─── CTA BOTTOM ─── */
-    .cta-section {
-      background: var(--text);
-      padding: 80px 24px;
-      text-align: center;
-    }
-    .cta-section h2 {
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      font-weight: 800; letter-spacing: -1.5px;
-      color: white; margin-bottom: 14px;
-    }
-    .cta-section p { color: rgba(255,255,255,0.6); margin-bottom: 36px; font-size: 1rem; }
-    .cta-btn {
-      display: inline-block;
-      background: white; color: var(--text);
-      padding: 14px 32px; border-radius: 8px;
-      font-size: 0.9375rem; font-weight: 700;
-      text-decoration: none; transition: opacity 0.15s;
-    }
-    .cta-btn:hover { opacity: 0.9; }
-
-    /* ─── FOOTER ─── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 16px;
-    }
-    .footer-inner { max-width: 1060px; width: 100%; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    .footer-left { font-size: 0.825rem; color: var(--text3); }
-    .footer-links { display: flex; gap: 24px; }
-    .footer-links a { font-size: 0.825rem; color: var(--text3); text-decoration: none; }
-    .footer-links a:hover { color: var(--text2); }
-
-    /* ─── RESULT BOX ─── */
-    .result-wrap {
-      display: none; margin-top: 20px; text-align: left;
-    }
-    .result-title {
-      font-size: 0.75rem; font-weight: 700; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
-    }
-    .result-cards {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-      margin-bottom: 12px;
-    }
-    .r-card {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 12px 14px;
-    }
-    .r-label { font-size: 0.68rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
-    .r-val { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-top: 2px; }
-    .result-cta-row {
-      display: flex; gap: 8px;
-    }
-    .result-cta {
-      flex: 1; padding: 11px 16px; border-radius: 8px;
-      font-size: 0.875rem; font-weight: 600; cursor: pointer;
-      border: none; font-family: inherit; text-decoration: none;
-      text-align: center; display: block; transition: all 0.15s;
-    }
-    .result-cta.starter {
-      background: var(--bg2); color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .result-cta.starter:hover { border-color: var(--text2); }
-    .result-cta.pro {
-      background: var(--accent); color: white;
-    }
-    .result-cta.pro:hover { background: var(--accent-hover); }
-    .result-note {
-      font-size: 0.72rem; color: var(--text3); margin-top: 8px; text-align: center;
-    }
-
-    /* ─── LOADING SPINNER ─── */
-    .spinner {
-      display: inline-block; width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin-right: 8px; vertical-align: middle;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ─── WHO IT'S FOR ─── */
-    .audience-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 48px;
-    }
-    .audience-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 28px 24px;
-      box-shadow: var(--shadow-sm);
-    }
-    .audience-icon {
-      font-size: 1.6rem; margin-bottom: 14px; display: block;
-    }
-    .audience-title {
-      font-size: 1rem; font-weight: 800; color: var(--text);
-      letter-spacing: -0.3px; margin-bottom: 8px;
-    }
-    .audience-desc {
-      font-size: 0.85rem; color: var(--text2); line-height: 1.6; margin-bottom: 16px;
-    }
-    .audience-list { list-style: none; }
-    .audience-list li {
-      font-size: 0.8rem; color: var(--text2); padding: 4px 0;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .audience-list li::before {
-      content: ''; width: 5px; height: 5px; border-radius: 50%;
-      background: var(--accent); flex-shrink: 0;
-    }
-
-    /* ─── WHITE-LABEL SECTION ─── */
-    .wl-toggle {
-      display: flex; align-items: center; gap: 8px;
-      cursor: pointer; font-size: 0.8rem; font-weight: 600;
-      color: var(--text2); margin-bottom: 0;
-      padding: 10px 0; border-top: 1px solid var(--border); margin-top: 8px;
-      user-select: none;
-    }
-    .wl-toggle:hover { color: var(--text); }
-    .wl-toggle-icon { transition: transform 0.2s; font-size: 0.75rem; }
-    .wl-toggle.open .wl-toggle-icon { transform: rotate(90deg); }
-    .wl-form {
-      display: none; padding-top: 14px;
-      border-top: 1px solid var(--border); margin-top: 0;
-    }
-    .wl-form.open { display: block; }
-    .wl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .wl-input {
-      width: 100%; padding: 9px 12px;
-      border: 1px solid var(--border); border-radius: 7px;
-      font-size: 0.825rem; font-family: inherit; color: var(--text);
-      background: var(--bg); outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .wl-input::placeholder { color: var(--text3); }
-    .wl-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
-      background: var(--white);
-    }
-    .wl-label {
-      font-size: 0.7rem; font-weight: 600; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 0.6px;
-      margin-bottom: 4px; display: block;
-    }
-    .wl-field { margin-bottom: 10px; }
-    .wl-note {
-      font-size: 0.72rem; color: var(--text3); margin-top: 8px; line-height: 1.5;
-    }
-    .wl-preview-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: var(--green-light); border: 1px solid rgba(22,163,74,0.2);
-      color: var(--green); padding: 3px 10px; border-radius: 100px;
-      font-size: 0.7rem; font-weight: 700; margin-left: 8px;
-    }
-
-    /* ─── RESPONSIVE ─── */
-    @media (max-width: 860px) {
-      nav { padding: 0 20px; }
-      .nav-links { display: none; }
-      .how-grid, .pricing-grid, .testi-grid { grid-template-columns: 1fr; }
-      .data-grid { grid-template-columns: 1fr; }
-      .audience-grid { grid-template-columns: 1fr; }
-      .wl-grid { grid-template-columns: 1fr; }
-      .result-cards { grid-template-columns: 1fr 1fr; }
-      .preview-body { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 520px) {
-      .form-row { flex-direction: column; }
-      .analyze-btn { width: 100%; }
-      .result-cards { grid-template-columns: 1fr; }
-      .result-cta-row { flex-direction: column; }
-    }
-    @media print { nav, .cta-section, footer { display: none; } }
-  </style>
+/* ─── LOADER ─── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-top-color: white;
+  display: inline-block; animation: spin 0.7s linear infinite;
+  vertical-align: middle; margin-right: 8px;
+}
+</style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- ─── NAV ─── -->
 <nav>
-  <a href="index.html" class="logo">
-    <svg width="108" height="28" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:28px;width:auto">
-      <rect width="40" height="40" rx="10" fill="#2563EB"/>
-      <rect x="11" y="20" width="5" height="10" rx="1" fill="white" opacity="0.85"/>
-      <rect x="17.5" y="15" width="5" height="15" rx="1" fill="white"/>
-      <rect x="24" y="22" width="5" height="8" rx="1" fill="white" opacity="0.7"/>
-      <circle cx="30" cy="10" r="3.5" fill="#93C5FD"/>
-      <text x="50" y="27" font-family="Inter,-apple-system,system-ui,sans-serif" font-size="19" font-weight="800" letter-spacing="-0.5" fill="#0F172A">Prop<tspan fill="#2563EB">Intel</tspan></text>
-    </svg>
+  <a class="nav-logo" href="/">
+    <span class="nav-logo-dot"></span>
+    PropIntel
   </a>
   <ul class="nav-links">
-    <li><a href="#how">How It Works</a></li>
-    <li><a href="#data">What's Included</a></li>
+    <li><a href="#how">How it works</a></li>
     <li><a href="#pricing">Pricing</a></li>
-    <li><a href="demo.html" style="color:var(--accent);font-weight:600">See a Sample Report</a></li>
+    <li><a href="#faq">FAQ</a></li>
   </ul>
-  <div class="nav-right">
-    <a href="admin.html" class="nav-link-plain" style="display:none" id="admin-link">Admin</a>
-    <a href="demo.html" class="nav-cta">See Sample Report</a>
-  </div>
+  <a class="nav-cta" href="#pricing">Get a report →</a>
 </nav>
 
-<!-- HERO -->
-<section class="hero" id="analyze">
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-grid"></div>
 
-  <!-- Painted landscape layers -->
-  <div class="hero-sun"></div>
-
-  <!-- Birds — tiny SVG dots drifting -->
-  <svg class="hero-birds" width="120" height="40" viewBox="0 0 120 40" fill="none">
-    <path d="M10 20 Q14 14 18 20" stroke="#451a03" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.6"/>
-    <path d="M30 12 Q35 6 40 12" stroke="#451a03" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
-    <path d="M60 25 Q64 19 68 25" stroke="#451a03" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.4"/>
-    <path d="M90 8 Q95 2 100 8" stroke="#451a03" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.35"/>
-    <path d="M50 32 Q53 28 56 32" stroke="#451a03" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.3"/>
-  </svg>
-
-  <!-- Far hills — soft sage green, blurred -->
-  <svg class="hero-hills-far" viewBox="0 0 1440 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 180 C120 120, 200 80, 360 100 C520 120, 580 60, 720 80 C860 100, 960 50, 1100 70 C1240 90, 1350 110, 1440 90 L1440 200 L0 200 Z"
-      fill="#a7f3d0" opacity="0.55"/>
-    <path d="M0 190 C180 140, 300 110, 480 130 C660 150, 720 100, 900 115 C1080 130, 1200 105, 1440 120 L1440 200 L0 200 Z"
-      fill="#6ee7b7" opacity="0.4"/>
-  </svg>
-
-  <!-- Mid hills — warm green-brown -->
-  <svg class="hero-hills-mid" viewBox="0 0 1440 220" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 200 C80 140, 180 100, 320 120 C460 140, 520 80, 680 100 C840 120, 920 70, 1080 90 C1240 110, 1360 140, 1440 120 L1440 220 L0 220 Z"
-      fill="#78350f" opacity="0.45"/>
-    <path d="M0 210 C200 160, 380 130, 560 150 C740 170, 820 120, 1000 140 C1180 160, 1320 150, 1440 135 L1440 220 L0 220 Z"
-      fill="#92400e" opacity="0.35"/>
-  </svg>
-
-  <!-- Near rolling hills — richer warm brown -->
-  <svg class="hero-hills-near" viewBox="0 0 1440 240" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 200 C60 160, 140 120, 280 140 C420 160, 480 110, 620 125 C760 140, 860 100, 1020 115 C1180 130, 1300 155, 1440 130 L1440 240 L0 240 Z"
-      fill="#7c2d12"/>
-    <path d="M0 215 C100 175, 260 150, 440 165 C620 180, 720 145, 900 158 C1080 171, 1260 165, 1440 148 L1440 240 L0 240 Z"
-      fill="#6b2100" opacity="0.7"/>
-  </svg>
-
-  <div class="hero-ground"></div>
-  <div class="hero-fog"></div>
-  <div class="hero-fade"></div>
-
-  <!-- Content -->
-  <div class="hero-content">
+  <div class="hero-inner">
     <div class="hero-badge">
       <span class="hero-badge-dot"></span>
-      Residential · Commercial · Land · Any property type
+      Live — Verified public records
     </div>
 
-    <h1>The new standard in<br /><strong>property intelligence</strong></h1>
+    <h1>Know the property<br><em>before anyone else.</em></h1>
 
     <p class="hero-sub">
-      Any address. Full public record intel in 30 seconds — owner identity, assessed value, NOI estimate, flood zone, investment verdict.
+      Full property intelligence in 30 seconds — owner identity,
+      flood zone, motivation score, deal analyzer — all sourced
+      from verified government records.
     </p>
-  </div>
 
-  <div class="form-card">
-    <label class="form-label">Property Address</label>
-    <div class="form-row">
-      <input type="text" id="prop-input" class="form-input"
-        placeholder="e.g. 3229 Forest Ln, Garland TX 75042"
-        autocomplete="off" />
-      <button class="analyze-btn" id="analyze-btn" onclick="runAnalyze()">
+    <form class="analyze-form" onsubmit="handleAnalyze(event)">
+      <input
+        class="analyze-input"
+        id="address-input"
+        type="text"
+        placeholder="Enter any US property address..."
+        autocomplete="off"
+        required
+      />
+      <button class="analyze-btn" id="analyze-btn" type="submit">
         Analyze →
       </button>
-    </div>
+    </form>
 
-    <label class="form-label" style="margin-top:4px">Email <span style="color:var(--text3);text-transform:none;letter-spacing:0;font-weight:400;font-size:0.8rem">(optional — receive your report instantly)</span></label>
-    <input type="email" id="email-input" class="form-input-email"
-      placeholder="you@example.com" autocomplete="email" />
+    <p class="hero-note">No subscription. Pay per report. <a href="#pricing">See pricing</a></p>
 
-    <!-- Brand Your Report toggle -->
-    <div class="wl-toggle" id="wl-toggle" onclick="toggleWL()">
-      <span class="wl-toggle-icon">▶</span>
-      Brand this report with your company
-      <span class="wl-preview-badge" id="wl-active-badge" style="display:none">✓ Branding set</span>
-    </div>
-    <div class="wl-form" id="wl-form">
-      <div class="wl-grid">
-        <div class="wl-field">
-          <label class="wl-label">Company / Brokerage Name</label>
-          <input type="text" id="wl-company" class="wl-input" placeholder="Mathis Realty Group" />
-        </div>
-        <div class="wl-field">
-          <label class="wl-label">Your Name</label>
-          <input type="text" id="wl-name" class="wl-input" placeholder="Mason Mathis" />
-        </div>
-        <div class="wl-field">
-          <label class="wl-label">Phone</label>
-          <input type="text" id="wl-phone" class="wl-input" placeholder="(972) 834-7204" />
-        </div>
-        <div class="wl-field">
-          <label class="wl-label">Your Email</label>
-          <input type="text" id="wl-email" class="wl-input" placeholder="mason@yourfirm.com" />
-        </div>
-      </div>
-      <div class="wl-field">
-        <label class="wl-label">Logo URL <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <input type="text" id="wl-logo" class="wl-input" placeholder="https://yourfirm.com/logo.png" />
-      </div>
-      <p class="wl-note">Your branding appears at the top of every report and in the delivery email. Clients see your firm — not PropIntel. Saved in your browser.</p>
-    </div>
-
-    <div class="form-hint" style="margin-top:10px">
-      <span>Any US address</span>
-      <span class="form-hint-dot"></span>
-      <span>Residential · Commercial · Land</span>
-      <span class="form-hint-dot"></span>
-      <span>~10 seconds</span>
-    </div>
-
-    <!-- Free teaser result -->
-    <div class="result-wrap" id="result-wrap">
-      <div class="result-title">Free Preview — <span id="result-address" style="font-weight:500;color:var(--text2)"></span></div>
-      <div class="result-cards" id="result-cards"></div>
-      <div id="result-flags" style="display:none;margin-top:12px;display:flex;flex-wrap:wrap;gap:6px"></div>
-      <div class="result-cta-row">
-        <a id="starter-btn" href="#" class="result-cta starter" target="_blank">
-          Starter Report — $9.99
-        </a>
-        <a id="pro-btn" href="#" class="result-cta pro" target="_blank">
-          Full Intel Report — $29.99 →
-        </a>
-      </div>
-      <p class="result-note">Includes owner skip trace, motivation score, LOI generator, deal analyzer</p>
+    <!-- Inline result -->
+    <div id="result-wrap">
+      <div class="result-header">Analysis complete</div>
+      <div id="result-address"></div>
+      <div id="result-cards"></div>
+      <div class="result-actions" id="result-actions"></div>
     </div>
   </div>
 </section>
 
-<!-- TRUST STRIP -->
-<div class="trust-strip">
-  <p class="trust-label">Data pulled directly from</p>
-  <div class="trust-sources">
-    <span class="trust-pill">Regrid / County GIS</span>
-    <span class="trust-pill">FEMA NFHL</span>
-    <span class="trust-pill">U.S. Census ACS</span>
-    <span class="trust-pill">Texas SOS</span>
-    <span class="trust-pill">DCAD</span>
-    <span class="trust-pill">DataZapp</span>
-    <span class="trust-pill">LoopNet · Crexi</span>
+<!-- ─── BENTO ─── -->
+<div class="section" id="features">
+  <div class="section-eyebrow">What's inside</div>
+  <h2 class="section-title">Every data point<br>that matters.</h2>
+  <p class="section-sub">Built for agents and investors who need answers fast — not another bloated subscription portal.</p>
+
+  <div class="bento">
+
+    <!-- Tile 1: Motivation Score -->
+    <div class="tile tile-1">
+      <div class="tile-glow" style="width:200px;height:200px;top:-40px;right:-40px;background:var(--amber);"></div>
+      <div class="tile-label">Motivation Score</div>
+      <div class="score-row">
+        <div class="score-val" style="color:var(--amber)">72</div>
+        <div class="score-meta">out of 100<br><strong>HIGH</strong> motivation to sell</div>
+      </div>
+      <div class="score-bar"><div class="score-fill"></div></div>
+      <div class="tags" style="margin-top:16px">
+        <span class="tag tag-amber">Absentee Owner</span>
+        <span class="tag tag-red">Out of State</span>
+        <span class="tag tag-blue">LLC / Entity</span>
+      </div>
+    </div>
+
+    <!-- Tile 2: Owner Intel -->
+    <div class="tile tile-2">
+      <div class="tile-glow" style="width:180px;height:180px;bottom:-40px;left:-20px;background:var(--blue-l);"></div>
+      <div class="tile-label">Owner Intelligence</div>
+      <div class="tile-heading">Verified owner identity,<br>mailing address & entity type.</div>
+      <div style="margin-top:20px">
+        <div class="owner-field">
+          <div class="owner-field-label">Owner of Record</div>
+          <div class="owner-field-val">ZAKI FAMILY PARTNERSHIP LP</div>
+        </div>
+        <div class="owner-field">
+          <div class="owner-field-label">Mailing Address</div>
+          <div class="owner-field-val">8901 Post Oak Blvd, Houston TX 77056</div>
+        </div>
+        <div class="owner-field">
+          <div class="owner-field-label">Owner Type</div>
+          <div class="owner-field-val">Limited Partnership — Out of State</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tile 3: Flood Zone -->
+    <div class="tile tile-3">
+      <div class="tile-label">FEMA Flood Zone</div>
+      <div class="flood-zone-big">X</div>
+      <div class="tile-body">Minimal flood hazard. No mandatory flood insurance.</div>
+      <div class="tags" style="margin-top:14px">
+        <span class="tag tag-green">Low Risk</span>
+      </div>
+    </div>
+
+    <!-- Tile 4: Assessed Value -->
+    <div class="tile tile-4">
+      <div class="tile-label">Assessed Value</div>
+      <div style="font-family:'Satoshi',sans-serif;font-size:2.2rem;font-weight:900;letter-spacing:-2px;margin:12px 0 6px;color:var(--white)">$1.61M</div>
+      <div class="tile-body" style="margin-bottom:10px">Tax assessed. Market estimate: <strong style="color:var(--white)">$1.69M – $2.01M</strong></div>
+      <div class="tile-body">5,920 SF · Built 1987 · Commercial</div>
+    </div>
+
+    <!-- Tile 5: PDF Pages -->
+    <div class="tile tile-5">
+      <div class="tile-glow" style="width:160px;height:160px;bottom:-30px;right:-30px;background:#7c3aed;"></div>
+      <div class="tile-label">Report Depth</div>
+      <div class="page-count">13+</div>
+      <div class="page-subtitle">Pages per report — comps, ownership history, deal analysis, flood maps, skip trace, and more.</div>
+    </div>
+
+    <!-- Tile 6: Comps strip -->
+    <div class="tile tile-6">
+      <div class="tile-label">Sold Comparables</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 24px">
+        <div>
+          <div class="comp-row">
+            <div><div class="comp-addr">4612 Greenville Ave</div><div class="comp-sf">5,200 SF · 2023</div></div>
+            <div></div>
+            <div class="comp-price">$1.72M</div>
+          </div>
+          <div class="comp-row">
+            <div><div class="comp-addr">5001 Greenville Ave</div><div class="comp-sf">6,100 SF · 2023</div></div>
+            <div></div>
+            <div class="comp-price">$2.05M</div>
+          </div>
+        </div>
+        <div>
+          <div class="comp-row">
+            <div><div class="comp-addr">4318 Lovers Ln</div><div class="comp-sf">4,800 SF · 2024</div></div>
+            <div></div>
+            <div class="comp-price">$1.55M</div>
+          </div>
+          <div class="comp-row">
+            <div><div class="comp-addr">3901 Greenville Ave</div><div class="comp-sf">5,500 SF · 2022</div></div>
+            <div></div>
+            <div class="comp-price">$1.88M</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<div class="divider"></div>
+<!-- ─── HOW IT WORKS ─── -->
+<div class="section" id="how">
+  <div class="section-eyebrow">How it works</div>
+  <h2 class="section-title">Report ready<br>in 30 seconds.</h2>
 
-<!-- HOW IT WORKS -->
-<section class="section" id="how">
-  <div class="section-inner">
-    <div class="section-label">How It Works</div>
-    <div class="section-title">From address to full report in<br />under 30 seconds</div>
-    <p class="section-desc">No login required. No subscription. Pay once, get a permanent report link you can share with your team.</p>
-
-    <div class="how-grid">
-      <div class="how-card">
-        <div class="how-num">01</div>
-        <div class="how-title">Enter any address</div>
-        <div class="how-desc">Paste a property address, LoopNet URL, Zillow link, or listing ID. PropIntel resolves it automatically.</div>
-      </div>
-      <div class="how-card">
-        <div class="how-num">02</div>
-        <div class="how-title">We pull the data</div>
-        <div class="how-desc">Our pipeline queries county appraisal districts, FEMA, Census, and proprietary databases simultaneously.</div>
-      </div>
-      <div class="how-card">
-        <div class="how-num">03</div>
-        <div class="how-title">Get your report</div>
-        <div class="how-desc">Receive a permanent, shareable report with every data point linked back to its original government source.</div>
-      </div>
+  <div class="steps-grid">
+    <div class="step-tile">
+      <div class="step-num">01</div>
+      <div class="step-title">Enter any address</div>
+      <div class="step-desc">US property address, any state. Residential or commercial. We pull from 7 verified government and public-record sources instantly.</div>
+    </div>
+    <div class="step-tile">
+      <div class="step-num">02</div>
+      <div class="step-title">Choose your report</div>
+      <div class="step-desc">Starter gets you the core record — assessed value, owner, flood zone. Pro unlocks motivation score, sold comps, deal analyzer, skip trace, and full PDF.</div>
+    </div>
+    <div class="step-tile">
+      <div class="step-num">03</div>
+      <div class="step-title">Get your report</div>
+      <div class="step-desc">PDF delivered to your inbox instantly. Plus a shareable link you can send to clients, partners, or your team — no login required.</div>
     </div>
   </div>
-</section>
+</div>
 
-<div class="divider"></div>
+<hr class="divider"/>
 
-<!-- WHO IT'S FOR -->
-<section class="section">
-  <div class="section-inner">
-    <div class="section-label">Who It's For</div>
-    <div class="section-title">Built for every property professional</div>
-    <p class="section-desc">One product. Two very different power users.</p>
+<!-- ─── PRICING ─── -->
+<div class="section" id="pricing">
+  <div class="section-eyebrow">Pricing</div>
+  <h2 class="section-title">Pay for what<br>you need.</h2>
+  <p class="section-sub">No subscription. No seat fees. One report, one price — yours to keep.</p>
 
-    <div class="audience-grid">
-      <div class="audience-card">
-        <span class="audience-icon">🏡</span>
-        <div class="audience-title">Real Estate Agents</div>
-        <p class="audience-desc">Walk into every listing appointment with a full property brief already prepared. Send clients a branded report that looks like it cost thousands.</p>
-        <ul class="audience-list">
-          <li>Impress sellers with instant comp data at listing appointments</li>
-          <li>Send branded due diligence reports to buyers</li>
-          <li>Flood zone, tax, and ownership verified before you ask</li>
-          <li>Replace hours of MLS research with one click</li>
-          <li>White-label it — your firm's name, not PropIntel's</li>
-        </ul>
-      </div>
-      <div class="audience-card">
-        <span class="audience-icon">🏗️</span>
-        <div class="audience-title">Investors & Wholesalers</div>
-        <p class="audience-desc">Underwrite strip centers, land, warehouses, and multifamily in under a minute. Know the owner's phone number before you make the call.</p>
-        <ul class="audience-list">
-          <li>Land, strip centers, warehouses, multifamily — any asset class</li>
-          <li>Owner skip trace with direct phone and email</li>
-          <li>Seller motivation score from 7 verified indicators</li>
-          <li>Deal analyzer — DSCR, cap rate, price-to-assessed ratio</li>
-          <li>Pre-filled LOI ready to send in 30 seconds</li>
-        </ul>
-      </div>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-name">Starter</div>
+      <div class="price-val">$9.99</div>
+      <div class="price-per">per report</div>
+      <ul class="price-features">
+        <li>Owner of record + mailing address</li>
+        <li>Assessed & market value estimate</li>
+        <li>FEMA flood zone</li>
+        <li>Year built, lot size, use type</li>
+        <li>County & census demographics</li>
+        <li>PDF report — 5 pages</li>
+      </ul>
+      <a class="price-btn" href="https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00" target="_blank">Get Starter report →</a>
+    </div>
+
+    <div class="price-card featured">
+      <div class="price-name">Pro</div>
+      <div class="price-val">$29.99</div>
+      <div class="price-per">per report</div>
+      <ul class="price-features">
+        <li>Everything in Starter</li>
+        <li>Seller motivation score (0–100)</li>
+        <li>Sold comps — 90 day, 6 mo, 12 mo</li>
+        <li>AVM — real market value estimate</li>
+        <li>Mortgage & equity position</li>
+        <li>Ownership history</li>
+        <li>Skip trace — phones & email</li>
+        <li>Deal analyzer — 3 purchase scenarios</li>
+        <li>PDF report — 13+ pages</li>
+      </ul>
+      <a class="price-btn primary" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank">Get Pro report →</a>
     </div>
   </div>
-</section>
+</div>
 
-<div class="divider"></div>
+<hr class="divider"/>
 
-<!-- WHAT'S IN THE REPORT -->
-<section class="section" id="data" style="background:var(--bg)">
-  <div class="section-inner">
-    <div class="section-label">What's Included</div>
-    <div class="section-title">Every report is a full<br />analyst-grade brief</div>
-    <p class="section-desc">Satellite maps, value charts, owner intelligence, flood data, neighborhood analytics — sourced from verified government records and presented beautifully.</p>
+<!-- ─── FAQ ─── -->
+<div class="section" id="faq">
+  <div class="section-eyebrow">FAQ</div>
+  <h2 class="section-title">Common questions.</h2>
 
-    <div class="data-grid">
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#eff6ff">🗺️</div>
-          <div>
-            <div class="data-card-title">Interactive Property Map</div>
-            <div class="data-card-src">ESRI Satellite · Google Street View</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>High-res satellite view with property pin</li>
-          <li>One-click Google Street View</li>
-          <li>Zoning + parcel boundary context</li>
-        </ul>
-      </div>
-
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#eff6ff">🏠</div>
-          <div>
-            <div class="data-card-title">Parcel & Ownership</div>
-            <div class="data-card-src">County Appraisal District · Regrid</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>Owner name, mailing address, entity type</li>
-          <li>APN / account number</li>
-          <li>County assessed (tax) value — land + improvement</li>
-          <li><strong>Estimated market value range</strong> (DFW multiplier)</li>
-          <li>Year built, building SF, lot acres, zoning</li>
-          <li>Tax delinquency · Absentee · Out-of-state flags</li>
-          <li>Direct permit portal + assessor portal links</li>
-        </ul>
-      </div>
-
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#f8fafc">📊</div>
-          <div>
-            <div class="data-card-title">Value Charts</div>
-            <div class="data-card-src">Live from county parcel data</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>Land vs improvement breakdown (donut chart)</li>
-          <li>Assessed vs market range (bar chart)</li>
-          <li>Property age and equity estimate</li>
-          <li>Per-SF value calculation</li>
-        </ul>
-      </div>
-
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#f0fdf4">🌊</div>
-          <div>
-            <div class="data-card-title">FEMA Flood Zone</div>
-            <div class="data-card-src">FEMA National Flood Hazard Layer</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>Flood zone designation (X, AE, VE, etc.)</li>
-          <li>FIRM panel number and effective date</li>
-          <li>Flood insurance requirement status</li>
-          <li>500-year floodplain exposure</li>
-        </ul>
-      </div>
-
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#fefce8">📍</div>
-          <div>
-            <div class="data-card-title">Neighborhood Profile</div>
-            <div class="data-card-src">U.S. Census Bureau — ACS 5-Year</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>Median household income with visual bar</li>
-          <li>Owner-occupied % with progress indicator</li>
-          <li>Median age and population</li>
-          <li>Unemployment rate</li>
-        </ul>
-      </div>
-
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#f0fdf4">🔗</div>
-          <div>
-            <div class="data-card-title">Research &amp; Comparables</div>
-            <div class="data-card-src">Pre-loaded for every property</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>Zillow, Redfin, Realtor.com — one click</li>
-          <li>LoopNet for commercial comps</li>
-          <li>County assessor + permit portal direct links</li>
-          <li>PACER for lien/bankruptcy check</li>
-        </ul>
-      </div>
-
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#fdf4ff">🎯</div>
-          <div>
-            <div class="data-card-title">Seller Motivation Score <span class="pro-only">PRO</span></div>
-            <div class="data-card-src">7 verified public record indicators</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>0–100 score from verified data only</li>
-          <li>Absentee / out-of-state owner</li>
-          <li>LLC/entity structure pierce</li>
-          <li>Days on market + price reduction history</li>
-          <li>Tax delinquency signal</li>
-        </ul>
-      </div>
-
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#fff7ed">📊</div>
-          <div>
-            <div class="data-card-title">Deal Analyzer <span class="pro-only">PRO</span></div>
-            <div class="data-card-src">Live calculations from report data</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>DSCR and cash-on-cash return</li>
-          <li>Price per SF vs. assessed value</li>
-          <li>Cap rate analysis</li>
-          <li>Pre-filled LOI draft (editable)</li>
-        </ul>
-      </div>
-
-      <div class="data-card">
-        <div class="data-card-head">
-          <div class="data-icon" style="background:#f0fdf4">📞</div>
-          <div>
-            <div class="data-card-title">Owner Contact <span class="pro-only">PRO</span></div>
-            <div class="data-card-src">DataZapp Skip Trace</div>
-          </div>
-        </div>
-        <ul class="data-items">
-          <li>Direct phone numbers (mobile + landline)</li>
-          <li>Email addresses</li>
-          <li>DNC registry check</li>
-          <li>LLC registered agent information</li>
-        </ul>
-      </div>
+  <div class="faq-list">
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Where does the data come from?</div>
+      <div class="faq-a">We pull from county assessor records, FEMA National Flood Hazard Layer, US Census ACS, REGRID parcel data, and People Data Labs for skip trace — all verified, government-sourced, updated regularly.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">How accurate is the motivation score?</div>
+      <div class="faq-a">The motivation score is a 0–100 composite based on verified signals: absentee ownership, out-of-state mailing, LLC/entity ownership, hold duration, and tax delinquency. It reflects likelihood to be open to a deal — not a guaranteed seller.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Do you cover all US states?</div>
+      <div class="faq-a">Yes. We cover all 50 states for base parcel data. Sold comps and AVM are currently strongest in Texas, with national coverage expanding. FEMA and census data is nationwide.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">Can I use this for client-facing work?</div>
+      <div class="faq-a">Yes. The shareable report link is clean and unbranded — safe to forward to clients. Enterprise accounts get full white-label with your logo. <a href="mailto:hello@propertyvalueintel.com" style="color:var(--blue-l)">Contact us</a> for volume pricing.</div>
+    </div>
+    <div class="faq-item" onclick="toggleFaq(this)">
+      <div class="faq-q">What's the refund policy?</div>
+      <div class="faq-a">If a report fails to generate or returns no data, we'll refund you immediately — no questions asked. If the data is live and delivered, all sales are final.</div>
     </div>
   </div>
-</section>
+</div>
 
-<div class="divider"></div>
-
-<!-- REPORT PREVIEW MOCK -->
-<section class="section">
-  <div class="section-inner">
-    <div class="section-label">Live Preview</div>
-    <div class="section-title">See what your report looks like</div>
-    <p class="section-desc">Every report includes source citations, risk flags, and shareable links. <a href="demo.html" style="color:var(--accent);font-weight:600">View a full sample →</a></p>
-
-    <div class="preview-wrap">
-      <div class="preview-bar">
-        <div class="preview-dot" style="background:#ef4444"></div>
-        <div class="preview-dot" style="background:#f59e0b"></div>
-        <div class="preview-dot" style="background:#22c55e"></div>
-        <div class="preview-url">propertyvalueintel.com/report · 3229 Forest Ln, Garland TX</div>
-      </div>
-      <div class="preview-body">
-        <div class="preview-card">
-          <div class="preview-card-label">Owner of Record</div>
-          <div class="preview-card-val" style="font-size:0.85rem">SUNCHA 2004 INC</div>
-          <div class="preview-card-sub">Absentee — San Antonio TX</div>
-        </div>
-        <div class="preview-card">
-          <div class="preview-card-label">Assessed Value</div>
-          <div class="preview-card-val">$808,830</div>
-          <div class="preview-card-sub">Dallas CAD · 2025</div>
-        </div>
-        <div class="preview-card">
-          <div class="preview-card-label">Flood Zone</div>
-          <div class="preview-card-val" style="color:var(--green)">Zone X</div>
-          <div class="preview-card-sub">Minimal flood risk</div>
-        </div>
-        <div class="preview-card">
-          <div class="preview-card-label">Motivation Score</div>
-          <div class="preview-card-val" style="color:#f59e0b">55 / 100</div>
-          <div class="preview-card-sub">MODERATE — 4 signals</div>
-        </div>
-        <div class="preview-card">
-          <div class="preview-card-label">Building SF</div>
-          <div class="preview-card-val">9,640 SF</div>
-          <div class="preview-card-sub">Built 1988</div>
-        </div>
-        <div class="preview-card">
-          <div class="preview-card-label">Tax Delinquency</div>
-          <div class="preview-card-val" style="color:var(--green);font-size:0.85rem">Current</div>
-          <div class="preview-card-sub">No delinquency</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- PRICING -->
-<section class="section section-center" id="pricing" style="background:var(--bg)">
-  <div class="section-inner">
-    <div class="section-label" style="text-align:center">Pricing</div>
-    <div class="section-title" style="text-align:center">Pay once. Keep forever.</div>
-    <p class="section-desc" style="margin:0 auto 0;text-align:center">No subscription required. Every report is permanently accessible and shareable.</p>
-
-    <div class="pricing-grid">
-
-      <!-- Starter -->
-      <div class="price-card">
-        <div class="price-tier">Starter</div>
-        <div class="price-amount">
-          <span class="p-dollar">$</span>
-          <span class="p-num">9</span>
-          <span class="p-per">.99 / report</span>
-        </div>
-        <p class="price-desc">All verified public record data. Perfect for quick due diligence.</p>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="p-check">✓</span> Parcel data — owner, APN, legal description <span class="p-source">County CAD</span></li>
-          <li><span class="p-check">✓</span> Assessed value, tax bill &amp; delinquency <span class="p-source">County CAD</span></li>
-          <li><span class="p-check">✓</span> FEMA flood zone &amp; FIRM panel <span class="p-source">FEMA</span></li>
-          <li><span class="p-check">✓</span> Demographics — pop, MHI, growth <span class="p-source">Census</span></li>
-          <li><span class="p-check">✓</span> Business registrations by suite <span class="p-source">TX SOS</span></li>
-          <li><span class="p-check">✓</span> Automated risk flags</li>
-        </ul>
-        <a id="pricing-starter-btn" href="https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00" class="p-btn outline" target="_blank">Buy Starter Report →</a>
-      </div>
-
-      <!-- Pro -->
-      <div class="price-card featured">
-        <div class="price-badge">Most Popular</div>
-        <div class="price-tier">Full Intel</div>
-        <div class="price-amount">
-          <span class="p-dollar">$</span>
-          <span class="p-num">29</span>
-          <span class="p-per">.99 / report</span>
-        </div>
-        <p class="price-desc">Everything in Starter plus owner contact, motivation scoring, and deal analysis.</p>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="p-check">✓</span> Everything in Starter</li>
-          <li><span class="p-check">✓</span> Owner phone &amp; email <span class="p-source">DataZapp</span></li>
-          <li><span class="p-check">✓</span> LLC pierce — registered agent <span class="p-source">TX SOS</span></li>
-          <li><span class="p-check">✓</span> Seller motivation score (0–100) <span class="p-source">7 indicators</span></li>
-          <li><span class="p-check">✓</span> Lien search — mechanic's, UCC, tax <span class="p-source">County Clerk</span></li>
-          <li><span class="p-check">✓</span> Deal Analyzer — DSCR, cap rate, CoC</li>
-          <li><span class="p-check">✓</span> Pre-filled LOI draft (copy or print)</li>
-        </ul>
-        <a id="pricing-pro-btn" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" class="p-btn primary" target="_blank">Buy Full Intel Report →</a>
-      </div>
-
-      <!-- Enterprise -->
-      <div class="price-card">
-        <div class="price-tier">Enterprise</div>
-        <div class="price-amount">
-          <span class="p-dollar">$</span>
-          <span class="p-num">199</span>
-          <span class="p-per">/mo</span>
-        </div>
-        <p class="price-desc">Unlimited reports, API access, multi-user, and CRM export for teams.</p>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="p-check">✓</span> 100 Pro reports per month</li>
-          <li><span class="p-check">✓</span> API access</li>
-          <li><span class="p-check">✓</span> Multi-user dashboard</li>
-          <li><span class="p-check">✓</span> CRM export (CSV)</li>
-          <li><span class="p-check">✓</span> Priority support</li>
-          <li><span class="p-check">✓</span> White-label available</li>
-        </ul>
-        <a href="mailto:mason@mathislandco.com" class="p-btn outline">Contact Sales →</a>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- TESTIMONIALS -->
-<section class="section">
-  <div class="section-inner">
-    <div class="section-label">What Investors Say</div>
-    <div class="section-title">Trusted by real estate<br />professionals across Texas</div>
-
-    <div class="testi-grid">
-      <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-text">"I used to spend 45 minutes pulling this data manually from 4 different sites. PropIntel does it in under a minute and links every number back to its source. That source attribution alone is worth the price."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">RC</div>
-          <div>
-            <div class="testi-name">Ryan C.</div>
-            <div class="testi-role">Commercial wholesaler, Dallas–Fort Worth</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-text">"The motivation score is the standout feature. I ran it on 15 properties I was considering and the top 3 scorers all had owners who engaged within 48 hours. It's not magic — it's just sourced data, which is better."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">JM</div>
-          <div>
-            <div class="testi-name">Jessica M.</div>
-            <div class="testi-role">Land investor, Austin TX</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-text">"I white-labeled it for my brokerage. My clients get a full property brief with my logo and contact info at the top — they think it's our own proprietary tool. It's become a major differentiator at listing appointments."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">SK</div>
-          <div>
-            <div class="testi-name">Sarah K.</div>
-            <div class="testi-role">Real estate agent, Keller Williams DFW</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA BOTTOM -->
-<section class="cta-section">
-  <div class="section-inner">
-    <h2>See exactly what you're buying</h2>
-    <p>A real report. A real Dallas property. Every data point sourced and verified. Takes 10 seconds to see.</p>
-    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px">
-      <a href="demo.html" class="cta-btn">View Sample Report →</a>
-      <a href="#analyze" style="display:inline-block;background:rgba(255,255,255,0.12);color:white;padding:14px 28px;border-radius:8px;font-size:0.9375rem;font-weight:700;text-decoration:none;transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">Try It Yourself</a>
-    </div>
-  </div>
-</section>
-
-<!-- FOOTER -->
+<!-- ─── FOOTER ─── -->
 <footer>
-  <div class="footer-inner">
-    <span class="footer-left">© 2026 PropIntel · propertyvalueintel.com · All data from verified public records.</span>
-    <div class="footer-links">
-      <a href="demo.html">Sample Report</a>
-      <a href="#pricing">Pricing</a>
-      <a href="mailto:mason@mathislandco.com">Support</a>
-      <a href="admin.html" id="footer-admin" style="display:none">Admin</a>
-    </div>
+  <a class="footer-logo" href="/">PropIntel</a>
+  <div class="footer-links">
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="mailto:hello@propertyvalueintel.com">Contact</a>
   </div>
+  <span class="footer-copy">© 2026 PropertyValueIntel LLC. All rights reserved.</span>
 </footer>
 
 <script>
-  const API = 'https://propintel-htij.onrender.com';
+/* ─── FAQ ─── */
+function toggleFaq(el) {
+  el.classList.toggle('open');
+}
 
-  // Show admin link if key is stored
-  if (localStorage.getItem('admin_key')) {
-    document.getElementById('admin-link').style.display = '';
-    document.getElementById('footer-admin').style.display = '';
-  }
+/* ─── ANALYZE ─── */
+const API = 'https://propintel-htij.onrender.com';
 
-  // ── WHITE-LABEL ──
-  function toggleWL() {
-    const toggle = document.getElementById('wl-toggle');
-    const form = document.getElementById('wl-form');
-    toggle.classList.toggle('open');
-    form.classList.toggle('open');
-  }
+async function handleAnalyze(e) {
+  e.preventDefault();
+  const input = document.getElementById('address-input').value.trim();
+  if (!input) return;
 
-  function saveBranding() {
-    const b = {
-      company: document.getElementById('wl-company').value.trim(),
-      name: document.getElementById('wl-name').value.trim(),
-      phone: document.getElementById('wl-phone').value.trim(),
-      email: document.getElementById('wl-email').value.trim(),
-      logo: document.getElementById('wl-logo').value.trim(),
-    };
-    if (b.company || b.name) {
-      localStorage.setItem('propintel_brand', JSON.stringify(b));
-      document.getElementById('wl-active-badge').style.display = '';
-    }
-    return b;
-  }
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Analyzing…';
 
-  function getBranding() {
-    try { return JSON.parse(localStorage.getItem('propintel_brand') || 'null'); }
-    catch { return null; }
-  }
-
-  // Pre-fill branding fields from localStorage
-  (function loadBranding() {
-    const b = getBranding();
-    if (!b) return;
-    if (b.company) document.getElementById('wl-company').value = b.company;
-    if (b.name) document.getElementById('wl-name').value = b.name;
-    if (b.phone) document.getElementById('wl-phone').value = b.phone;
-    if (b.email) document.getElementById('wl-email').value = b.email;
-    if (b.logo) document.getElementById('wl-logo').value = b.logo;
-    if (b.company || b.name) document.getElementById('wl-active-badge').style.display = '';
-  })();
-
-  // Auto-save branding on input change
-  ['wl-company','wl-name','wl-phone','wl-email','wl-logo'].forEach(id => {
-    document.getElementById(id).addEventListener('input', saveBranding);
-  });
-
-  // ── ANALYZE ──
-  async function runAnalyze() {
-    const input = document.getElementById('prop-input').value.trim();
-    const clientEmail = document.getElementById('email-input').value.trim();
-    if (!input) { document.getElementById('prop-input').focus(); return; }
-
-    const btn = document.getElementById('analyze-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span>Analyzing...';
-
-    // Save address + branding
-    localStorage.setItem('last_address', input);
-    const branding = saveBranding();
-
-    try {
-      const body = { input, tier: 'starter', format: 'json' };
-      if (clientEmail && clientEmail.includes('@')) body.email = clientEmail;
-      if (branding && (branding.company || branding.name)) body.branding = branding;
-
-      const res = await fetch(`${API}/api/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-      const data = await res.json();
-      showResult(data, input);
-    } catch (err) {
-      btn.disabled = false;
-      btn.innerHTML = 'Analyze →';
-      alert('Error: ' + err.message + '\n\nMake sure the backend is online.');
-    }
-  }
-
-  function showResult(data, input) {
-    const btn = document.getElementById('analyze-btn');
-    btn.disabled = false;
-    btn.innerHTML = 'Analyze →';
-
-    const wrap = document.getElementById('result-wrap');
-    const cards = document.getElementById('result-cards');
-    const parcel = data.parcel || {};
-    const flood = data.flood || {};
-    const demo = data.demographics || {};
-    const branding = getBranding();
-
-    // Show resolved address
-    const addrEl = document.getElementById('result-address');
-    if (addrEl) addrEl.textContent = data.resolved_address || input;
-
-    // Build data cards
-    const fmt = v => v ? '$' + Number(v).toLocaleString() : 'N/A';
-    const fzone = flood.zone || 'N/A';
-    const fLabel = fzone === 'X' ? fzone + ' — No flood risk ✓' :
-                   (fzone.startsWith('A') || fzone.startsWith('V')) ? fzone + ' — High risk ⚠' :
-                   fzone;
-
-    const items = [
-      { label: 'Owner of Record', val: parcel.owner_name || 'N/A' },
-      { label: 'Assessed Value', val: fmt(parcel.assessed_total) },
-      { label: 'Flood Zone', val: fLabel },
-      { label: 'County', val: parcel.county ? parcel.county.charAt(0).toUpperCase() + parcel.county.slice(1) + ' County' : (data.geo && data.geo.county ? data.geo.county : 'N/A') },
-    ];
-    if (parcel.year_built) items.push({ label: 'Year Built', val: parcel.year_built });
-    if (demo.median_household_income_fmt) items.push({ label: 'Median Income', val: demo.median_household_income_fmt });
-
-    cards.innerHTML = items.map(i =>
-      `<div class="r-card"><div class="r-label">${i.label}</div><div class="r-val">${i.val}</div></div>`
-    ).join('');
-
-    // Build flags from real data
-    const flagsEl = document.getElementById('result-flags');
-    const rawFlags = data.flags || [];
-    const flags = [];
-    if (parcel.absentee_owner) flags.push({ text: 'Absentee Owner', cls: 'amber' });
-    if (parcel.out_of_state_owner) flags.push({ text: 'Out-of-State Owner', cls: 'amber' });
-    if (parcel.tax_delinquent) flags.push({ text: 'Tax Delinquent', cls: 'red' });
-    if (fzone && fzone !== 'N/A' && fzone !== 'X') flags.push({ text: 'Flood Risk: ' + fzone, cls: 'red' });
-    rawFlags.forEach(f => {
-      if (!flags.some(existing => existing.text.toLowerCase().includes((f.text || '').toLowerCase().slice(0, 12))))
-        flags.push({ text: f.text || '', cls: f.type === 'red' ? 'red' : 'amber' });
+  try {
+    const res = await fetch(API + '/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: input, tier: 'starter' })
     });
 
-    if (flags.length && flagsEl) {
-      const clsMap = { red: 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;', amber: 'background:#fffbeb;color:#d97706;border:1px solid #fde68a;' };
-      flagsEl.innerHTML = flags.map(f =>
-        `<span style="${clsMap[f.cls] || clsMap.amber}font-size:0.72rem;font-weight:700;padding:3px 9px;border-radius:20px;">${f.text}</span>`
-      ).join('');
-      flagsEl.style.display = 'flex';
+    if (res.status === 429) {
+      const d = await res.json();
+      throw new Error('Rate limit reached — try again in an hour.');
     }
+    if (!res.ok) throw new Error(`Server error (${res.status})`);
 
-    const enc = encodeURIComponent(input);
-    document.getElementById('starter-btn').href = `https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00?client_reference_id=${enc}`;
-    document.getElementById('pro-btn').href = `https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01?client_reference_id=${enc}`;
-    document.getElementById('pricing-starter-btn').href = `https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00?client_reference_id=${enc}`;
-    document.getElementById('pricing-pro-btn').href = `https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01?client_reference_id=${enc}`;
-
-    wrap.style.display = 'block';
-    wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const data = await res.json();
+    showResult(data, input);
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = 'Analyze →';
+    alert('Error: ' + err.message);
   }
+}
 
-  // Enter key support
-  document.getElementById('prop-input').addEventListener('keydown', e => { if (e.key === 'Enter') runAnalyze(); });
-  document.getElementById('email-input').addEventListener('keydown', e => { if (e.key === 'Enter') runAnalyze(); });
+function showResult(data, input) {
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = false;
+  btn.innerHTML = 'Analyze →';
+
+  const wrap = document.getElementById('result-wrap');
+  const cards = document.getElementById('result-cards');
+  const actions = document.getElementById('result-actions');
+  const parcel = data.parcel || {};
+  const flood = data.flood || {};
+  const demo = data.demographics || {};
+
+  document.getElementById('result-address').textContent = data.resolved_address || input;
+
+  const fmt = v => v ? '$' + Number(v).toLocaleString() : '—';
+  const fzone = flood.zone || '—';
+  const fLabel = fzone === 'X' ? 'Zone X (Low Risk ✓)' :
+                 (fzone.startsWith('A') || fzone.startsWith('V')) ? fzone + ' (High Risk ⚠)' : fzone;
+
+  const items = [
+    { label: 'Owner', val: parcel.owner_name || '—' },
+    { label: 'Assessed', val: fmt(parcel.assessed_total) },
+    { label: 'Flood Zone', val: fLabel },
+    { label: 'County', val: parcel.county ? parcel.county.charAt(0).toUpperCase() + parcel.county.slice(1) + ' Co.' : '—' },
+    { label: 'Year Built', val: parcel.year_built || '—' },
+    { label: 'Building SF', val: parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : '—' },
+  ];
+
+  cards.innerHTML = items.map(i => `
+    <div class="result-card">
+      <div class="result-card-label">${i.label}</div>
+      <div class="result-card-val">${i.val}</div>
+    </div>
+  `).join('');
+
+  const addr = encodeURIComponent(data.resolved_address || input);
+  actions.innerHTML = `
+    <a class="result-btn result-btn-secondary" href="#pricing">Get full Pro report →</a>
+    <a class="result-btn result-btn-primary"
+       href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01"
+       target="_blank">Buy Pro — $29.99</a>
+  `;
+
+  wrap.classList.add('visible');
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ─── Animate score fill on scroll ─── */
+const scoreFill = document.querySelector('.score-fill');
+if (scoreFill) {
+  const io = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      scoreFill.style.width = '72%';
+      io.disconnect();
+    }
+  }, { threshold: 0.3 });
+  io.observe(scoreFill);
+  scoreFill.style.width = '0%';
+}
 </script>
-
 </body>
 </html>
