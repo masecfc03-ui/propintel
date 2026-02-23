@@ -319,7 +319,7 @@ def _handle_checkout_completed(session: dict):
             report_id=order_id,
         )
 
-        # Email report
+        # Email report with PDF attachment
         if customer_email:
             result = send_report(
                 to_email=customer_email,
@@ -330,6 +330,7 @@ def _handle_checkout_completed(session: dict):
                 report_id=order_id,
                 order_id=order_id,
                 report_token=report_token,
+                report_data=report_data,   # enables PDF attachment
             )
             if result["success"]:
                 update_order(order_id, emailed=1)

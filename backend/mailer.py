@@ -30,9 +30,11 @@ REPORT_BASE_URL = os.environ.get("REPORT_BASE_URL", "https://masecfc03-ui.github
 
 def send_report(to_email: str, to_name: str, address: str,
                 tier: str, report_html: str, report_id: str,
-                order_id: str = "", report_token: str = "") -> dict:
+                order_id: str = "", report_token: str = "",
+                report_data: dict = None) -> dict:
     """
     Send the PropIntel report to a customer.
+    Attaches a PDF copy when report_data is provided.
 
     Returns: {"success": True/False, "method": "sendgrid|smtp|none", "error": str}
     """
@@ -42,24 +44,40 @@ def send_report(to_email: str, to_name: str, address: str,
     subject = f"PropIntel {'Full Intel' if tier == 'pro' else 'Public Record'} Report — {address}"
     html_body = _build_email_body(to_name, address, tier, report_html, report_id, order_id, report_token)
 
+    # Generate PDF attachment
+    pdf_bytes = None
+    pdf_filename = None
+    if report_data:
+        try:
+            from pdf_builder import generate_pdf_bytes
+            pdf_bytes = generate_pdf_bytes(report_data)
+            safe_addr = address.replace(",", "").replace(" ", "_")[:40]
+            pdf_filename = f"PropIntel_Report_{safe_addr}.pdf"
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning("PDF generation failed (sending without): %s", e)
+
+    last_error = "No email provider configured"
+
     # Try Mailgun first (already configured)
     if MAILGUN_API_KEY and MAILGUN_DOMAIN:
-        result = _send_mailgun(to_email, to_name, subject, html_body)
+        result = _send_mailgun(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
         if result["success"]:
             return result
+        last_error = f"Mailgun: {result.get('error', 'unknown')}"
 
     # Try SendGrid
     if SENDGRID_API_KEY:
-        result = _send_sendgrid(to_email, to_name, subject, html_body)
+        result = _send_sendgrid(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
         if result["success"]:
             return result
+        last_error = f"SendGrid: {result.get('error', 'unknown')}"
 
     # Fallback to SMTP
     if SMTP_USER and SMTP_PASS:
-        result = _send_smtp(to_email, to_name, subject, html_body)
-        return result
+        return _send_smtp(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
 
-    return {"success": False, "method": "none", "error": "No email provider configured"}
+    return {"success": False, "method": "none", "error": last_error}
 
 
 def _build_email_body(name: str, address: str, tier: str,
@@ -193,59 +211,74 @@ def _get_features(tier: str) -> list:
             for icon, label in features]
 
 
-def _send_mailgun(to_email: str, to_name: str, subject: str, html_body: str) -> dict:
-    """Send via Mailgun API (mathislandco.com domain)."""
-    import urllib.request
-    import urllib.parse
-    import urllib.error
-    import base64
+def _send_mailgun(to_email: str, to_name: str, subject: str, html_body: str,
+                  pdf_bytes: bytes = None, pdf_filename: str = None) -> dict:
+    """Send via Mailgun API with optional PDF attachment (multipart/form-data)."""
+    import subprocess, base64, json as _json
 
     url = "https://api.mailgun.net/v3/{}/messages".format(MAILGUN_DOMAIN)
     from_addr = "{} <{}>".format(FROM_NAME, FROM_EMAIL)
-    to_addr = "{} <{}>".format(to_name or "", to_email) if to_name else to_email
+    to_addr = "{} <{}>".format(to_name, to_email) if to_name else to_email
 
-    data = urllib.parse.urlencode({
-        "from": from_addr,
-        "to": to_addr,
-        "subject": subject,
-        "html": html_body,
-    }).encode("utf-8")
-
-    credentials = base64.b64encode("api:{}".format(MAILGUN_API_KEY).encode()).decode()
-    req = urllib.request.Request(
+    # Build curl command (avoids ssl cert issues on some envs)
+    cmd = [
+        "curl", "-s", "--user", "api:{}".format(MAILGUN_API_KEY),
         url,
-        data=data,
-        headers={
-            "Authorization": "Basic {}".format(credentials),
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        method="POST"
-    )
+        "-F", "from={}".format(from_addr),
+        "-F", "to={}".format(to_addr),
+        "-F", "subject={}".format(subject),
+        "-F", "html={}".format(html_body),
+    ]
+
+    # Attach PDF if provided
+    if pdf_bytes and pdf_filename:
+        import tempfile, os
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+        try:
+            tmp.write(pdf_bytes)
+            tmp.close()
+            cmd += ["-F", "attachment=@{};type=application/pdf;filename={}".format(
+                tmp.name, pdf_filename
+            )]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        finally:
+            os.unlink(tmp.name)
+    else:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            if resp.status in (200, 202):
-                return {"success": True, "method": "mailgun"}
-            return {"success": False, "method": "mailgun",
-                    "error": "Mailgun returned {}".format(resp.status)}
-    except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", errors="ignore")
-        return {"success": False, "method": "mailgun",
-                "error": "{}: {}".format(e.code, body[:200])}
+        resp = _json.loads(result.stdout)
+        if resp.get("id") or "queued" in resp.get("message", "").lower():
+            return {"success": True, "method": "mailgun",
+                    "pdf_attached": bool(pdf_bytes)}
+        return {"success": False, "method": "mailgun", "error": str(resp)}
     except Exception as e:
-        return {"success": False, "method": "mailgun", "error": str(e)}
+        stderr = result.stderr[:200] if result.stderr else ""
+        return {"success": False, "method": "mailgun",
+                "error": f"curl failed: stdout={result.stdout[:100]} stderr={stderr}"}
 
 
-def _send_sendgrid(to_email: str, to_name: str, subject: str, html_body: str) -> dict:
+def _send_sendgrid(to_email: str, to_name: str, subject: str, html_body: str,
+                   pdf_bytes: bytes = None, pdf_filename: str = None) -> dict:
     """Send via SendGrid HTTP API."""
     import urllib.request
     import urllib.error
 
-    payload = json.dumps({
+    body = {
         "personalizations": [{"to": [{"email": to_email, "name": to_name or ""}]}],
         "from": {"email": FROM_EMAIL, "name": FROM_NAME},
         "subject": subject,
         "content": [{"type": "text/html", "value": html_body}],
-    }).encode("utf-8")
+    }
+    if pdf_bytes and pdf_filename:
+        import base64
+        body["attachments"] = [{
+            "content": base64.b64encode(pdf_bytes).decode(),
+            "type": "application/pdf",
+            "filename": pdf_filename,
+            "disposition": "attachment",
+        }]
+    payload = json.dumps(body).encode("utf-8")
 
     req = urllib.request.Request(
         "https://api.sendgrid.com/v3/mail/send",
@@ -269,16 +302,26 @@ def _send_sendgrid(to_email: str, to_name: str, subject: str, html_body: str) ->
         return {"success": False, "method": "sendgrid", "error": str(e)}
 
 
-def _send_smtp(to_email: str, to_name: str, subject: str, html_body: str) -> dict:
-    """Send via SMTP (Gmail, etc.)."""
+def _send_smtp(to_email: str, to_name: str, subject: str, html_body: str,
+               pdf_bytes: bytes = None, pdf_filename: str = None) -> dict:
+    """Send via SMTP (Gmail, etc.) with optional PDF attachment."""
     try:
-        msg = MIMEMultipart("alternative")
+        msg = MIMEMultipart("mixed")
         msg["From"] = f"{FROM_NAME} <{SMTP_USER}>"
         msg["To"] = to_email
         msg["Subject"] = subject
 
-        msg.attach(MIMEText("Your PropIntel report is ready. Please view in HTML.", "plain"))
-        msg.attach(MIMEText(html_body, "html"))
+        alt = MIMEMultipart("alternative")
+        alt.attach(MIMEText("Your PropIntel report is ready. Please view in HTML.", "plain"))
+        alt.attach(MIMEText(html_body, "html"))
+        msg.attach(alt)
+
+        if pdf_bytes and pdf_filename:
+            part = MIMEBase("application", "pdf")
+            part.set_payload(pdf_bytes)
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", f'attachment; filename="{pdf_filename}"')
+            msg.attach(part)
 
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
             server.starttls()

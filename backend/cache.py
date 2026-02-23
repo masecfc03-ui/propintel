@@ -52,7 +52,7 @@ def _make_key(address: str, tier: str) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-def get(address: str, tier: str) -> dict | None:
+def get(address: str, tier: str):
     """Return cached report or None if miss/expired."""
     key = _make_key(address, tier)
     now = int(time.time())
