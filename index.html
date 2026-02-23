@@ -614,7 +614,7 @@
           <li><span class="p-check">✓</span> Listing facts only — price, SF, cap rate, broker <span class="p-source">LoopNet</span></li>
           <li><span class="p-check">✓</span> Every data point hyperlinked to its source</li>
         </ul>
-        <a href="https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00" class="p-btn outline" target="_blank">Buy Report — $9.99 →</a>
+        <a id="pricing-starter-btn" href="https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00" class="p-btn outline" target="_blank">Buy Report — $9.99 →</a>
         <a href="report-starter.html" class="p-btn-secondary" style="display:block;text-align:center;margin-top:10px;color:var(--text3);font-size:0.82rem;text-decoration:none;" target="_blank">View sample report</a>
       </div>
 
@@ -623,7 +623,7 @@
         <div class="popular-pill">⚡ Most Popular</div>
         <div class="p-tier">Full Intel</div>
         <div class="p-name">Pro</div>
-        <div class="p-desc">Everything in Starter plus owner contact data, motivation scoring, comps, liens, and a pre-filled LOI.</div>
+        <div class="p-desc">Everything in Starter plus owner skip trace, motivation scoring, deal analyzer (DSCR + CoC), LOI generator, and lien search.</div>
         <div class="p-price">
           <span class="p-dollar">$</span>
           <span class="p-num">29</span>
@@ -640,9 +640,10 @@
           <li><span class="p-check">✓</span> Permit history — all permits on parcel <span class="p-source">City Records</span></li>
           <li><span class="p-check">✓</span> Tenant verification by suite <span class="p-source">TX SOS</span></li>
           <li><span class="p-check">✓</span> Environmental flags — EPA, TCEQ UST <span class="p-source">EPA ECHO</span></li>
-          <li><span class="p-check">✓</span> Pre-filled LOI template with property data</li>
+          <li><span class="p-check">✓</span> Deal Analyzer — DSCR, cash-on-cash, price/SF <span class="p-source">Live calc</span></li>
+          <li><span class="p-check">✓</span> LOI price targets + editable draft (copy or print)</li>
         </ul>
-        <a href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" class="p-btn primary" target="_blank">Buy Report — $29.99 →</a>
+        <a id="pricing-pro-btn" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" class="p-btn primary" target="_blank">Buy Report — $29.99 →</a>
         <a href="report-pro.html" class="p-btn-secondary" style="display:block;text-align:center;margin-top:10px;color:var(--text3);font-size:0.82rem;text-decoration:none;" target="_blank">View sample report</a>
       </div>
 
@@ -689,7 +690,7 @@
       </div>
       <div class="faq-item">
         <div class="faq-q">Are there any estimated or AI-generated numbers in the report?</div>
-        <div class="faq-a">No. That's the entire point. Every number is a verified public record fact. The only "estimates" are items marked clearly as sample values in the demo — live reports pull real-time data. We do not generate projected NOI, DSCR, or cap rates without a verified rent roll.</div>
+        <div class="faq-a">Not from thin air. Every number is a verified public record fact. The Pro report's Deal Analyzer calculates DSCR and cash-on-cash from the listing's <em>stated</em> cap rate — clearly labeled as unverified until you have the rent roll. Live reports pull real-time data. We never fabricate NOI, cap rates, or projections.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q">How long does a report take?</div>
@@ -893,6 +894,18 @@ document.querySelectorAll(".p-btn").forEach(btn => {
     }
   });
 });
+
+// Wire pricing card buttons with saved address for webhook delivery
+(function() {
+  const addr = localStorage.getItem("propintel_address");
+  if (addr) {
+    const enc = encodeURIComponent(addr);
+    const sb = document.getElementById("pricing-starter-btn");
+    const pb = document.getElementById("pricing-pro-btn");
+    if (sb) sb.href = "https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00?client_reference_id=" + enc;
+    if (pb) pb.href = "https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01?client_reference_id=" + enc;
+  }
+})();
 </script>
 
 <!-- ANALYSIS OVERLAY -->
