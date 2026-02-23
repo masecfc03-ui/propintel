@@ -14,7 +14,10 @@ import hmac
 import hashlib
 import logging
 import sys
+import time
+import threading
 from datetime import datetime
+from collections import defaultdict
 
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
@@ -73,6 +76,26 @@ import idempotency
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
+
+# ─── IN-MEMORY RATE LIMITER ────────────────────────────────────────────────
+# 10 requests per IP per hour on /api/analyze — protects Regrid quota
+# Thread-safe; resets automatically; no Redis required
+_rate_store = defaultdict(list)  # ip → [timestamps]
+_rate_lock  = threading.Lock()
+RATE_LIMIT  = int(os.environ.get("RATE_LIMIT_PER_HOUR", "10"))
+
+def _check_rate_limit(ip: str) -> bool:
+    """Return True if request is allowed, False if rate limited."""
+    now = time.time()
+    window = 3600  # 1 hour
+    with _rate_lock:
+        hits = [t for t in _rate_store[ip] if now - t < window]
+        if len(hits) >= RATE_LIMIT:
+            _rate_store[ip] = hits
+            return False
+        hits.append(now)
+        _rate_store[ip] = hits
+        return True
 log.info("PropIntel API starting up")
 
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "reports_cache")
@@ -105,7 +128,7 @@ def health():
     cache_stats = report_cache.stats()
     return jsonify({
         "status": "ok",
-        "version": "1.3.0",
+        "version": "1.4.0",
         "ts": datetime.utcnow().isoformat(),
         # Critical services
         "regrid":           bool(os.environ.get("REGRID_API_KEY")),
@@ -192,6 +215,14 @@ def analyze():
       "format": "json" | "html" | "pdf"
     }
     """
+    # Rate limit: 10 requests/IP/hour (protects Regrid quota)
+    client_ip = request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+    if not _check_rate_limit(client_ip):
+        return jsonify({
+            "error": "Rate limit exceeded. Maximum 10 analyses per hour per IP.",
+            "retry_after": "3600"
+        }), 429
+
     body = request.get_json(force=True, silent=True) or {}
     input_str = (body.get("input") or "").strip()
     tier = body.get("tier", "starter").lower()
