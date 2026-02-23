@@ -41,13 +41,20 @@ def _query_layer(where_clause, layer=CURRENT_LAYER):
                 "f": "json",
             },
             headers=HEADERS,
-            timeout=18,
+            timeout=12,  # Fail fast — fallback if blocked from Render IPs
         )
         resp.raise_for_status()
         data = resp.json()
-        return data.get("features", []), data.get("error")
+        # ArcGIS returns {"error": {"code":...}} on failure
+        if data.get("error"):
+            return [], data["error"]
+        return data.get("features", []), None
+    except requests.exceptions.Timeout:
+        return [], {"message": "DCAD ArcGIS timeout — server may be blocking this IP range"}
+    except requests.exceptions.ConnectionError as e:
+        return [], {"message": f"DCAD connection error: {str(e) or 'Connection refused'}"}
     except Exception as e:
-        return [], {"message": str(e)}
+        return [], {"message": str(e) or repr(e)}
 
 
 def _parse_feature(attrs, query):

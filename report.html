@@ -5,290 +5,460 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PropIntel Report</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #1a1a1a; --bg2: #242424; --bg3: #2e2e2e;
-      --border: rgba(255,255,255,0.08);
+      --bg: #0f1117; --bg2: #161b27; --bg3: #1d2535; --bg4: #232d40;
+      --border: rgba(255,255,255,0.07);
       --accent: #3b82f6; --green: #22c55e; --red: #ef4444; --amber: #f59e0b;
-      --text: #ffffff; --text2: #a0a0a0; --text3: #666;
+      --purple: #a855f7; --teal: #14b8a6;
+      --text: #f1f5f9; --text2: #94a3b8; --text3: #475569;
       --sample: #f59e0b;
     }
-    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text);
+      min-height: 100vh; }
     a { color: var(--accent); }
 
-    /* LOADING */
+    /* ── LOADING ── */
     #loading { display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh; text-align: center; gap: 16px; }
-    .spinner { font-size: 2.5rem; animation: spin 1.5s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+      min-height: 100vh; text-align: center; gap: 12px; padding: 24px; }
+    .load-icon { font-size: 3rem; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.96)} }
+    .load-title { font-size: 1.3rem; font-weight: 800; }
+    .load-sub { color: var(--text2); font-size: 0.88rem; }
+    .load-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 20px;
+      width: 100%; max-width: 320px; }
+    .load-step { display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+      font-size: 0.82rem; color: var(--text2); transition: all 0.4s; }
+    .load-step.active { border-color: rgba(59,130,246,0.4);
+      background: rgba(59,130,246,0.06); color: var(--text); }
+    .load-step.done { border-color: rgba(34,197,94,0.3);
+      background: rgba(34,197,94,0.06); color: var(--green); }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3);
+      flex-shrink: 0; transition: all 0.4s; }
+    .load-step.active .step-dot { background: var(--accent);
+      box-shadow: 0 0 8px rgba(59,130,246,0.6); animation: blink 1s infinite; }
+    .load-step.done .step-dot { background: var(--green); }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    /* ERROR */
+    /* ── ERROR ── */
     #error-state { display: none; flex-direction: column; align-items: center; justify-content: center;
       min-height: 100vh; text-align: center; gap: 16px; padding: 24px; }
 
-    /* REPORT */
-    #report { display: none; max-width: 860px; margin: 0 auto; padding: 32px 24px 80px; }
+    /* ── TOPBAR ── */
+    .topbar { background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 14px 32px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topbar-logo { font-size: 0.95rem; font-weight: 800; display: flex;
+      align-items: center; gap: 8px; }
+    .logo-dot { background: var(--accent); border-radius: 7px; width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .topbar-right a { color: var(--text2); text-decoration: none; font-size: 0.8rem; font-weight: 500; }
+    .print-btn { background: none; border: 1px solid var(--border); color: var(--text2);
+      padding: 7px 16px; border-radius: 100px; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; }
+    .print-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    .report-header { display: flex; align-items: center; justify-content: space-between;
-      padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-    .report-logo { font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-    .report-meta { text-align: right; color: var(--text3); font-size: 0.78rem; }
-    .tier-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem;
-      font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-left: 8px; }
-    .tier-starter { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
-    .tier-pro { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    /* ── REPORT LAYOUT ── */
+    #report { display: none; max-width: 900px; margin: 0 auto; padding: 36px 24px 100px; }
 
-    .subject-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
-      padding: 24px; margin-bottom: 24px; }
-    .subject-label { font-size: 0.72rem; color: var(--accent); font-weight: 700;
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-    .subject-address { font-size: 1.3rem; font-weight: 800; margin-bottom: 12px; }
-    .subject-meta { display: flex; flex-wrap: wrap; gap: 16px; }
-    .subject-pill { background: var(--bg3); border-radius: 8px; padding: 6px 12px;
-      font-size: 0.8rem; color: var(--text2); }
+    /* ── HERO HEADER ── */
+    .r-hero { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px;
+      padding: 32px; margin-bottom: 20px; position: relative; overflow: hidden; }
+    .r-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--purple)); }
+    .tier-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px;
+      border-radius: 100px; font-size: 0.72rem; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; margin-bottom: 16px; }
+    .badge-starter { background: rgba(59,130,246,0.12); color: var(--accent);
+      border: 1px solid rgba(59,130,246,0.3); }
+    .badge-pro { background: rgba(34,197,94,0.12); color: var(--green);
+      border: 1px solid rgba(34,197,94,0.3); }
+    .r-address { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .r-meta { color: var(--text2); font-size: 0.85rem; margin-bottom: 20px; }
+    .r-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .r-pill { background: var(--bg3); border: 1px solid var(--border); padding: 5px 14px;
+      border-radius: 8px; font-size: 0.75rem; color: var(--text2); font-weight: 500; }
+    .r-pill.green { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2);
+      color: var(--green); }
+    .r-pill.red { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.2);
+      color: var(--red); }
+    .r-pill.amber { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2);
+      color: var(--amber); }
 
-    .section { margin-bottom: 20px; }
-    .section-header { display: flex; align-items: center; gap: 10px;
-      padding: 16px 20px; background: var(--bg2); border: 1px solid var(--border);
-      border-radius: 14px 14px 0 0; cursor: pointer; }
-    .section-icon { font-size: 1.1rem; }
-    .section-title { font-size: 0.92rem; font-weight: 700; flex: 1; }
-    .section-source { font-size: 0.72rem; color: var(--text3); }
-    .section-body { background: var(--bg2); border: 1px solid var(--border); border-top: none;
-      border-radius: 0 0 14px 14px; padding: 20px; }
-
-    .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .data-row { display: flex; flex-direction: column; gap: 3px; }
-    .data-label { font-size: 0.72rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
-    .data-value { font-size: 0.92rem; font-weight: 600; }
-    .data-source { font-size: 0.68rem; color: var(--text3); margin-top: 2px; }
-
-    .zone-badge { display: inline-block; padding: 6px 16px; border-radius: 30px;
-      font-size: 1rem; font-weight: 800; margin-bottom: 8px; }
-    .zone-x { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
-    .zone-risk { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
-    .zone-unknown { background: rgba(100,100,100,0.2); color: #a0a0a0; border: 1px solid rgba(100,100,100,0.3); }
-
-    .flags-list { display: flex; flex-direction: column; gap: 10px; }
-    .flag { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px;
+    /* ── FLAGS BAR ── */
+    .flags-bar { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .flag-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px;
       border-radius: 10px; font-size: 0.85rem; }
-    .flag-green { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); }
-    .flag-red { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
-    .flag-yellow { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); }
+    .flag-green { background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.18); color: var(--green); }
+    .flag-red { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.18); color: var(--red); }
+    .flag-yellow { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.18); color: var(--amber); }
 
-    .source-cite { font-size: 0.72rem; color: var(--text3); margin-top: 6px; }
+    /* ── SECTION ── */
+    .section { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+      margin-bottom: 16px; overflow: hidden; }
+    .sec-head { padding: 16px 22px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .sec-title { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+    .sec-src { font-size: 0.7rem; color: var(--text3); }
+    .sec-src a { color: #60a5fa; }
+    .sec-body { padding: 20px 22px; }
 
-    .fallback-box { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);
-      border-radius: 10px; padding: 14px; font-size: 0.85rem; color: var(--text2); }
+    /* ── DATA ROWS ── */
+    .dr { display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 9px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+    .dr:last-child { border-bottom: none; padding-bottom: 0; }
+    .dl { font-size: 0.78rem; color: var(--text3); font-weight: 500; min-width: 160px; }
+    .dv { font-size: 0.88rem; font-weight: 600; text-align: right; color: var(--text); }
+    .dv.green { color: var(--green); } .dv.red { color: var(--red); }
+    .dv.amber { color: var(--amber); } .dv.blue { color: var(--accent); }
 
-    .disclaimer { margin-top: 40px; padding: 20px; background: var(--bg2);
-      border: 1px solid var(--border); border-radius: 12px;
-      font-size: 0.75rem; color: var(--text3); line-height: 1.6; }
+    /* ── DEAL ANALYZER ── */
+    .deal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .deal-kpi { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; text-align: center; }
+    .deal-kpi-label { font-size: 0.68rem; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .deal-kpi-value { font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; }
+    .deal-kpi-sub { font-size: 0.7rem; color: var(--text3); margin-top: 4px; }
+    .deal-kpi.dscr-good .deal-kpi-value { color: var(--green); }
+    .deal-kpi.dscr-warn .deal-kpi-value { color: var(--amber); }
+    .deal-kpi.dscr-bad .deal-kpi-value { color: var(--red); }
 
-    .upsell-box { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.08));
-      border: 1px solid rgba(59,130,246,0.25); border-radius: 16px; padding: 28px;
-      text-align: center; margin-top: 32px; }
-    .upsell-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
-    .upsell-desc { color: var(--text2); font-size: 0.88rem; margin-bottom: 20px; line-height: 1.6; }
-    .upsell-btn { display: inline-block; background: var(--accent); color: #fff;
-      border-radius: 50px; padding: 12px 28px; font-weight: 700; font-size: 0.9rem;
-      text-decoration: none; }
+    /* LOI targets */
+    .loi-targets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+    .loi-target { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .loi-target:hover { border-color: var(--accent); }
+    .loi-target-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text3); margin-bottom: 6px; }
+    .loi-target-value { font-size: 1.1rem; font-weight: 800; }
+    .loi-target-pct { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
 
-    @media (max-width: 600px) { .data-grid { grid-template-columns: 1fr; } }
+    /* ── MOTIVATION SCORE ── */
+    .mot-header { display: flex; align-items: center; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+    .mot-score-circle { position: relative; }
+    .mot-score-num { font-size: 3.5rem; font-weight: 900; line-height: 1; }
+    .mot-score-label { font-size: 0.7rem; color: var(--text3); font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px; }
+    .mot-bar-wrap { flex: 1; }
+    .mot-progress { height: 10px; background: var(--bg3); border-radius: 100px;
+      overflow: hidden; margin-bottom: 10px; }
+    .mot-fill { height: 100%; border-radius: 100px;
+      background: linear-gradient(90deg, var(--green), var(--amber)); transition: width 1s ease; }
+    .mot-interp { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+
+    .mot-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .mot-table th { text-align: left; color: var(--text3); font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 10px;
+      border-bottom: 1px solid var(--border); background: var(--bg3); }
+    .mot-table td { padding: 10px 10px; border-bottom: 1px solid var(--border); color: var(--text2); }
+    .mot-table tr:last-child td { border-bottom: none; }
+
+    /* ── OWNER INTEL ── */
+    .contact-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px 20px; margin-bottom: 12px; }
+    .contact-type { font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text3); margin-bottom: 10px; }
+    .contact-items { display: flex; flex-direction: column; gap: 8px; }
+    .contact-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
+    .contact-icon { font-size: 1rem; }
+    .contact-val { font-weight: 600; color: var(--text); }
+    .contact-meta { font-size: 0.72rem; color: var(--text3); }
+    .dnc-badge { background: rgba(239,68,68,0.12); color: var(--red);
+      border: 1px solid rgba(239,68,68,0.2); padding: 2px 7px; border-radius: 4px;
+      font-size: 0.65rem; font-weight: 700; margin-left: 6px; }
+
+    /* ── LOI GENERATOR ── */
+    .loi-box { background: var(--bg3); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px;
+      padding: 20px; }
+    .loi-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--accent); margin-bottom: 14px; }
+    .loi-text { font-size: 0.83rem; color: var(--text2); line-height: 1.8;
+      white-space: pre-wrap; font-family: 'Georgia', serif; }
+    .loi-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .loi-btn { padding: 9px 20px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; border: none; transition: opacity 0.2s; }
+    .loi-btn:hover { opacity: 0.85; }
+    .loi-btn-primary { background: var(--accent); color: white; }
+    .loi-btn-secondary { background: var(--bg4); border: 1px solid var(--border); color: var(--text2); }
+
+    /* ── UPSELL ── */
+    .upsell { background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(168,85,247,0.06));
+      border: 1px solid rgba(59,130,246,0.2); border-radius: 18px; padding: 32px;
+      text-align: center; margin-top: 28px; }
+    .upsell-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 10px; }
+    .upsell-desc { color: var(--text2); font-size: 0.88rem; margin-bottom: 24px; line-height: 1.6; }
+    .upsell-features { display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      max-width: 480px; margin: 0 auto 24px; text-align: left; }
+    .upsell-feat { display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; color: var(--text2); }
+    .upsell-btn { display: inline-block; background: var(--accent); color: white;
+      border-radius: 100px; padding: 14px 32px; font-weight: 700; font-size: 0.95rem;
+      text-decoration: none; transition: opacity 0.2s; }
+    .upsell-btn:hover { opacity: 0.85; }
+
+    /* ── DISCLAIMER ── */
+    .disclaimer { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px 22px; font-size: 0.75rem; color: var(--text3); line-height: 1.7;
+      margin-top: 24px; }
+
+    /* ── FALLBACK BOX ── */
+    .fallback { background: rgba(59,130,246,0.05); border: 1px solid rgba(59,130,246,0.15);
+      border-radius: 10px; padding: 14px 16px; font-size: 0.85rem; color: var(--text2); }
+
+    /* ── TABLE ── */
+    .dt { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .dt th { text-align: left; color: var(--text3); font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 10px;
+      border-bottom: 1px solid var(--border); background: var(--bg3); }
+    .dt td { padding: 10px 10px; border-bottom: 1px solid var(--border); color: var(--text2); }
+    .dt tr:last-child td { border-bottom: none; }
+
+    .pro-tag { background: rgba(34,197,94,0.12); color: var(--green);
+      border: 1px solid rgba(34,197,94,0.25); padding: 2px 8px; border-radius: 4px;
+      font-size: 0.62rem; font-weight: 700; letter-spacing: 0.5px; margin-left: 8px;
+      vertical-align: middle; }
+
+    @media print {
+      .topbar, .upsell, #loading, #error-state { display: none !important; }
+      body { background: white; color: #0f172a; }
+      .section, .r-hero { background: white; border-color: #e2e8f0; }
+      .sec-head { background: #f8fafc; }
+    }
+    @media (max-width: 600px) {
+      .deal-grid { grid-template-columns: 1fr 1fr; }
+      .loi-targets { grid-template-columns: 1fr 1fr; }
+      .r-address { font-size: 1.2rem; }
+      .topbar { padding: 12px 16px; }
+    }
   </style>
 </head>
 <body>
 
 <!-- LOADING -->
 <div id="loading">
-  <div class="spinner">🔍</div>
-  <div style="font-size:1.2rem;font-weight:700">Generating your report...</div>
-  <div id="loading-status" style="color:#a0a0a0;font-size:0.88rem">Pulling public records...</div>
-  <div style="color:#555;font-size:0.76rem;margin-top:8px">Geocoding · FEMA NFHL · Census ACS · County Records</div>
+  <div class="load-icon">🔍</div>
+  <div class="load-title">Pulling public records...</div>
+  <div class="load-sub" id="load-sub">Geocoding address</div>
+  <div class="load-steps">
+    <div class="load-step active" id="step-geo"><div class="step-dot"></div>Census Geocoder</div>
+    <div class="load-step" id="step-fema"><div class="step-dot"></div>FEMA NFHL Flood Zone</div>
+    <div class="load-step" id="step-census"><div class="step-dot"></div>Census ACS Demographics</div>
+    <div class="load-step" id="step-dcad"><div class="step-dot"></div>County Parcel Record (DCAD)</div>
+    <div class="load-step" id="step-pro" style="display:none"><div class="step-dot"></div>Owner Intelligence (DataZapp)</div>
+  </div>
 </div>
 
 <!-- ERROR -->
 <div id="error-state">
-  <div style="font-size:2rem">⚠️</div>
-  <div style="font-size:1.1rem;font-weight:700">Could not generate report</div>
-  <div id="error-msg" style="color:#a0a0a0;font-size:0.88rem;max-width:400px"></div>
-  <a href="/" style="margin-top:16px;color:#3b82f6;font-size:0.88rem">← Back to PropIntel</a>
+  <div style="font-size:2.5rem">⚠️</div>
+  <div style="font-size:1.2rem;font-weight:800">Report generation failed</div>
+  <div id="error-msg" style="color:var(--text2);font-size:0.88rem;max-width:420px;line-height:1.6"></div>
+  <a href="/" style="margin-top:16px;font-size:0.88rem;color:var(--accent)">← Back to PropIntel</a>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar" id="topbar" style="display:none">
+  <div class="topbar-logo">
+    <div class="logo-dot">🔍</div>
+    PropIntel
+    <span id="top-tier-badge" class="tier-badge badge-starter" style="margin-left:8px;margin-bottom:0">STARTER</span>
+  </div>
+  <div class="topbar-right">
+    <a href="/">← Back</a>
+    <button class="print-btn" onclick="window.print()">⬇ Save PDF</button>
+  </div>
 </div>
 
 <!-- REPORT -->
 <div id="report">
-  <!-- HEADER -->
-  <div class="report-header">
-    <div class="report-logo">
-      🏢 PropIntel <span id="tier-badge" class="tier-badge tier-starter">STARTER</span>
-    </div>
-    <div class="report-meta">
-      <div id="report-id-display"></div>
-      <div id="report-date"></div>
-      <div style="margin-top:4px"><a href="/" style="font-size:0.75rem;color:#555">← Back to search</a></div>
-    </div>
+
+  <!-- HERO -->
+  <div class="r-hero">
+    <div id="r-tier-badge" class="tier-badge badge-starter">Starter Report · $9.99</div>
+    <div class="r-address" id="r-address">—</div>
+    <div class="r-meta" id="r-meta">Dallas County, TX</div>
+    <div class="r-pills" id="r-pills"></div>
   </div>
 
-  <!-- SUBJECT PROPERTY -->
-  <div class="subject-box">
-    <div class="subject-label">Subject Property</div>
-    <div class="subject-address" id="r-address">—</div>
-    <div class="subject-meta">
-      <div class="subject-pill" id="r-coords">Geocoding...</div>
-      <div class="subject-pill" id="r-county">Dallas County, TX</div>
-      <div class="subject-pill" id="r-zip">ZIP —</div>
-    </div>
-  </div>
+  <!-- FLAGS -->
+  <div class="flags-bar" id="r-flags"></div>
 
   <!-- FEMA FLOOD ZONE -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-icon">🌊</span>
-      <span class="section-title">FEMA Flood Zone</span>
-      <span class="section-source">FEMA NFHL REST API</span>
+    <div class="sec-head">
+      <div class="sec-title">🌊 FEMA Flood Zone</div>
+      <div class="sec-src">Source: <a href="https://msc.fema.gov/portal/home" target="_blank">FEMA National Flood Hazard Layer (NFHL)</a></div>
     </div>
-    <div class="section-body">
-      <div id="r-fema-zone" class="zone-badge zone-unknown">Loading...</div>
-      <div id="r-fema-desc" style="color:var(--text2);font-size:0.88rem;margin:8px 0"></div>
-      <div class="data-grid" style="margin-top:16px">
-        <div class="data-row">
-          <div class="data-label">FIRM Panel</div>
-          <div class="data-value" id="r-firm">—</div>
-        </div>
-        <div class="data-row">
-          <div class="data-label">Flood Insurance Required</div>
-          <div class="data-value" id="r-flood-req">—</div>
-        </div>
-      </div>
-      <div class="source-cite">Source: <a href="https://msc.fema.gov/portal/home" target="_blank">FEMA National Flood Hazard Layer (NFHL)</a></div>
+    <div class="sec-body" id="r-fema-body">
+      <div class="dr"><span class="dl">Flood Zone</span><span class="dv" id="r-zone">Loading...</span></div>
+      <div class="dr"><span class="dl">Description</span><span class="dv" id="r-zone-desc">—</span></div>
+      <div class="dr"><span class="dl">FIRM Panel</span><span class="dv" id="r-firm">—</span></div>
+      <div class="dr"><span class="dl">Flood Insurance Required</span><span class="dv" id="r-flood-req">—</span></div>
     </div>
   </div>
 
   <!-- CENSUS DEMOGRAPHICS -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-icon">👥</span>
-      <span class="section-title">Demographics</span>
-      <span class="section-source">U.S. Census Bureau, ACS 5-Year</span>
+    <div class="sec-head">
+      <div class="sec-title">👥 Demographics</div>
+      <div class="sec-src">Source: <a id="r-census-src" href="https://data.census.gov" target="_blank">U.S. Census ACS 5-Year Estimates</a></div>
     </div>
-    <div class="section-body">
-      <div class="data-grid">
-        <div class="data-row">
-          <div class="data-label">ZIP Code</div>
-          <div class="data-value" id="r-demo-zip">—</div>
-        </div>
-        <div class="data-row">
-          <div class="data-label">Population</div>
-          <div class="data-value" id="r-pop">—</div>
-        </div>
-        <div class="data-row">
-          <div class="data-label">Median Household Income</div>
-          <div class="data-value" id="r-mhi">—</div>
-        </div>
-        <div class="data-row">
-          <div class="data-label">Owner-Occupied Units</div>
-          <div class="data-value" id="r-owner-occ">—</div>
-        </div>
-        <div class="data-row">
-          <div class="data-label">Median Age</div>
-          <div class="data-value" id="r-age">—</div>
-        </div>
-        <div class="data-row">
-          <div class="data-label">Unemployment Rate</div>
-          <div class="data-value" id="r-unemp">—</div>
-        </div>
-      </div>
-      <div class="source-cite" style="margin-top:14px">Source: <a id="r-census-url" href="#" target="_blank">U.S. Census Bureau ACS 5-Year Estimates</a></div>
+    <div class="sec-body">
+      <div class="dr"><span class="dl">ZIP Code</span><span class="dv" id="r-zip">—</span></div>
+      <div class="dr"><span class="dl">Population</span><span class="dv" id="r-pop">—</span></div>
+      <div class="dr"><span class="dl">Median Household Income</span><span class="dv green" id="r-mhi">—</span></div>
+      <div class="dr"><span class="dl">Owner-Occupied Units</span><span class="dv" id="r-owner-occ">—</span></div>
+      <div class="dr"><span class="dl">Median Age</span><span class="dv" id="r-age">—</span></div>
+      <div class="dr"><span class="dl">Unemployment Rate</span><span class="dv" id="r-unemp">—</span></div>
     </div>
   </div>
 
   <!-- PARCEL / DCAD -->
   <div class="section">
-    <div class="section-header">
-      <span class="section-icon">📋</span>
-      <span class="section-title">Parcel & Ownership</span>
-      <span class="section-source">Dallas Central Appraisal District</span>
+    <div class="sec-head">
+      <div class="sec-title">📋 Parcel &amp; Ownership</div>
+      <div class="sec-src">Source: <a href="https://www.dcad.org/property-search/" target="_blank">Dallas Central Appraisal District</a></div>
     </div>
-    <div class="section-body" id="r-parcel-body">
-      <div class="fallback-box">
-        ℹ️ DCAD parcel data requires direct lookup. <a id="r-dcad-link" href="https://www.dcad.org/property-search/" target="_blank">Search DCAD →</a>
-        <div style="margin-top:6px;font-size:0.78rem;color:#555">Retrieve: owner name, APN, assessed value, deed history, and tax status.</div>
+    <div class="sec-body" id="r-parcel-body">
+      <div class="fallback">
+        ℹ️ DCAD lookup in progress — <a id="r-dcad-link" href="https://www.dcad.org/property-search/" target="_blank">Search manually →</a>
       </div>
     </div>
   </div>
 
-  <!-- FLAGS -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">🚩</span>
-      <span class="section-title">Public Record Flags</span>
-      <span class="section-source">Automated analysis</span>
+  <!-- PRO: OWNER INTELLIGENCE -->
+  <div class="section" id="sec-owner" style="display:none">
+    <div class="sec-head">
+      <div class="sec-title">👤 Owner Intelligence <span class="pro-tag">PRO</span></div>
+      <div class="sec-src">DCAD · DataZapp Skip Trace</div>
     </div>
-    <div class="section-body">
-      <div class="flags-list" id="r-flags">
-        <div style="color:var(--text3);font-size:0.85rem">Loading flags...</div>
-      </div>
+    <div class="sec-body" id="r-owner-body"></div>
+  </div>
+
+  <!-- PRO: MOTIVATION SCORE -->
+  <div class="section" id="sec-motivation" style="display:none">
+    <div class="sec-head">
+      <div class="sec-title">🎯 Seller Motivation Score <span class="pro-tag">PRO</span></div>
+      <div class="sec-src">Calculated from verified public data only — no subjective inputs</div>
     </div>
+    <div class="sec-body" id="r-motivation-body"></div>
+  </div>
+
+  <!-- PRO: DEAL ANALYZER -->
+  <div class="section" id="sec-deal" style="display:none">
+    <div class="sec-head">
+      <div class="sec-title">📊 Deal Analyzer <span class="pro-tag">PRO</span></div>
+      <div class="sec-src">Based on stated listing cap rate · Verify with actual rent roll</div>
+    </div>
+    <div class="sec-body" id="r-deal-body"></div>
+  </div>
+
+  <!-- PRO: LOI GENERATOR -->
+  <div class="section" id="sec-loi" style="display:none">
+    <div class="sec-head">
+      <div class="sec-title">📄 Pre-Filled Letter of Intent <span class="pro-tag">PRO</span></div>
+      <div class="sec-src">Generated from verified listing data · Edit before sending</div>
+    </div>
+    <div class="sec-body" id="r-loi-body"></div>
+  </div>
+
+  <!-- PRO: LIENS -->
+  <div class="section" id="sec-liens" style="display:none">
+    <div class="sec-head">
+      <div class="sec-title">🔒 Lien &amp; Encumbrance Search <span class="pro-tag">PRO</span></div>
+      <div class="sec-src">Dallas County Clerk</div>
+    </div>
+    <div class="sec-body" id="r-liens-body"></div>
   </div>
 
   <!-- PRO UPSELL (starter only) -->
-  <div class="upsell-box" id="r-upsell" style="display:none">
+  <div class="upsell" id="r-upsell" style="display:none">
     <div class="upsell-title">Unlock the Full Intel Report</div>
     <div class="upsell-desc">
-      Your Starter report covers public records. The Pro report adds:<br>
-      <strong>Owner skip trace · LLC pierce · Motivation score · Comparable sales ·
-      Lien search · Permit history · Tenant verification · Environmental flags · Pre-filled LOI</strong>
+      Your Starter report shows all public records. Upgrade to Pro to add:
     </div>
-    <a id="r-upsell-btn" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank" class="upsell-btn">
+    <div class="upsell-features">
+      <div class="upsell-feat">🔍 Owner skip trace (phone + email)</div>
+      <div class="upsell-feat">🎯 Seller motivation score</div>
+      <div class="upsell-feat">🔗 LLC pierce + entity history</div>
+      <div class="upsell-feat">📊 DSCR + cash-on-cash calc</div>
+      <div class="upsell-feat">📄 Pre-filled LOI (ready to send)</div>
+      <div class="upsell-feat">🔒 Lien + encumbrance search</div>
+    </div>
+    <a id="r-upsell-btn" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" class="upsell-btn">
       Upgrade to Pro — $29.99 →
     </a>
   </div>
 
   <!-- DISCLAIMER -->
   <div class="disclaimer">
-    <strong>Disclaimer:</strong> This report contains only verified public record data pulled from government sources.
-    All data points are hyperlinked to their source. This report does <strong>not</strong> include: verified rent roll,
-    actual NOI confirmation, cap rate validation, financial projections, Phase I ESA, or full title search.
+    <strong>Disclaimer:</strong> This report contains only verified public record data.
+    Data points link directly to their government source.
+    This report does <strong>not</strong> include verified rent roll, actual NOI, cap rate validation,
+    financial projections (except from stated listing data, clearly marked), Phase I ESA, or full title search.
     PropIntel is not a licensed broker, appraiser, attorney, or environmental professional.
-    This report does not constitute investment advice. Verify all data before making investment decisions.
-    &copy; 2026 PropIntel · propertyvalueintel.com
+    This report does not constitute investment advice.
+    Verify all data with licensed professionals before making investment decisions.<br>
+    <span style="opacity:0.6">Report ID: <span id="r-report-id">—</span> · &copy; 2026 PropIntel · propertyvalueintel.com</span>
   </div>
-</div>
+
+</div><!-- /report -->
 
 <script>
 const API_URL = "https://propintel-htij.onrender.com";
-const STARTER_LINK = "https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00";
 const PRO_LINK = "https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01";
 
-function getParam(key) {
-  return new URLSearchParams(window.location.search).get(key);
-}
+function qp(k) { return new URLSearchParams(window.location.search).get(k); }
+
+function $id(id) { return document.getElementById(id); }
 
 function showError(msg) {
-  document.getElementById("loading").style.display = "none";
-  const e = document.getElementById("error-state");
+  $id("loading").style.display = "none";
+  const e = $id("error-state");
   e.style.display = "flex";
-  document.getElementById("error-msg").textContent = msg;
+  $id("error-msg").textContent = msg;
 }
 
-function fmt(val, suffix) {
-  if (val === null || val === undefined || val === "") return "—";
-  return val + (suffix || "");
+function stepDone(id) {
+  const el = $id(id);
+  if (el) { el.classList.remove("active"); el.classList.add("done"); }
 }
+function stepActive(id) {
+  const el = $id(id);
+  if (el) el.classList.add("active");
+}
+function stepShow(id) {
+  const el = $id(id);
+  if (el) el.style.display = "flex";
+}
+
+function fmt(v, suffix) { return (v === null || v === undefined || v === "") ? "—" : v + (suffix || ""); }
+function fmtMoney(v) { return v ? "$" + Number(v).toLocaleString() : "—"; }
 
 async function generateReport() {
-  // Get address from URL param or localStorage
-  let address = getParam("address") || localStorage.getItem("propintel_address");
-  const tier = getParam("tier") || "starter";
+  const address = qp("address") || localStorage.getItem("propintel_address");
+  const tier = qp("tier") || "starter";
+  const isPro = tier === "pro";
 
   if (!address) {
-    showError("No property address found. Please go back and enter an address.");
+    showError("No property address found. Please go back and enter an address first.");
     return;
   }
 
-  document.getElementById("loading-status").textContent = "Geocoding " + address + "...";
+  if (isPro) { stepShow("step-pro"); }
+
+  // Animate steps
+  setTimeout(() => { stepDone("step-geo"); stepActive("step-fema"); $id("load-sub").textContent = "Checking FEMA flood maps..."; }, 1200);
+  setTimeout(() => { stepDone("step-fema"); stepActive("step-census"); $id("load-sub").textContent = "Pulling Census demographics..."; }, 2800);
+  setTimeout(() => { stepDone("step-census"); stepActive("step-dcad"); $id("load-sub").textContent = "Looking up county parcel record..."; }, 4500);
+  if (isPro) {
+    setTimeout(() => { stepDone("step-dcad"); stepActive("step-pro"); $id("load-sub").textContent = "Running owner skip trace..."; }, 6500);
+  }
 
   try {
     const resp = await fetch(API_URL + "/api/analyze", {
@@ -300,90 +470,472 @@ async function generateReport() {
     if (!resp.ok) throw new Error("API returned " + resp.status);
     const d = await resp.json();
 
+    if (d.error) throw new Error(d.error);
+
     renderReport(d, tier);
   } catch(e) {
-    showError("Failed to generate report: " + e.message + ". Please try again.");
+    showError("Failed to generate report: " + e.message + ". Please try again or contact support.");
   }
 }
 
 function renderReport(d, tier) {
-  // Hide loading, show report
-  document.getElementById("loading").style.display = "none";
-  const report = document.getElementById("report");
-  report.style.display = "block";
+  const isPro = tier === "pro";
 
-  const geo = d.geo || {};
+  // Show UI
+  $id("loading").style.display = "none";
+  $id("topbar").style.display = "flex";
+  $id("report").style.display = "block";
+
+  const geo   = d.geo || {};
   const flood = d.flood || {};
-  const demo = d.demographics || {};
+  const demo  = d.demographics || {};
   const parcel = d.parcel || {};
   const flags = d.flags || [];
+  const motivation = d.motivation || {};
+  const skip = d.skip_trace || {};
+  const deal = d.deal_analysis || {};
+  const liens = d.liens || {};
 
-  // Header
-  const badge = document.getElementById("tier-badge");
-  if (tier === "pro") { badge.textContent = "PRO"; badge.className = "tier-badge tier-pro"; }
-  document.getElementById("report-id-display").textContent = "Report #" + (d.report_id || "—");
-  document.getElementById("report-date").textContent = new Date().toLocaleDateString("en-US", {month:"long",day:"numeric",year:"numeric"});
+  // Tier badge
+  const tierText = isPro ? "Full Intel Report · $29.99" : "Public Record Report · $9.99";
+  const tierClass = isPro ? "badge-pro" : "badge-starter";
+  $id("r-tier-badge").textContent = tierText;
+  $id("r-tier-badge").className = "tier-badge " + tierClass;
+  const topBadge = $id("top-tier-badge");
+  topBadge.textContent = isPro ? "PRO" : "STARTER";
+  topBadge.className = "tier-badge " + tierClass;
+  topBadge.style.marginBottom = "0";
 
-  // Subject property
-  document.getElementById("r-address").textContent = geo.matched_address || d.resolved_address || d.input || "—";
-  document.getElementById("r-coords").textContent = geo.lat ? geo.lat.toFixed(5) + ", " + geo.lng.toFixed(5) : "Geocode pending";
-  document.getElementById("r-county").textContent = (geo.county || "Dallas County") + ", TX";
-  document.getElementById("r-zip").textContent = "ZIP " + (geo.zip || "—");
+  // Hero
+  const addr = geo.matched_address || d.resolved_address || d.input || "—";
+  $id("r-address").textContent = addr;
+  $id("r-meta").textContent =
+    [(geo.county || "Dallas County"), geo.state || "TX",
+     "APN: " + (parcel.apn || "—"),
+     "Generated " + new Date().toLocaleDateString("en-US", {month:"long",day:"numeric",year:"numeric"})
+    ].filter(Boolean).join(" · ");
+
+  $id("r-report-id").textContent = d.report_id || "—";
+
+  // Pills
+  const pills = [];
+  if (geo.zip) pills.push({ text: "ZIP " + geo.zip, cls: "" });
+  if (flood.zone) pills.push({ text: "Flood Zone " + flood.zone, cls: flood.zone === "X" ? "green" : "red" });
+  if (parcel.building_sf) pills.push({ text: Number(parcel.building_sf).toLocaleString() + " SF", cls: "" });
+  if (d.listing && d.listing.cap_rate) pills.push({ text: "Cap " + d.listing.cap_rate, cls: "" });
+  if (parcel.year_built) pills.push({ text: "Built " + parcel.year_built, cls: "" });
+  if (motivation.tier) pills.push({ text: "Motivation: " + motivation.tier, cls: motivation.tier === "HIGH" ? "amber" : "" });
+
+  $id("r-pills").innerHTML = pills.map(p =>
+    `<span class="r-pill${p.cls ? ' ' + p.cls : ''}">${p.text}</span>`
+  ).join("");
+
+  // Flags
+  $id("r-flags").innerHTML = flags.length === 0 ? "" :
+    flags.map(f => `<div class="flag-item flag-${f.type||'green'}">${f.text}</div>`).join("");
 
   // FEMA
   const zone = flood.zone || "Unknown";
-  const zoneBadge = document.getElementById("r-fema-zone");
-  zoneBadge.textContent = "Zone " + zone;
-  if (zone === "X") { zoneBadge.className = "zone-badge zone-x"; }
-  else if (["AE","A","VE","AH","AO"].includes(zone)) { zoneBadge.className = "zone-badge zone-risk"; }
-  else { zoneBadge.className = "zone-badge zone-unknown"; }
-  document.getElementById("r-fema-desc").textContent = flood.description || "—";
-  document.getElementById("r-firm").textContent = flood.firm_panel || "—";
-  document.getElementById("r-flood-req").textContent = flood.flood_insurance_required ? "⚠️ Yes" : "✅ No";
+  const zoneClass = zone === "X" ? "green" : (["AE","A","VE","AH","AO"].includes(zone) ? "red" : "amber");
+  $id("r-zone").textContent = zone + (flood.description ? " — " + flood.description : "");
+  $id("r-zone").className = "dv " + zoneClass;
+  $id("r-zone-desc").textContent = zone === "X" ?
+    "No flood insurance required. Property is outside the 500-year floodplain." :
+    (flood.description || "—");
+  $id("r-firm").textContent = flood.firm_panel || "—";
+  $id("r-flood-req").textContent = flood.flood_insurance_required ? "⚠️ YES — Required by lender" : "✅ No";
+  $id("r-flood-req").className = "dv " + (flood.flood_insurance_required ? "red" : "green");
 
-  // Demographics
-  document.getElementById("r-demo-zip").textContent = demo.zip || "—";
-  document.getElementById("r-pop").textContent = demo.population ? demo.population.toLocaleString() : "—";
-  document.getElementById("r-mhi").textContent = demo.median_household_income_fmt || (demo.median_household_income ? "$" + demo.median_household_income.toLocaleString() : "—");
-  document.getElementById("r-owner-occ").textContent = demo.owner_occupied_pct ? demo.owner_occupied_pct + "%" : "—";
-  document.getElementById("r-age").textContent = demo.median_age ? demo.median_age + " yrs" : "—";
-  document.getElementById("r-unemp").textContent = demo.unemployment_rate ? demo.unemployment_rate + "%" : "—";
-  if (demo.source_url) document.getElementById("r-census-url").href = demo.source_url;
+  // Census
+  $id("r-zip").textContent = demo.zip || geo.zip || "—";
+  $id("r-pop").textContent = demo.population ? demo.population.toLocaleString() : "—";
+  $id("r-mhi").textContent = demo.median_household_income_fmt ||
+    (demo.median_household_income ? "$" + demo.median_household_income.toLocaleString() : "—");
+  $id("r-owner-occ").textContent = demo.owner_occupied_pct ? demo.owner_occupied_pct + "%" : "—";
+  $id("r-age").textContent = demo.median_age ? demo.median_age + " yrs" : "—";
+  $id("r-unemp").textContent = demo.unemployment_rate ? demo.unemployment_rate + "%" : "—";
+  if (demo.source_url) $id("r-census-src").href = demo.source_url;
 
   // Parcel
-  if (parcel.owner_name) {
-    document.getElementById("r-parcel-body").innerHTML =
-      '<div class="data-grid">' +
-      '<div class="data-row"><div class="data-label">Owner</div><div class="data-value">' + parcel.owner_name + '</div></div>' +
-      '<div class="data-row"><div class="data-label">APN</div><div class="data-value">' + (parcel.apn || "—") + '</div></div>' +
-      '<div class="data-row"><div class="data-label">Assessed Value</div><div class="data-value">' + (parcel.assessed_total ? "$" + parcel.assessed_total.toLocaleString() : "—") + '</div></div>' +
-      '<div class="data-row"><div class="data-label">Tax Status</div><div class="data-value">' + (parcel.tax_delinquent ? "⚠️ Delinquent" : "✅ Current") + '</div></div>' +
-      '</div>' +
-      '<div class="source-cite" style="margin-top:14px">Source: <a href="https://www.dcad.org/property-search/" target="_blank">Dallas Central Appraisal District</a></div>';
+  if (parcel.owner_name || parcel.apn) {
+    const taxStatus = parcel.tax_delinquent ?
+      '<span class="dv red">⚠️ DELINQUENT — verify payoff</span>' :
+      '<span class="dv green">✅ Current — no delinquency</span>';
+    const absentee = parcel.absentee_owner ?
+      '<span class="dv amber">⚠️ Absentee — mailing ≠ property</span>' :
+      '<span class="dv green">Owner-occupied area</span>';
+    $id("r-parcel-body").innerHTML = [
+      dr("APN / Account", parcel.apn || "—"),
+      dr("Owner of Record", parcel.owner_name || "—"),
+      dr("Owner Mailing", parcel.owner_mailing || "—"),
+      dr("Legal Description", parcel.legal_description || "—"),
+      dr("Use / Class", [parcel.use_description, parcel.property_class].filter(Boolean).join(" · ") || "—"),
+      dr("Year Built", parcel.year_built || "—"),
+      dr("Building SF", parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + " SF" : "—"),
+      dr("Assessed — Land", parcel.assessed_land ? fmtMoney(parcel.assessed_land) : "—"),
+      dr("Assessed — Improvement", parcel.assessed_improvement ? fmtMoney(parcel.assessed_improvement) : "—"),
+      dr("Total Assessed Value", parcel.assessed_total ? fmtMoney(parcel.assessed_total) : "—"),
+      `<div class="dr"><span class="dl">Tax Delinquency</span>${taxStatus}</div>`,
+      `<div class="dr"><span class="dl">Owner Presence</span>${absentee}</div>`,
+    ].join("") +
+    `<div style="font-size:0.72rem;color:var(--text3);margin-top:10px">
+      Source: <a href="${parcel.dcad_direct_url || parcel.source_url || '#'}" target="_blank">Dallas Central Appraisal District</a>
+      ${parcel.apn ? '· <a href="https://www.dcad.org/property-search/?account=' + parcel.apn + '" target="_blank">Direct APN link →</a>' : ''}
+     </div>`;
   } else {
-    const link = parcel.manual_url || "https://www.dcad.org/property-search/?situs=" + encodeURIComponent(d.input || "");
-    document.getElementById("r-dcad-link").href = link;
+    const link = parcel.manual_url || ("https://www.dcad.org/property-search/?situs=" + encodeURIComponent(d.input || ""));
+    $id("r-dcad-link").href = link;
+    $id("r-parcel-body").innerHTML =
+      `<div class="fallback">
+        ℹ️ DCAD lookup returned no data for this address. Parcel data may be outside Dallas County.
+        <br><a href="${link}" target="_blank">Search DCAD manually →</a>
+        <div style="margin-top:6px;font-size:0.78rem;color:var(--text3)">
+          Retrieve: owner name, APN, assessed value, deed history, tax status.</div>
+       </div>`;
   }
 
-  // Flags
-  const flagsEl = document.getElementById("r-flags");
-  if (flags.length === 0) {
-    flagsEl.innerHTML = '<div style="color:var(--text3);font-size:0.85rem">No flags detected.</div>';
+  // PRO SECTIONS
+  if (isPro) {
+    renderOwnerIntel(d, skip, parcel);
+    renderMotivation(motivation);
+    renderDealAnalyzer(deal, d.listing || {});
+    renderLOI(d, deal, parcel, skip);
+    renderLiens(liens, parcel);
   } else {
-    flagsEl.innerHTML = flags.map(f =>
-      '<div class="flag flag-' + (f.type || "green") + '">' + f.text + '</div>'
-    ).join("");
-  }
-
-  // Upsell
-  if (tier !== "pro") {
-    const upsell = document.getElementById("r-upsell");
-    upsell.style.display = "block";
-    const addr = d.resolved_address || d.input || "";
-    document.getElementById("r-upsell-btn").href = PRO_LINK + "?client_reference_id=" + encodeURIComponent(addr);
+    // Show upsell
+    $id("r-upsell").style.display = "block";
+    const addr2 = d.resolved_address || d.input || "";
+    $id("r-upsell-btn").href = PRO_LINK + "?client_reference_id=" + encodeURIComponent(addr2);
   }
 }
 
+// ─── DR helper ───────────────────────────────────────────────────────────────
+function dr(label, value, cls) {
+  return `<div class="dr"><span class="dl">${label}</span><span class="dv${cls?' '+cls:''}">${value}</span></div>`;
+}
+
+// ─── Owner Intelligence ───────────────────────────────────────────────────────
+function renderOwnerIntel(d, skip, parcel) {
+  $id("sec-owner").style.display = "block";
+
+  let html = "";
+
+  // Owner from DCAD
+  html += `<div class="contact-card">
+    <div class="contact-type">📋 Owner of Record — Dallas Central Appraisal District</div>
+    <div class="contact-items">
+      ${parcel.owner_name ? `<div class="contact-item"><span class="contact-icon">🏢</span><span class="contact-val">${parcel.owner_name}</span></div>` : ""}
+      ${parcel.owner_mailing ? `<div class="contact-item"><span class="contact-icon">📮</span><span class="contact-val">${parcel.owner_mailing}</span></div>` : ""}
+      ${parcel.apn ? `<div class="contact-item"><span class="contact-icon">🔑</span><span><span class="contact-val">APN: ${parcel.apn}</span></span></div>` : ""}
+    </div>
+  </div>`;
+
+  // Skip trace results
+  const status = skip.status || "disabled";
+  if (status === "hit" && (skip.phones?.length || skip.emails?.length)) {
+    html += `<div class="contact-card">
+      <div class="contact-type">🔍 Skip Trace Results — DataZapp</div>
+      <div class="contact-items">`;
+    (skip.phones || []).forEach((p, i) => {
+      const isDnc = skip.dnc && skip.dnc[i];
+      html += `<div class="contact-item">
+        <span class="contact-icon">📱</span>
+        <span>
+          <span class="contact-val">${formatPhone(p)}</span>
+          ${isDnc ? '<span class="dnc-badge">DNC</span>' : ""}
+          <span class="contact-meta"> · Cell/Landline</span>
+        </span>
+      </div>`;
+    });
+    (skip.emails || []).forEach(e => {
+      html += `<div class="contact-item">
+        <span class="contact-icon">✉️</span>
+        <span>
+          <span class="contact-val"><a href="mailto:${e}" style="color:var(--accent)">${e}</a></span>
+          <span class="contact-meta"> · Email</span>
+        </span>
+      </div>`;
+    });
+    html += `</div>
+      <div style="font-size:0.72rem;color:var(--text3);margin-top:12px">
+        ⚠️ Handle contact data responsibly. Do not contact numbers marked DNC.
+        Source: DataZapp · ${new Date().toLocaleDateString()}
+      </div>
+    </div>`;
+  } else if (status === "disabled") {
+    html += `<div class="fallback" style="margin-top:12px">
+      ℹ️ Skip trace requires <code style="background:var(--bg3);padding:2px 6px;border-radius:4px">DATAZAPP_API_KEY</code>
+      in backend/.env. Sign up at <a href="https://datazapp.com" target="_blank">datazapp.com</a> (~$0.03/trace).
+    </div>`;
+  } else if (status === "no_hit") {
+    html += `<div class="fallback" style="margin-top:12px">
+      No matching records found for this owner. May be unlisted or record recently changed.
+    </div>`;
+  } else {
+    html += `<div class="fallback" style="margin-top:12px">Skip trace: ${skip.note || status}</div>`;
+  }
+
+  $id("r-owner-body").innerHTML = html;
+}
+
+function formatPhone(p) {
+  const d = String(p).replace(/\D/g, "");
+  if (d.length === 10) return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+  if (d.length === 11) return `+${d[0]} (${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}`;
+  return p;
+}
+
+// ─── Motivation Score ─────────────────────────────────────────────────────────
+function renderMotivation(mot) {
+  if (!mot || !mot.score) return;
+  $id("sec-motivation").style.display = "block";
+
+  const score = mot.score || 0;
+  const tier = mot.tier || "LOW";
+  const scoreColor = tier === "HIGH" ? "#f59e0b" : (tier === "MODERATE" ? "#3b82f6" : "#22c55e");
+
+  const indicatorRows = (mot.indicators || []).map(ind => {
+    const pts = ind.points || 0;
+    const ptsColor = pts > 0 ? "#f59e0b" : "#475569";
+    return `<tr>
+      <td>
+        <strong style="color:var(--text)">${ind.name}</strong><br>
+        <span style="font-size:0.78rem;color:var(--text2)">${ind.evidence || ""}</span>
+      </td>
+      <td style="color:var(--text3);font-size:0.78rem">${ind.source || ""}</td>
+      <td style="font-weight:900;font-size:1.1rem;color:${ptsColor}">
+        ${pts > 0 ? '+' + pts : pts}
+      </td>
+    </tr>`;
+  }).join("");
+
+  $id("r-motivation-body").innerHTML = `
+    <div class="mot-header">
+      <div class="mot-score-circle">
+        <div class="mot-score-num" style="color:${scoreColor}">${score}</div>
+        <div class="mot-score-label">/ 100 · ${tier}</div>
+      </div>
+      <div class="mot-bar-wrap">
+        <div class="mot-progress">
+          <div class="mot-fill" style="width:0%;background:linear-gradient(90deg,#22c55e,${scoreColor})"
+            data-target="${score}"></div>
+        </div>
+        <div class="mot-interp">${mot.interpretation || ""}</div>
+      </div>
+    </div>
+    <table class="mot-table">
+      <thead><tr><th>Indicator</th><th>Source</th><th>Points</th></tr></thead>
+      <tbody>${indicatorRows}</tbody>
+    </table>
+    <p style="color:var(--text3);font-size:0.72rem;margin-top:12px">
+      Score derived exclusively from verified public record data. No subjective inputs.
+    </p>`;
+
+  // Animate progress bar
+  setTimeout(() => {
+    const fill = document.querySelector(".mot-fill");
+    if (fill) fill.style.width = score + "%";
+  }, 200);
+}
+
+// ─── Deal Analyzer ────────────────────────────────────────────────────────────
+function renderDealAnalyzer(deal, listing) {
+  if (!deal || !deal.asking_price) {
+    $id("sec-deal").style.display = "block";
+    $id("r-deal-body").innerHTML = `<div class="fallback">
+      Deal analysis requires listing data (asking price + cap rate).
+      Enter a LoopNet URL to unlock automatic analysis.
+    </div>`;
+    return;
+  }
+  $id("sec-deal").style.display = "block";
+
+  const dscr = deal.dscr;
+  const dscrClass = dscr ? (dscr >= 1.25 ? "dscr-good" : dscr >= 1.0 ? "dscr-warn" : "dscr-bad") : "";
+  const coc = deal.cash_on_cash_pct;
+  const cocColor = coc > 8 ? "var(--green)" : coc > 4 ? "var(--amber)" : "var(--red)";
+
+  const loanAssump = deal.loan_assumptions || {};
+  const assessedPremium = deal.assessed_vs_asking_premium_pct;
+  const premiumText = assessedPremium != null ?
+    (assessedPremium > 0 ? `+${assessedPremium}% above assessed` : `${assessedPremium}% below assessed`) : "—";
+  const premiumColor = assessedPremium != null && assessedPremium < 0 ? "var(--green)" :
+    (assessedPremium > 30 ? "var(--amber)" : "var(--text)");
+
+  // LOI targets
+  const loiHtml = deal.loi_targets ? `
+    <div style="margin-top:20px">
+      <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;
+        color:var(--text3);margin-bottom:10px">📄 LOI Price Targets</div>
+      <div class="loi-targets">
+        <div class="loi-target" onclick="selectLoiTarget('${fmtMoney(deal.loi_targets.aggressive)}')">
+          <div class="loi-target-label">Aggressive</div>
+          <div class="loi-target-value" style="color:var(--green)">${fmtMoney(deal.loi_targets.aggressive)}</div>
+          <div class="loi-target-pct">~12% below ask</div>
+        </div>
+        <div class="loi-target" onclick="selectLoiTarget('${fmtMoney(deal.loi_targets.moderate)}')">
+          <div class="loi-target-label">Moderate</div>
+          <div class="loi-target-value" style="color:var(--amber)">${fmtMoney(deal.loi_targets.moderate)}</div>
+          <div class="loi-target-pct">~7% below ask</div>
+        </div>
+        <div class="loi-target" onclick="selectLoiTarget('${fmtMoney(deal.loi_targets.conservative)}')">
+          <div class="loi-target-label">Conservative</div>
+          <div class="loi-target-value" style="color:var(--accent)">${fmtMoney(deal.loi_targets.conservative)}</div>
+          <div class="loi-target-pct">~3% below ask</div>
+        </div>
+      </div>
+    </div>` : "";
+
+  $id("r-deal-body").innerHTML = `
+    <div class="deal-grid">
+      <div class="deal-kpi ${dscrClass}">
+        <div class="deal-kpi-label">DSCR</div>
+        <div class="deal-kpi-value">${dscr ? dscr + "x" : "—"}</div>
+        <div class="deal-kpi-sub">${dscr >= 1.25 ? "✅ Bankable" : dscr >= 1.0 ? "⚠️ Thin" : "❌ Sub-1.0"}</div>
+      </div>
+      <div class="deal-kpi">
+        <div class="deal-kpi-label">Cash-on-Cash</div>
+        <div class="deal-kpi-value" style="color:${cocColor}">${coc != null ? coc + "%" : "—"}</div>
+        <div class="deal-kpi-sub">25% down, yr 1</div>
+      </div>
+      <div class="deal-kpi">
+        <div class="deal-kpi-label">Price / SF</div>
+        <div class="deal-kpi-value" style="color:var(--accent)">${deal.price_per_sf ? "$" + deal.price_per_sf : "—"}</div>
+        <div class="deal-kpi-sub">${deal.building_sf ? Number(deal.building_sf).toLocaleString() + " SF" : ""}</div>
+      </div>
+    </div>
+
+    ${[
+      dr("Asking Price", fmtMoney(deal.asking_price)),
+      dr("Stated Cap Rate", deal.stated_cap_rate || "—"),
+      dr("Stated NOI", deal.stated_noi_fmt || "—"),
+      dr("Total Assessed (DCAD)", fmtMoney(deal.assessed_total)),
+      `<div class="dr"><span class="dl">Asking vs. Assessed</span>
+        <span class="dv" style="color:${premiumColor}">${premiumText}</span></div>`,
+      dr("Annual Debt Service", deal.monthly_debt_service ?
+        "$" + Number(deal.monthly_debt_service * 12).toLocaleString() + "/yr" : "—"),
+      dr("Loan Assumptions", `${loanAssump.ltv_pct || 75}% LTV · ${loanAssump.rate_pct || 7.0}% · ${loanAssump.amortization_years || 25}yr`),
+    ].join("")}
+
+    <div style="font-size:0.72rem;color:var(--text3);margin-top:12px">
+      ⚠️ Based on <strong>stated listing cap rate</strong> — not verified rent roll.
+      Obtain T-12 income statement before making an offer.
+    </div>
+    ${loiHtml}`;
+}
+
+let selectedLoiPrice = "";
+function selectLoiTarget(price) {
+  selectedLoiPrice = price;
+  // Scroll to LOI section
+  $id("sec-loi").scrollIntoView({ behavior: "smooth" });
+  // Trigger LOI update
+  window._loiRefresh && window._loiRefresh(price);
+}
+
+// ─── LOI Generator ────────────────────────────────────────────────────────────
+function renderLOI(d, deal, parcel, skip) {
+  $id("sec-loi").style.display = "block";
+
+  const today = new Date().toLocaleDateString("en-US", {year:"numeric", month:"long", day:"numeric"});
+  const askPrice = deal.asking_price;
+  const offerPrice = deal.loi_targets ? deal.loi_targets.moderate : (askPrice ? Math.round(askPrice * 0.93) : null);
+  const address = d.resolved_address || d.input || "[PROPERTY ADDRESS]";
+  const sellerName = parcel.owner_name || "[SELLER NAME]";
+
+  window._loiRefresh = function(priceOverride) {
+    const price = priceOverride || (offerPrice ? fmtMoney(offerPrice) : "[PURCHASE PRICE]");
+    renderLOIWithPrice(price, address, sellerName, today, d);
+  };
+
+  renderLOIWithPrice(
+    offerPrice ? fmtMoney(offerPrice) : "[PURCHASE PRICE]",
+    address, sellerName, today, d
+  );
+}
+
+function renderLOIWithPrice(offerStr, address, sellerName, today, d) {
+  const loiText = `${today}
+
+To: ${sellerName}
+Re: Non-Binding Letter of Intent — ${address}
+
+Dear Seller / Authorized Representative,
+
+This Letter of Intent ("LOI") is submitted on behalf of the undersigned buyer ("Buyer") to express interest in acquiring the property located at:
+
+  ${address}
+
+This LOI is non-binding and subject to the execution of a formal Purchase and Sale Agreement ("PSA").
+
+PURCHASE PRICE: ${offerStr}
+
+TERMS:
+  • All-cash offer, no financing contingency
+  • Earnest Money Deposit: $5,000, deposited within 3 business days of PSA execution
+  • Due Diligence Period: 30 days from PSA execution
+  • Close of Escrow: 30 days following expiration of due diligence period
+  • Seller to provide: T-12 income statement, current rent roll, all leases, 
+    most recent property tax bill, and Phase I ESA (if available)
+
+EXCLUSIVITY: Seller agrees to remove property from market and cease negotiations with 
+third parties for 21 days from LOI acceptance to allow for PSA finalization.
+
+BUYER: Mason Mathis / [Entity Name]
+CONTACT: [Phone] · [Email]
+
+This LOI does not constitute a binding contract. A binding agreement will only arise 
+upon execution of a mutually agreed-upon PSA.
+
+Submitted by,
+
+_______________________________
+Mason Mathis
+[Title / Entity]
+Date: ${today}`;
+
+  $id("r-loi-body").innerHTML = `
+    <div class="loi-box">
+      <div class="loi-title">📄 Letter of Intent — Editable Draft</div>
+      <div class="loi-text" id="loi-content" contenteditable="true">${loiText}</div>
+      <div class="loi-actions">
+        <button class="loi-btn loi-btn-primary" onclick="copyLOI()">📋 Copy to Clipboard</button>
+        <button class="loi-btn loi-btn-secondary" onclick="window.print()">⬇ Print / Save PDF</button>
+      </div>
+    </div>
+    <p style="font-size:0.72rem;color:var(--text3);margin-top:10px">
+      This LOI is a draft only. Consult a licensed real estate attorney before submitting.
+      Click the text above to edit.
+    </p>`;
+}
+
+function copyLOI() {
+  const text = $id("loi-content").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector(".loi-btn-primary");
+    if (btn) { btn.textContent = "✅ Copied!"; setTimeout(() => { btn.textContent = "📋 Copy to Clipboard"; }, 2000); }
+  });
+}
+
+// ─── Liens ────────────────────────────────────────────────────────────────────
+function renderLiens(liens, parcel) {
+  $id("sec-liens").style.display = "block";
+  const url = liens.manual_url || "https://www.dallascounty.org/departments/countyclerk/real-property.php";
+  const apn = liens.apn || parcel.apn || "";
+  $id("r-liens-body").innerHTML = `
+    <div class="fallback">
+      <strong style="color:var(--text)">Manual lien search required.</strong><br><br>
+      Dallas County Clerk maintains lien, deed of trust, and judgment records.
+      Search using the property APN <strong>${apn}</strong> or owner name <strong>${parcel.owner_name || "—"}</strong>.<br><br>
+      <a href="${url}" target="_blank" style="color:var(--accent)">Search Dallas County Clerk Records →</a>
+      ${apn ? `<br><a href="https://www.dcad.org/property-search/?account=${apn}" target="_blank" style="color:var(--accent)">DCAD Account ${apn} →</a>` : ""}
+    </div>
+    <div style="font-size:0.72rem;color:var(--text3);margin-top:12px">
+      For comprehensive lien search, consider ordering a preliminary title report from a licensed title company.
+    </div>`;
+}
+
+// Start
 generateReport();
 </script>
 </body>

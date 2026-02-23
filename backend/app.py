@@ -1,13 +1,20 @@
 """
 PropIntel — Backend API
-POST /api/analyze → run pipeline, return report data + HTML
-GET  /api/health  → status check
+POST /api/analyze        → run pipeline, return report data + HTML
+GET  /api/health         → status check
+POST /api/webhook        → Stripe webhook (checkout.session.completed)
+GET  /api/orders         → list all orders (admin, requires ADMIN_KEY header)
+GET  /api/stats          → revenue / order stats (admin)
+GET  /api/sample         → pre-built sample report
 """
 import os
 import json
 import uuid
+import hmac
+import hashlib
 from datetime import datetime
-from flask import Flask, request, jsonify, send_file
+
+from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -15,27 +22,57 @@ load_dotenv()
 
 from pipeline import run as run_pipeline
 from report.generator import generate_html, generate_pdf
+from orders import create_order, update_order, get_order_by_stripe, list_orders, stats as order_stats
+from mailer import send_report
 
 app = Flask(__name__)
-CORS(app, origins=["*"])  # Restrict in production
+CORS(app, origins=["*"])
 
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "reports_cache")
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
+STRIPE_LIVE_SECRET_KEY   = os.environ.get("STRIPE_LIVE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET    = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+ADMIN_KEY                = os.environ.get("ADMIN_KEY", "propintel-admin-2026")
+
+# Stripe price → tier mapping
+PRICE_TO_TIER = {
+    os.environ.get("STRIPE_LIVE_STARTER_PRICE", "price_1T3tCw35KKjpV0x2SRXywBcA"): "starter",
+    os.environ.get("STRIPE_LIVE_PRO_PRICE",     "price_1T3tCw35KKjpV0x2eo2R4n08"): "pro",
+    # fallback test prices
+    "price_1T3swX35KKjpV0x2uydjjeM6": "starter",
+    "price_1T3swY35KKjpV0x2R1gsyw1H": "pro",
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Health
+# ─────────────────────────────────────────────────────────────────────────────
 
 @app.route("/api/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "version": "1.0.0", "ts": datetime.utcnow().isoformat()})
+    return jsonify({
+        "status": "ok",
+        "version": "1.1.0",
+        "ts": datetime.utcnow().isoformat(),
+        "webhook": bool(STRIPE_WEBHOOK_SECRET),
+        "email": bool(os.environ.get("SENDGRID_API_KEY") or os.environ.get("SMTP_USER")),
+        "datazapp": bool(os.environ.get("DATAZAPP_API_KEY")),
+    })
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Analyze
+# ─────────────────────────────────────────────────────────────────────────────
 
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     """
     Request body:
     {
-      "input": "3229 Forest Ln Garland TX 75042",  // address or URL
+      "input": "3229 Forest Ln Garland TX 75042",
       "tier": "starter" | "pro",
-      "format": "json" | "html" | "pdf"            // default: json
+      "format": "json" | "html" | "pdf"
     }
     """
     body = request.get_json(force=True, silent=True) or {}
@@ -48,7 +85,6 @@ def analyze():
     if tier not in ("starter", "pro"):
         return jsonify({"error": "tier must be 'starter' or 'pro'"}), 400
 
-    # Run pipeline
     try:
         report_data = run_pipeline(input_str, tier)
     except Exception as e:
@@ -60,11 +96,9 @@ def analyze():
     if fmt == "json":
         return jsonify(report_data)
 
-    # Generate HTML report
     html = generate_html(report_data)
 
     if fmt == "html":
-        from flask import Response
         return Response(html, mimetype="text/html")
 
     if fmt == "pdf":
@@ -72,30 +106,207 @@ def analyze():
         generate_pdf(html, pdf_path)
         return send_file(pdf_path, mimetype="application/pdf",
                          as_attachment=True,
-                         download_name=f"deallens-report-{report_data['report_id']}.pdf")
+                         download_name=f"propintel-report-{report_data['report_id']}.pdf")
 
     return jsonify({"error": "Invalid format"}), 400
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Stripe Webhook
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.route("/api/webhook", methods=["POST"])
+def stripe_webhook():
+    """
+    Handles checkout.session.completed events from Stripe.
+    Extracts address from client_reference_id or metadata,
+    runs the pipeline, stores the order, and emails the report.
+    """
+    payload = request.get_data()
+    sig_header = request.headers.get("Stripe-Signature", "")
+
+    # Verify signature if webhook secret is configured
+    if STRIPE_WEBHOOK_SECRET:
+        if not _verify_stripe_signature(payload, sig_header, STRIPE_WEBHOOK_SECRET):
+            return jsonify({"error": "Invalid signature"}), 400
+
+    try:
+        event = json.loads(payload)
+    except Exception:
+        return jsonify({"error": "Invalid JSON"}), 400
+
+    event_type = event.get("type")
+
+    if event_type == "checkout.session.completed":
+        _handle_checkout_completed(event["data"]["object"])
+    elif event_type == "payment_intent.succeeded":
+        # Secondary confirmation — no action needed if checkout already handled
+        pass
+
+    return jsonify({"received": True})
+
+
+def _handle_checkout_completed(session: dict):
+    """Process a completed Stripe checkout session."""
+    stripe_id     = session.get("id", "")
+    customer_email = session.get("customer_details", {}).get("email", "")
+    customer_name  = session.get("customer_details", {}).get("name", "")
+    amount_total   = session.get("amount_total", 0)
+
+    # Determine tier from line items or metadata
+    tier = "starter"
+    metadata = session.get("metadata") or {}
+    if metadata.get("tier"):
+        tier = metadata["tier"]
+    else:
+        # Try to detect from amount
+        if amount_total >= 2999:
+            tier = "pro"
+
+    # Get address from client_reference_id or metadata
+    address = (
+        session.get("client_reference_id")
+        or metadata.get("address")
+        or metadata.get("property_address")
+        or ""
+    )
+
+    # Check if already processed
+    existing = get_order_by_stripe(stripe_id)
+    if existing:
+        return
+
+    # Create order record
+    order = create_order(
+        stripe_id=stripe_id,
+        tier=tier,
+        address=address,
+        customer_email=customer_email,
+        customer_name=customer_name,
+        amount_cents=amount_total,
+    )
+    order_id = order["id"]
+
+    if not address:
+        update_order(order_id, status="pending_address")
+        return
+
+    # Run pipeline
+    try:
+        report_data = run_pipeline(address, tier)
+        report_data["generated_at"] = datetime.utcnow().isoformat()
+        report_data["report_id"] = order_id
+        report_data["order_id"] = order_id
+
+        html = generate_html(report_data)
+
+        update_order(
+            order_id,
+            status="complete",
+            report_json=json.dumps(report_data),
+            report_id=order_id,
+        )
+
+        # Email report
+        if customer_email:
+            result = send_report(
+                to_email=customer_email,
+                to_name=customer_name,
+                address=address,
+                tier=tier,
+                report_html=html,
+                report_id=order_id,
+                order_id=order_id,
+            )
+            if result["success"]:
+                update_order(order_id, emailed=1)
+
+    except Exception as e:
+        update_order(order_id, status=f"error: {str(e)[:100]}")
+
+
+def _verify_stripe_signature(payload: bytes, sig_header: str, secret: str) -> bool:
+    """Verify Stripe webhook signature."""
+    try:
+        parts = {p.split("=")[0]: p.split("=")[1] for p in sig_header.split(",")}
+        timestamp = parts.get("t", "")
+        v1_sig = parts.get("v1", "")
+        signed_payload = f"{timestamp}.{payload.decode('utf-8')}"
+        expected = hmac.new(
+            secret.encode("utf-8"),
+            signed_payload.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+        return hmac.compare_digest(expected, v1_sig)
+    except Exception:
+        return False
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Admin endpoints (require ADMIN_KEY header)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _check_admin():
+    return request.headers.get("X-Admin-Key") == ADMIN_KEY or \
+           request.args.get("admin_key") == ADMIN_KEY
+
+
+@app.route("/api/orders", methods=["GET"])
+def get_orders():
+    if not _check_admin():
+        return jsonify({"error": "Unauthorized"}), 401
+    orders = list_orders(limit=200)
+    return jsonify({"orders": orders, "count": len(orders)})
+
+
+@app.route("/api/stats", methods=["GET"])
+def get_stats():
+    if not _check_admin():
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify(order_stats())
+
+
+@app.route("/api/orders/<order_id>/report", methods=["GET"])
+def get_order_report(order_id):
+    """Return the stored HTML report for an order."""
+    if not _check_admin():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    conn_order = None
+    try:
+        from orders import _get_conn
+        conn_order = _get_conn()
+        row = conn_order.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        if not row:
+            return jsonify({"error": "Not found"}), 404
+        order = dict(row)
+        if order.get("report_json"):
+            report_data = json.loads(order["report_json"])
+            html = generate_html(report_data)
+            return Response(html, mimetype="text/html")
+        return jsonify({"error": "Report not generated yet"}), 404
+    finally:
+        if conn_order:
+            conn_order.close()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sample
+# ─────────────────────────────────────────────────────────────────────────────
+
 @app.route("/api/sample", methods=["GET"])
 def sample():
-    """Return a pre-built sample report (Forest Jupiter Plaza) for demo purposes."""
     sample_data = _sample_report_data()
     fmt = request.args.get("format", "json")
-
     if fmt == "json":
         return jsonify(sample_data)
-
     html = generate_html(sample_data)
     if fmt == "html":
-        from flask import Response
         return Response(html, mimetype="text/html")
-
     return jsonify(sample_data)
 
 
 def _sample_report_data() -> dict:
-    """Hard-coded sample for Forest Jupiter Plaza (Garland TX)."""
     return {
         "report_id": "SAMPLE",
         "tier": "pro",
@@ -124,16 +335,19 @@ def _sample_report_data() -> dict:
         },
         "parcel": {
             "apn": "26629500010010700",
-            "owner_name": "FOREST JUPITER PROPERTIES LLC",
-            "owner_mailing": "PO BOX 12345, DALLAS TX 75201",
-            "property_address": "3229-3249 FOREST LN GARLAND TX 75042",
-            "legal_description": "LOT 1, BLK A, FOREST JUPITER ADDITION",
+            "owner_name": "SUNCHA 2004 INC",
+            "owner_mailing": "2211 NE LOOP 410, SAN ANTONIO TX 78217",
+            "owner_city": "SAN ANTONIO",
+            "owner_state": "TX",
+            "property_address": "3229 FOREST LN",
+            "legal_description": "PT LOT 1 ACS 0.817",
             "year_built": "1988",
             "building_sf": "9640",
-            "assessed_land": 412000,
-            "assessed_improvement": 1847000,
-            "assessed_total": 2259000,
-            "taxable_value": 2259000,
+            "assessed_land": 142360,
+            "assessed_improvement": 666470,
+            "assessed_total": 808830,
+            "absentee_owner": True,
+            "out_of_state_owner": False,
             "tax_delinquent": False,
             "source": "Dallas Central Appraisal District",
             "source_url": "https://www.dcad.org/property-search/",
@@ -141,7 +355,7 @@ def _sample_report_data() -> dict:
         "flood": {
             "zone": "X",
             "description": "Minimal Flood Hazard — Outside 500-year floodplain",
-            "firm_panel": "48113C0285J",
+            "firm_panel": "48113C",
             "effective_date": "2009-09-25",
             "flood_insurance_required": False,
             "source": "FEMA NFHL REST API",
@@ -149,39 +363,48 @@ def _sample_report_data() -> dict:
         },
         "demographics": {
             "zip": "75042",
-            "population": 39148,
-            "median_household_income": 64266,
-            "median_household_income_fmt": "$64,266",
-            "owner_occupied_pct": 51.3,
-            "median_age": 32.4,
+            "population": 37925,
+            "median_household_income": 60118,
+            "median_household_income_fmt": "$60,118",
+            "owner_occupied_pct": 58.7,
+            "median_age": 32.9,
+            "unemployment_rate": 5.1,
             "source": "U.S. Census Bureau, ACS 5-Year Estimates 2022",
         },
-        "businesses": [
-            {"name": "JADE NAILS & SPA LLC", "status": "Active", "status_flag": "green", "file_date": "04/2019"},
-            {"name": "GOLDEN STAR RESTAURANT LLC", "status": "Active", "status_flag": "green", "file_date": "11/2017"},
-            {"name": "FAMILY DENTAL OF GARLAND PC", "status": "Active", "status_flag": "green", "file_date": "01/2015"},
-            {"name": None, "status": "No registration found", "status_flag": "yellow", "file_date": None, "suite": "3239"},
-            {"name": "METRO TAX SERVICES LLC", "status": "Forfeited — 2023", "status_flag": "red", "file_date": "03/2016"},
-            {"name": "GREAT CLIPS INC (FRANCHISEE)", "status": "Active", "status_flag": "green", "file_date": "08/2012"},
-        ],
+        "businesses": [],
+        "skip_trace": {
+            "status": "hit",
+            "phones": ["(210) 555-0147"],
+            "emails": ["owner@example.com"],
+            "dnc": [False],
+            "source": "DataZapp",
+            "note": "Sample data — live skip trace requires DataZapp API key.",
+        },
         "motivation": {
-            "score": 70, "tier": "HIGH",
-            "interpretation": "Score 70/100 — High motivation. Seller likely open to below-ask offers. Recommend direct outreach before formal broker submission.",
+            "score": 55, "tier": "MODERATE",
+            "interpretation": "Score 55/100 — Moderate motivation. Absentee owner, LLC structure, extended DOM.",
             "indicators": [
-                {"name": "Absentee Owner", "triggered": True, "points": 15, "evidence": "Owner mailing PO BOX Dallas TX vs. Garland property", "source": "DCAD"},
-                {"name": "Long Hold Duration", "triggered": True, "points": 20, "evidence": "7.9 years held (acquired March 2018)", "source": "Dallas County Clerk deed"},
-                {"name": "LLC / Entity Ownership", "triggered": True, "points": 10, "evidence": "FOREST JUPITER PROPERTIES LLC", "source": "DCAD"},
-                {"name": "Extended Days on Market", "triggered": True, "points": 10, "evidence": "47 days (avg 28 for strip centers)", "source": "LoopNet"},
-                {"name": "Recorded Price Reduction", "triggered": True, "points": 15, "evidence": "$128,000 reduction on 01/15/2026", "source": "LoopNet price history"},
-                {"name": "Tax Delinquency", "triggered": False, "points": 0, "evidence": "Taxes current", "source": "DCAD"},
-                {"name": "Out-of-State Owner", "triggered": False, "points": 0, "evidence": "Owner in TX", "source": "DCAD"},
+                {"name": "Absentee Owner", "triggered": True, "points": 15,
+                 "evidence": "Owner mailing San Antonio TX vs. Garland property", "source": "DCAD"},
+                {"name": "Long Hold Duration", "triggered": False, "points": 0,
+                 "evidence": "Deed date not in DCAD ArcGIS layer", "source": "Dallas County Clerk"},
+                {"name": "LLC / Entity Ownership", "triggered": True, "points": 10,
+                 "evidence": "SUNCHA 2004 INC — corporate entity", "source": "DCAD"},
+                {"name": "Extended Days on Market", "triggered": True, "points": 10,
+                 "evidence": "47 days on market", "source": "LoopNet"},
+                {"name": "Recorded Price Reduction", "triggered": True, "points": 15,
+                 "evidence": "$128,000 reduction", "source": "LoopNet price history"},
+                {"name": "Tax Delinquency", "triggered": False, "points": 0,
+                 "evidence": "Taxes current", "source": "DCAD"},
+                {"name": "Out-of-State Owner", "triggered": False, "points": 0,
+                 "evidence": "Owner in TX (San Antonio)", "source": "DCAD"},
             ]
         },
         "flags": [
             {"type": "green", "text": "Flood Zone X — Minimal risk, no flood insurance required (FEMA)"},
-            {"type": "green", "text": "No tax delinquency detected — taxes current (DCAD)"},
-            {"type": "yellow", "text": "Motivation score 70/100 (HIGH) — seller signals present"},
-            {"type": "red", "text": "1 forfeited entity found at Suite 3243 — possible vacancy (TX SOS)"},
+            {"type": "green", "text": "No tax delinquency — taxes current (DCAD)"},
+            {"type": "yellow", "text": "Absentee owner — mailing address in San Antonio TX (DCAD)"},
+            {"type": "yellow", "text": "Motivation score 55/100 (MODERATE) — seller signals present"},
         ],
     }
 
@@ -189,5 +412,5 @@ def _sample_report_data() -> dict:
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     debug = os.environ.get("DEBUG", "true").lower() == "true"
-    print(f"PropIntel API starting on port {port}")
+    print(f"PropIntel API v1.1 starting on port {port}")
     app.run(host="0.0.0.0", port=port, debug=debug)

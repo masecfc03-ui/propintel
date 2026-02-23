@@ -11,6 +11,7 @@ from scrapers.census import get_demographics
 from scrapers.dcad import search_by_address, search_by_apn
 from scrapers.txsos import search_by_address as txsos_address
 from scrapers.listing import parse_listing, is_address, detect_source
+from scrapers.datazapp import skip_trace, parse_owner_name
 from motivation import score as motivation_score
 
 
@@ -86,13 +87,18 @@ def run(input_str: str, tier: str = "starter") -> dict:
             city = geo.get("city", "")
             tasks["txsos"] = ex.submit(txsos_address, street, city)
 
+        import concurrent.futures as _cf
         results = {}
         for key, future in tasks.items():
             try:
-                results[key] = future.result(timeout=20)
+                results[key] = future.result(timeout=30)
+            except _cf.TimeoutError:
+                results[key] = {"error": "timeout", "warning": "Request timed out (30s) — service may be slow from this region"}
+                report["errors"].append(f"{key}: timeout")
             except Exception as e:
-                results[key] = {"error": str(e)}
-                report["errors"].append(f"{key}: {str(e)}")
+                err_msg = str(e) or repr(e)
+                results[key] = {"error": err_msg}
+                report["errors"].append(f"{key}: {err_msg}")
 
     report["parcel"] = results.get("dcad", {})
     report["flood"] = results.get("fema", {})
@@ -101,7 +107,8 @@ def run(input_str: str, tier: str = "starter") -> dict:
 
     # ── Step 4: Pro-only enrichment ───────────────────────────────────────────
     if tier == "pro":
-        owner_name = report["parcel"].get("owner_name", "")
+        parcel_data = report["parcel"]
+        owner_name = parcel_data.get("owner_name", "")
 
         # Motivation scoring — from verified data only
         listing_meta = {
@@ -110,29 +117,166 @@ def run(input_str: str, tier: str = "starter") -> dict:
             "price_reduction_amount": report["listing"].get("price_reduction_amount", 0),
         }
         report["motivation"] = motivation_score(
-            parcel=report["parcel"],
+            parcel=parcel_data,
             listing=listing_meta,
-            deed_history=report["parcel"].get("deed_history", []),
+            deed_history=parcel_data.get("deed_history", []),
         )
 
-        # Skip trace placeholder (DataZapp API — requires key)
-        report["skip_trace"] = {
-            "status": "pending_api_key",
-            "note": "DataZapp skip trace — add DATAZAPP_API_KEY to .env to enable",
-            "owner_name": owner_name,
-        }
+        # DataZapp skip trace
+        first, last, is_entity = parse_owner_name(owner_name)
+        owner_mail_addr = parcel_data.get("owner_mailing", "")
+        owner_city = parcel_data.get("owner_city", "")
+        owner_state = parcel_data.get("owner_state", "TX")
+        owner_zip = parcel_data.get("owner_zip", "")
+
+        if is_entity:
+            # For entities, try to skip trace the entity name
+            from scrapers.datazapp import skip_trace_entity
+            report["skip_trace"] = skip_trace_entity(
+                entity_name=owner_name,
+                mailing_address=owner_mail_addr,
+                mailing_city=owner_city,
+                mailing_state=owner_state,
+                mailing_zip=owner_zip,
+            )
+        elif first or last:
+            report["skip_trace"] = skip_trace(
+                first_name=first,
+                last_name=last,
+                address=owner_mail_addr,
+                city=owner_city,
+                state=owner_state,
+                zip_code=owner_zip,
+            )
+        else:
+            report["skip_trace"] = {
+                "status": "no_owner",
+                "phones": [],
+                "emails": [],
+                "note": "Owner name not available from DCAD — manual skip trace required.",
+                "source": "DataZapp",
+            }
 
         # Lien search placeholder
         report["liens"] = {
-            "status": "pending",
-            "note": "Dallas County Clerk lien search — implement county clerk scraper",
-            "manual_url": "https://www.dallascounty.org/departments/countyclerk/real-property.php"
+            "status": "manual_required",
+            "note": "Dallas County Clerk lien search — access via link below.",
+            "manual_url": "https://www.dallascounty.org/departments/countyclerk/real-property.php",
+            "apn": parcel_data.get("apn", ""),
         }
+
+        # Deal analyzer calculations (from listing data if available)
+        report["deal_analysis"] = _analyze_deal(report)
 
     # ── Step 5: Assemble flags ────────────────────────────────────────────────
     report["flags"] = _build_flags(report)
 
     return report
+
+
+def _analyze_deal(report: dict) -> dict:
+    """
+    Calculate key deal metrics from available listing + parcel data.
+    Only uses numbers that come from verified sources (listing, DCAD).
+    Marks estimates clearly.
+    """
+    listing = report.get("listing", {})
+    parcel  = report.get("parcel", {})
+
+    ask_price = listing.get("asking_price")
+    cap_rate_str = listing.get("cap_rate", "")
+    bldg_sf = None
+    try:
+        bldg_sf = float(str(listing.get("building_sf") or parcel.get("building_sf") or 0).replace(",", ""))
+    except Exception:
+        pass
+
+    # Parse stated cap rate
+    stated_cap = None
+    if cap_rate_str:
+        try:
+            stated_cap = float(str(cap_rate_str).replace("%", "").strip()) / 100
+        except Exception:
+            pass
+
+    # NOI from stated cap rate + asking price
+    stated_noi = None
+    if ask_price and stated_cap:
+        stated_noi = round(ask_price * stated_cap)
+
+    # Price per SF
+    price_per_sf = None
+    if ask_price and bldg_sf and bldg_sf > 0:
+        price_per_sf = round(ask_price / bldg_sf, 2)
+
+    # Assessed vs asking premium/discount
+    assessed_total = parcel.get("assessed_total")
+    assessed_premium = None
+    if ask_price and assessed_total and assessed_total > 0:
+        assessed_premium = round((ask_price / assessed_total - 1) * 100, 1)
+
+    # DSCR at 75% LTV, 7% rate, 25yr am (commercial market standard)
+    dscr = None
+    monthly_payment = None
+    if ask_price and stated_noi:
+        ltv = 0.75
+        loan_amount = ask_price * ltv
+        rate_monthly = 0.07 / 12
+        n_payments = 25 * 12
+        try:
+            monthly_payment = loan_amount * (rate_monthly * (1 + rate_monthly) ** n_payments) / \
+                              ((1 + rate_monthly) ** n_payments - 1)
+            annual_debt_service = monthly_payment * 12
+            dscr = round(stated_noi / annual_debt_service, 2)
+        except Exception:
+            pass
+
+    # Cash-on-cash at 25% down
+    coc = None
+    if stated_noi and ask_price and monthly_payment:
+        equity = ask_price * 0.25
+        annual_cf = stated_noi - (monthly_payment * 12)
+        coc = round((annual_cf / equity) * 100, 2) if equity > 0 else None
+
+    # Gross Rent Multiplier
+    grm = None
+    # (Would need actual rent roll — skip for now)
+
+    analysis = {
+        "source": "PropIntel Deal Analyzer",
+        "based_on": "Stated listing cap rate + asking price — NOT verified rent roll",
+        "note": "Verify with actual rent roll and T-12 income statement before making offers.",
+        "asking_price": ask_price,
+        "asking_price_fmt": listing.get("asking_price_fmt") or (
+            "$" + f"{ask_price:,.0f}" if ask_price else None
+        ),
+        "price_per_sf": price_per_sf,
+        "building_sf": bldg_sf,
+        "stated_cap_rate": cap_rate_str,
+        "stated_noi": stated_noi,
+        "stated_noi_fmt": ("$" + f"{stated_noi:,}") if stated_noi else None,
+        "assessed_total": assessed_total,
+        "assessed_vs_asking_premium_pct": assessed_premium,
+        "loan_assumptions": {
+            "ltv_pct": 75,
+            "rate_pct": 7.0,
+            "amortization_years": 25,
+            "down_payment_pct": 25,
+        },
+        "dscr": dscr,
+        "cash_on_cash_pct": coc,
+        "monthly_debt_service": round(monthly_payment) if monthly_payment else None,
+    }
+
+    # LOI targets (10% discount for initial offer)
+    if ask_price:
+        analysis["loi_targets"] = {
+            "aggressive": round(ask_price * 0.88 / 1000) * 1000,
+            "moderate": round(ask_price * 0.93 / 1000) * 1000,
+            "conservative": round(ask_price * 0.97 / 1000) * 1000,
+        }
+
+    return analysis
 
 
 def _build_flags(report: dict) -> list:

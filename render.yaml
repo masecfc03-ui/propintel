@@ -1,13 +1,29 @@
 services:
   - type: web
-    name: deallens-api
-    env: python
+    name: propintel
+    runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
-    envVars:
-      - key: PORT
-        value: 10000
-      - key: DEBUG
-        value: false
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     plan: free
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: ADMIN_KEY
+        value: propintel-mason-2026
+      - key: STRIPE_LIVE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: DATAZAPP_API_KEY
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: STRIPE_LIVE_STARTER_PRICE
+        value: price_1T3tCw35KKjpV0x2SRXywBcA
+      - key: STRIPE_LIVE_PRO_PRICE
+        value: price_1T3tCw35KKjpV0x2eo2R4n08
+      - key: REPORT_BASE_URL
+        value: https://masecfc03-ui.github.io/propintel
