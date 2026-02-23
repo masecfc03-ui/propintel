@@ -29,20 +29,13 @@ def score(parcel: dict, listing: dict, deed_history: list = None) -> dict:
     indicators = []
     total = 0
 
-    # ── 1. Absentee owner (mailing ≠ property address) ────────────────────────
+    # ── 1. Absentee owner — use Regrid verified flag directly ─────────────────
+    # Regrid computes this from its own data (mailing vs property address).
+    # Do NOT re-derive from strings — property_address from Regrid has no ZIP.
+    absentee = bool(parcel.get("absentee_owner", False))
     owner_mail = parcel.get("owner_mailing", "")
-    prop_addr = parcel.get("property_address", "")
-    absentee = False
-    if owner_mail and prop_addr:
-        # Simple check: different street in mailing vs property
-        mail_zip = re.search(r"\b\d{5}\b", owner_mail)
-        prop_zip = re.search(r"\b\d{5}\b", prop_addr)
-        if mail_zip and prop_zip and mail_zip.group() != prop_zip.group():
-            absentee = True
-        elif "PO BOX" in owner_mail.upper() or "PMB" in owner_mail.upper():
-            absentee = True
 
-    pts = 15 if absentee else 0
+    pts = 25 if absentee else 0
     total += pts
     indicators.append({
         "name": "Absentee Owner",
@@ -132,20 +125,20 @@ def score(parcel: dict, listing: dict, deed_history: list = None) -> dict:
         "source": "Dallas Central Appraisal District — tax records",
     })
 
-    # ── 7. Out-of-state owner ─────────────────────────────────────────────────
-    out_of_state = False
-    if owner_mail:
-        state_m = re.search(r"\b([A-Z]{2})\s+\d{5}", owner_mail)
-        if state_m and state_m.group(1) != "TX":
-            out_of_state = True
-    pts = 15 if out_of_state else 0
+    # ── 7. Out-of-state owner — use Regrid verified flag directly ────────────
+    out_of_state = bool(parcel.get("out_of_state_owner", False))
+    # Fallback: check owner_state field
+    if not out_of_state and parcel.get("owner_state") and parcel.get("owner_state","TX").upper() != "TX":
+        out_of_state = True
+    pts = 20 if out_of_state else 0
     total += pts
+    owner_state_label = parcel.get("owner_state", "TX") or "TX"
     indicators.append({
         "name": "Out-of-State Owner",
         "triggered": out_of_state,
         "points": pts,
-        "evidence": f"Owner mailing in {state_m.group(1) if out_of_state else 'TX'}" if owner_mail else "Mailing address not available",
-        "source": "Dallas Central Appraisal District — owner mailing address",
+        "evidence": f"Owner mailing address in {owner_state_label}" if out_of_state else f"Owner in {owner_state_label}",
+        "source": "Regrid — owner mailing state",
     })
 
     # ── Cap and tier ─────────────────────────────────────────────────────────
@@ -157,7 +150,7 @@ def score(parcel: dict, listing: dict, deed_history: list = None) -> dict:
             "Recommend direct outreach before formal broker submission."
         )
     elif total >= 40:
-        tier = "MODERATE"
+        tier = "MEDIUM"
         interpretation = (
             f"Score {total}/100 — Moderate motivation. Some signals present. "
             "Submit through broker at or near ask, include due diligence contingencies."
