@@ -12,6 +12,8 @@ import json
 import uuid
 import hmac
 import hashlib
+import logging
+import sys
 from datetime import datetime
 
 from flask import Flask, request, jsonify, send_file, Response
@@ -20,13 +22,58 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ─── STRUCTURED LOGGING ─────────────────────────────────────────────────────
+# Rule: Every log level is wrong in prod. Set explicitly. Never use print().
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+log = logging.getLogger("propintel")
+
+# ─── STARTUP CONFIG VALIDATION ──────────────────────────────────────────────
+# Rule: Every config file has a cursed flag nobody touches. Validate on startup. Fail fast.
+_REQUIRED = {
+    "REGRID_API_KEY":        "Parcel data (core product) will not work",
+    "STRIPE_LIVE_SECRET_KEY":"Payment processing will fail — no revenue",
+    "STRIPE_WEBHOOK_SECRET": "Paid orders won't be fulfilled",
+}
+_OPTIONAL = {
+    "MAILGUN_API_KEY":   "Email delivery disabled",
+    "PDL_API_KEY":       "Skip trace disabled (Pro reports show no owner contact)",
+    "ADMIN_KEY":         "Using default admin key — change in production",
+}
+
+_missing_critical = []
+for var, consequence in _REQUIRED.items():
+    if not os.environ.get(var):
+        _missing_critical.append(f"  ❌ {var} — {consequence}")
+
+for var, consequence in _OPTIONAL.items():
+    if not os.environ.get(var):
+        log.warning("Optional env var not set: %s → %s", var, consequence)
+
+if _missing_critical:
+    for msg in _missing_critical:
+        log.critical("MISSING REQUIRED ENV VAR: %s", msg)
+    # In production: halt. Locally: warn and continue.
+    if os.environ.get("RENDER"):
+        log.critical("Halting — fix env vars in Render dashboard")
+        sys.exit(1)
+    else:
+        log.warning("Running locally with missing vars — some features disabled")
+
 from pipeline import run as run_pipeline
 from report.generator import generate_html, generate_pdf
 from orders import create_order, update_order, get_order_by_stripe, get_order_by_token, list_orders, list_leads, create_lead, stats as order_stats
 from mailer import send_report
+import cache as report_cache
+import idempotency
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
+log.info("PropIntel API starting up")
 
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "reports_cache")
 os.makedirs(REPORTS_DIR, exist_ok=True)
@@ -51,14 +98,34 @@ PRICE_TO_TIER = {
 
 @app.route("/api/health", methods=["GET"])
 def health():
+    """
+    Full system health — every dependency surfaced explicitly.
+    Rule: Every metric is green while users are mad. Track what users experience.
+    """
+    cache_stats = report_cache.stats()
     return jsonify({
         "status": "ok",
-        "version": "1.2.0",
+        "version": "1.3.0",
         "ts": datetime.utcnow().isoformat(),
-        "webhook": bool(STRIPE_WEBHOOK_SECRET),
-        "email": bool(os.environ.get("SENDGRID_API_KEY") or os.environ.get("SMTP_USER") or os.environ.get("MAILGUN_API_KEY")),
-        "skip_trace": bool(os.environ.get("PDL_API_KEY") or os.environ.get("DATAZAPP_API_KEY")),
+        # Critical services
+        "regrid":           bool(os.environ.get("REGRID_API_KEY")),
+        "stripe":           bool(STRIPE_LIVE_SECRET_KEY),
+        "webhook":          bool(STRIPE_WEBHOOK_SECRET),
+        "email":            bool(os.environ.get("SENDGRID_API_KEY") or os.environ.get("SMTP_USER") or os.environ.get("MAILGUN_API_KEY")),
+        "skip_trace":       bool(os.environ.get("PDL_API_KEY") or os.environ.get("DATAZAPP_API_KEY")),
         "skip_trace_provider": "pdl" if os.environ.get("PDL_API_KEY") else ("datazapp" if os.environ.get("DATAZAPP_API_KEY") else "none"),
+        # Cache
+        "cache": {
+            "live_entries":  cache_stats["live"],
+            "total_entries": cache_stats["total"],
+            "total_hits":    cache_stats["total_hits"],
+        },
+        # Config completeness
+        "config_complete": bool(
+            os.environ.get("REGRID_API_KEY") and
+            STRIPE_LIVE_SECRET_KEY and
+            STRIPE_WEBHOOK_SECRET
+        ),
     })
 
 
@@ -95,10 +162,27 @@ def analyze():
         except Exception:
             pass  # Never block the report for a lead capture failure
 
+    # ── CACHE CHECK ──────────────────────────────────────────────────────────
+    # Rule: Every demo burns real API credits. Cache 24h to protect Regrid quota.
+    cached = report_cache.get(input_str, tier)
+    if cached:
+        log.info("Serving cached report: %s [%s]", input_str[:40], tier)
+        if fmt == "json":
+            return jsonify(cached)
+        html = generate_html(cached)
+        if fmt == "html":
+            return Response(html, mimetype="text/html")
+
+    # ── LIVE PIPELINE ────────────────────────────────────────────────────────
+    log.info("Running pipeline: %s [%s]", input_str[:40], tier)
     try:
         report_data = run_pipeline(input_str, tier)
     except Exception as e:
+        log.error("Pipeline failed for %s: %s", input_str[:40], e, exc_info=True)
         return jsonify({"error": f"Pipeline failed: {str(e)}"}), 500
+
+    # Store in cache (never blocks — errors are swallowed in cache.set)
+    report_cache.set(input_str, tier, report_data)
 
     report_data["generated_at"] = datetime.utcnow().isoformat()
     report_data["report_id"] = str(uuid.uuid4())[:8]
@@ -145,13 +229,30 @@ def stripe_webhook():
     except Exception:
         return jsonify({"error": "Invalid JSON"}), 400
 
-    event_type = event.get("type")
+    event_id   = event.get("id", "")
+    event_type = event.get("type", "")
+
+    log.info("Stripe webhook received: %s (%s)", event_type, event_id)
+
+    # ── IDEMPOTENCY CHECK ────────────────────────────────────────────────────
+    # Rule: Every webhook fires twice when you least expect it.
+    # Stripe retries for 72h. We must be safe to receive the same event 10x.
+    from orders import _get_conn
+    conn = _get_conn()
+    if idempotency.already_processed(conn, event_id):
+        log.info("Webhook duplicate — skipping: %s", event_id)
+        return jsonify({"received": True, "duplicate": True})
 
     if event_type == "checkout.session.completed":
-        _handle_checkout_completed(event["data"]["object"])
+        try:
+            _handle_checkout_completed(event["data"]["object"])
+            idempotency.mark_processed(conn, event_id, event_type, "ok")
+        except Exception as e:
+            log.error("Webhook handler failed: %s — NOT marking processed (will retry)", e, exc_info=True)
+            idempotency.mark_processed(conn, event_id, event_type, f"error: {e}")
+            return jsonify({"error": str(e)}), 500
     elif event_type == "payment_intent.succeeded":
-        # Secondary confirmation — no action needed if checkout already handled
-        pass
+        idempotency.mark_processed(conn, event_id, event_type, "ignored")
 
     return jsonify({"received": True})
 

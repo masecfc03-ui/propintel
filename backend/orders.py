@@ -57,12 +57,11 @@ def _ensure_schema(conn):
             updated_at  TEXT
         )
     """)
-    # Migrate existing tables (add column if missing)
-    try:
+    # Safe idempotent migration — check column existence before ALTER
+    existing_cols = {row[1] for row in conn.execute("PRAGMA table_info(orders)").fetchall()}
+    if "report_token" not in existing_cols:
         conn.execute("ALTER TABLE orders ADD COLUMN report_token TEXT")
         conn.commit()
-    except Exception:
-        pass
     conn.execute("""
         CREATE TABLE IF NOT EXISTS leads (
             id          TEXT PRIMARY KEY,
@@ -96,12 +95,14 @@ def _ensure_schema_pg(conn):
             updated_at  TEXT
         )
     """)
-    # Migrate existing tables
-    try:
+    # Safe idempotent migration — uses information_schema, no silent catch-all
+    cur.execute("""
+        SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'orders' AND column_name = 'report_token'
+    """)
+    if not cur.fetchone():
         cur.execute("ALTER TABLE orders ADD COLUMN report_token TEXT")
         conn.commit()
-    except Exception:
-        pass
     cur.execute("""
         CREATE TABLE IF NOT EXISTS leads (
             id          TEXT PRIMARY KEY,
