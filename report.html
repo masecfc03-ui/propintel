@@ -465,6 +465,9 @@
     <div class="load-step" id="step-demo"><span class="step-dot"></span>Census demographics</div>
     <div class="load-step" id="step-done"><span class="step-dot"></span>Finalizing report</div>
   </div>
+  <div id="loading-msg" style="margin-top:16px;font-size:0.78rem;color:var(--text3);max-width:320px;text-align:center;line-height:1.5">
+    Querying parcel data, flood records, and financials…
+  </div>
 </div>
 
 <!-- ERROR -->
@@ -1457,6 +1460,32 @@ mason@mathislandco.com | 972-834-7204`;
     });
   }
 
+  // ── FETCH WITH TIMEOUT ──
+  // Rule: Every timeout is 'just increase it.' Set by service SLA, document why.
+  // Render free tier cold start = up to 60s. We give 90s max, warn at 15s.
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 90000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    // Warm-up warning at 15s
+    const warnTimer = setTimeout(() => {
+      const el = document.getElementById('loading-msg');
+      if (el) el.textContent = 'Server is warming up — this can take up to 60 seconds on first load. Hang tight…';
+    }, 15000);
+
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(warnTimer);
+      return res;
+    } catch (err) {
+      clearTimeout(warnTimer);
+      if (err.name === 'AbortError') throw new Error('Request timed out after 90s. Please refresh and try again.');
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   // ── MAIN LOAD ──
   async function loadReport() {
     const params = new URLSearchParams(window.location.search);
@@ -1477,41 +1506,40 @@ mason@mathislandco.com | 972-834-7204`;
     if (token) {
       // Fetch stored report by public token (post-purchase email link)
       try {
-        const res = await fetch(`${API}/api/reports/${token}`);
+        const res = await fetchWithTimeout(`${API}/api/reports/${token}`);
         if (res.status === 202) {
-          showError('Your report is still processing. Please check back in a moment or refresh the page.');
+          showError('Your report is still processing. Please check back in a moment or <a href="javascript:location.reload()" style="color:var(--accent)">refresh the page</a>.');
           return;
         }
-        if (!res.ok) throw new Error('Report not found');
+        if (!res.ok) throw new Error(`Report not found (${res.status})`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         stepDone('step-done');
         setTimeout(() => renderReport(data), 300);
       } catch (err) {
-        showError('Could not load your report: ' + err.message);
+        showError(`Could not load your report: ${err.message}<br><br><a href="javascript:location.reload()" style="color:var(--accent);font-weight:600">↻ Try again</a>`);
       }
     } else if (orderId) {
-      // Legacy: admin-accessed order report — redirect to token if possible
-      showError('Report link expired. Return to PropIntel and re-run your analysis.');
+      showError('Report link expired. <a href="/" style="color:var(--accent)">Return to PropIntel</a> and re-run your analysis.');
     } else if (address) {
-      // Run fresh pipeline
+      // Run fresh pipeline (demo or direct link)
       try {
         const body = { input: address, tier, format: 'json' };
-        const res = await fetch(`${API}/api/analyze`, {
+        const res = await fetchWithTimeout(`${API}/api/analyze`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         });
-        if (!res.ok) throw new Error('Pipeline failed: ' + res.status);
+        if (!res.ok) throw new Error(`Pipeline failed (${res.status})`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         stepDone('step-done');
         setTimeout(() => renderReport(data), 300);
       } catch (err) {
-        showError('Could not generate report: ' + err.message);
+        showError(`Could not generate report: ${err.message}<br><br><a href="javascript:location.reload()" style="color:var(--accent);font-weight:600">↻ Try again</a>`);
       }
     } else {
-      showError('No property address provided. Return to PropIntel and analyze an address first.');
+      showError('No property address provided. <a href="/" style="color:var(--accent)">Return to PropIntel</a> and analyze an address first.');
     }
   }
 
