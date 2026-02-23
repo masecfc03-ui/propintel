@@ -436,13 +436,31 @@ def _merge_parcel(regrid: dict, dcad: dict, address: str) -> dict:
         dcad["data_sources"] = "DCAD"
         return dcad
 
-    # Both failed — return best error info available
+    # Both failed — return structured error (never silently return N/A)
     regrid_err = regrid.get("error", "unknown") if regrid else "no response"
+    regrid_err_type = regrid.get("error_type", "") if regrid else ""
     dcad_err = dcad.get("warning") or dcad.get("error", "") if dcad else ""
+
+    # Human-readable reason for the report UI
+    if "expired" in regrid_err.lower() or "auth" in regrid_err_type:
+        user_reason = "Parcel data service key expired. Contact PropIntel support."
+        action = "renew_key"
+    elif "coverage" in regrid_err_type or "outside" in regrid_err.lower():
+        user_reason = "This address is currently outside our covered service area. We're expanding coverage — check back soon."
+        action = "outside_coverage"
+    elif "timeout" in regrid_err.lower():
+        user_reason = "Parcel data request timed out. Please try again in a moment."
+        action = "retry"
+    else:
+        user_reason = "Parcel data temporarily unavailable. Please try again."
+        action = "retry"
 
     fallback = {
         "source": "PropIntel",
-        "warning": "Parcel data unavailable — Regrid: {}".format(regrid_err),
+        "parcel_error": True,
+        "parcel_error_reason": user_reason,
+        "parcel_error_action": action,
+        "warning": "Parcel data unavailable — {}".format(regrid_err),
         "dcad_warning": dcad_err or None,
         "data_sources": "none",
     }

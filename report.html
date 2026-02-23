@@ -938,9 +938,23 @@
     }
 
     // Parcel
-    document.getElementById('parcel-src').innerHTML = parcel.source_url
-      ? `<a href="${parcel.source_url}" target="_blank">${parcel.source || 'County Appraisal District'}</a>`
-      : (parcel.source || 'County Appraisal District');
+    // Show parcel error state clearly — never silently N/A
+    if (parcel.parcel_error) {
+      document.getElementById('parcel-src').textContent = 'Unavailable';
+      const actionBtns = parcel.parcel_error_action === 'retry'
+        ? `<button onclick="location.reload()" style="background:var(--accent);color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;margin-top:12px">↻ Retry</button>`
+        : '';
+      document.getElementById('parcel-body').innerHTML = `
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px 18px;color:#dc2626">
+          <div style="font-weight:700;margin-bottom:6px">⚠️ Parcel Data Unavailable</div>
+          <div style="font-size:0.85rem;color:#7f1d1d;line-height:1.5">${parcel.parcel_error_reason || 'Data temporarily unavailable.'}</div>
+          ${parcel.manual_url ? `<div style="margin-top:10px"><a href="${parcel.manual_url}" target="_blank" style="color:#dc2626;font-weight:600;font-size:0.82rem">Look up manually →</a></div>` : ''}
+          ${actionBtns}
+        </div>`;
+    } else {
+      document.getElementById('parcel-src').innerHTML = parcel.source_url
+        ? `<a href="${parcel.source_url}" target="_blank">${parcel.source || 'County Appraisal District'}</a>`
+        : (parcel.source || 'County Appraisal District');
 
     // Permit + assessor links
     const perm = data.permit_portal || {};
@@ -966,6 +980,7 @@
       row('Tax Delinquency', delinqTxt, delinqCls) +
       row('Permit Records', permLink) +
       row('Assessor Portal', assessLink);
+    } // end else (parcel data available)
 
     // Flood
     const fzone = flood.zone || '';
