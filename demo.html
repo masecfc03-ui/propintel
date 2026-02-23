@@ -9,30 +9,27 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --white: #ffffff; --bg: #f8fafc; --bg2: #f1f5f9; --border: #e2e8f0;
-      --accent: #2563eb; --accent-light: #eff6ff; --accent-hover: #1d4ed8;
-      --green: #16a34a; --green-light: #f0fdf4;
-      --amber: #d97706; --amber-light: #fffbeb;
-      --red: #dc2626; --red-light: #fef2f2;
-      --text: #0f172a; --text2: #475569; --text3: #94a3b8;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07); --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
-      --shadow-lg: 0 20px 48px rgba(0,0,0,0.12); --radius: 12px;
+      --white: #ffffff; --bg: #f8fafc; --border: #e2e8f0;
+      --accent: #2563eb; --accent-hover: #1d4ed8;
+      --green: #16a34a; --text: #0f172a; --text2: #475569; --text3: #94a3b8;
+      --shadow-lg: 0 20px 48px rgba(0,0,0,0.13);
     }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 20px; -webkit-font-smoothing: antialiased;
+    }
 
-    /* ── GATE OVERLAY ── */
-    #gate {
-      position: fixed; inset: 0; z-index: 999;
-      background: rgba(15,23,42,0.7); backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center; padding: 20px;
-    }
+    /* ── GATE CARD ── */
     .gate-card {
       background: var(--white); border-radius: 20px;
-      padding: 0; overflow: hidden; width: 100%; max-width: 880px;
+      width: 100%; max-width: 880px; overflow: hidden;
       box-shadow: var(--shadow-lg);
       display: grid; grid-template-columns: 1fr 1fr;
     }
+
+    /* Left panel — blue */
     .gate-left {
       background: var(--accent); padding: 48px 40px;
       display: flex; flex-direction: column; justify-content: space-between;
@@ -44,14 +41,15 @@
     .gate-logo-icon {
       width: 28px; height: 28px; border-radius: 7px;
       background: rgba(255,255,255,0.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px;
+      display: flex; align-items: center; justify-content: center; font-size: 13px;
     }
     .gate-headline {
       font-size: 1.6rem; font-weight: 800; color: white;
       line-height: 1.2; letter-spacing: -0.5px; margin: 32px 0 12px;
     }
     .gate-sub { font-size: 0.875rem; color: rgba(255,255,255,0.75); line-height: 1.6; }
+
+    /* Preview data table */
     .gate-preview {
       background: rgba(255,255,255,0.1); border-radius: 10px;
       padding: 14px 16px; margin-top: 28px;
@@ -61,13 +59,15 @@
       text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;
     }
     .gate-preview-row {
-      display: flex; justify-content: space-between;
-      padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
       font-size: 0.8rem;
     }
     .gate-preview-row:last-child { border-bottom: none; }
-    .gate-preview-key { color: rgba(255,255,255,0.6); }
+    .gate-preview-key { color: rgba(255,255,255,0.65); }
     .gate-preview-val { color: white; font-weight: 600; }
+
+    /* Right panel — form */
     .gate-right {
       padding: 48px 40px;
       display: flex; flex-direction: column; justify-content: center;
@@ -88,487 +88,157 @@
       border: none; border-radius: 8px; font-size: 0.9375rem;
       font-weight: 700; cursor: pointer; font-family: inherit;
       transition: background 0.15s; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .gate-btn:hover { background: var(--accent-hover); }
+    .gate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .gate-note { font-size: 0.75rem; color: var(--text3); text-align: center; line-height: 1.5; }
-    .gate-what {
-      margin-top: 24px; padding-top: 20px;
-      border-top: 1px solid var(--border);
-    }
+
+    /* What's included */
+    .gate-what { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
     .gate-what-title { font-size: 0.72rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
     .gate-feature {
       display: flex; align-items: center; gap: 8px;
       font-size: 0.8rem; color: var(--text2); padding: 3px 0;
     }
-    .gate-check { color: var(--green); font-weight: 700; }
+    .gate-check { color: var(--green); font-weight: 700; font-size: 0.85rem; }
 
-    /* ── TOPBAR ── */
-    .topbar {
-      background: var(--white); border-bottom: 1px solid var(--border);
-      padding: 0 32px; height: 60px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm);
+    /* Loading spinner */
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: none;
     }
-    .topbar-logo {
-      font-size: 0.9rem; font-weight: 800;
-      display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text);
-    }
-    .logo-icon { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .topbar-badge { background: var(--green-light); border: 1px solid rgba(22,163,74,0.2); color: var(--green); padding: 4px 12px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; }
-    .topbar-cta { background: var(--accent); color: white; padding: 8px 18px; border-radius: 7px; font-size: 0.8rem; font-weight: 700; text-decoration: none; transition: background 0.15s; }
-    .topbar-cta:hover { background: var(--accent-hover); }
-    .print-btn { background: none; border: 1px solid var(--border); color: var(--text2); padding: 7px 14px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── REPORT ── */
-    .report { max-width: 860px; margin: 0 auto; padding: 28px 20px 80px; }
-
-    /* ── REPORT HEADER ── */
-    .report-header { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; margin-bottom: 18px; box-shadow: var(--shadow-sm); }
-    .tier-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 14px; background: var(--accent-light); color: var(--accent); border: 1px solid rgba(37,99,235,0.2); }
-    .prop-address { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text); margin-bottom: 4px; }
-    .prop-sub { color: var(--text2); font-size: 0.875rem; margin-bottom: 20px; }
-    .header-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .htag { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; font-size: 0.75rem; font-weight: 500; color: var(--text2); }
-    .htag.green { background: var(--green-light); border-color: rgba(22,163,74,0.2); color: var(--green); font-weight: 600; }
-    .htag.amber { background: var(--amber-light); border-color: rgba(217,119,6,0.2); color: var(--amber); font-weight: 600; }
-    .htag.red { background: var(--red-light); border-color: rgba(220,38,38,0.2); color: var(--red); font-weight: 600; }
-
-    /* ── SCORE ROW ── */
-    .score-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
-    .score-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; box-shadow: var(--shadow-sm); }
-    .sc-label { font-size: 0.67rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-    .sc-val { font-size: 1.1rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
-    .sc-sub { font-size: 0.7rem; color: var(--text3); margin-top: 2px; }
-
-    /* ── FLAGS ── */
-    .flags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .flag-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; border-radius: 8px; font-size: 0.825rem; line-height: 1.4; font-weight: 500; border: 1px solid; }
-    .flag-item.green { background: var(--green-light); border-color: rgba(22,163,74,0.2); color: #166534; }
-    .flag-item.amber { background: var(--amber-light); border-color: rgba(217,119,6,0.2); color: #92400e; }
-    .flag-item.red { background: var(--red-light); border-color: rgba(220,38,38,0.2); color: #991b1b; }
-
-    /* ── SECTION CARDS ── */
-    .section-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; box-shadow: var(--shadow-sm); }
-    .sec-head { padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-    .sec-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text); display: flex; align-items: center; gap: 8px; }
-    .sec-src { font-size: 0.7rem; color: var(--text3); }
-    .sec-src a { color: var(--accent); text-decoration: none; }
-    .sec-body { padding: 20px 24px; }
-    .dr { display: flex; align-items: flex-start; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
-    .dr:last-child { border-bottom: none; padding-bottom: 0; }
-    .dl { font-size: 0.775rem; color: var(--text3); font-weight: 500; min-width: 160px; }
-    .dv { font-size: 0.85rem; font-weight: 600; color: var(--text); text-align: right; }
-    .dv.green { color: var(--green); } .dv.red { color: var(--red); } .dv.amber { color: var(--amber); }
-    .badge { display: inline-block; font-size: 0.6rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-left: 6px; }
-    .badge.absentee { background: var(--amber-light); color: var(--amber); border: 1px solid rgba(217,119,6,0.2); }
-    .pro-pill { background: var(--accent-light); color: var(--accent); font-size: 0.62rem; padding: 2px 7px; border-radius: 4px; font-weight: 700; margin-left: 6px; letter-spacing: 0.4px; }
-
-    /* ── MOTIVATION ── */
-    .motiv-wrap { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: start; }
-    .motiv-dial { width: 96px; height: 96px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-    .motiv-num { font-size: 2rem; font-weight: 800; letter-spacing: -1px; line-height: 1; }
-    .motiv-max { font-size: 0.65rem; color: var(--text3); }
-    .motiv-tier-lbl { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
-    .motiv-interp { font-size: 0.825rem; color: var(--text2); line-height: 1.6; margin-bottom: 14px; }
-    .mi { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--text2); padding: 8px 12px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg); margin-bottom: 6px; }
-    .mi.on { background: var(--amber-light); border-color: rgba(217,119,6,0.2); color: var(--text); }
-    .mi-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
-    .mi.on .mi-dot { background: var(--amber); }
-    .mi-lbl { flex: 1; font-weight: 500; }
-    .mi-pts { font-size: 0.72rem; font-weight: 700; color: var(--text3); }
-    .mi.on .mi-pts { color: var(--amber); }
-
-    /* ── CONTACT ── */
-    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .contact-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
-    .contact-label { font-size: 0.67rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .contact-val { font-size: 0.875rem; font-weight: 600; color: var(--text); }
-
-    /* ── DEAL ANALYZER ── */
-    .deal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-    .deal-metric { text-align: center; padding: 16px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
-    .deal-val { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
-    .deal-label { font-size: 0.68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
-
-    /* ── LOI ── */
-    .loi-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 22px; font-size: 0.825rem; color: var(--text2); line-height: 1.8; font-family: 'Georgia', serif; white-space: pre-wrap; }
-    .loi-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .loi-btn { padding: 8px 16px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: inherit; }
-    .loi-btn:hover { border-color: var(--text2); }
-
-    /* ── BUY CTA ── */
-    .buy-cta { background: var(--accent); border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 14px; }
-    .buy-cta h3 { font-size: 1.2rem; font-weight: 800; color: white; margin-bottom: 8px; letter-spacing: -0.3px; }
-    .buy-cta p { font-size: 0.875rem; color: rgba(255,255,255,0.75); margin-bottom: 20px; }
-    .buy-btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    .buy-btn { padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 700; text-decoration: none; transition: all 0.15s; }
-    .buy-btn.white { background: white; color: var(--accent); }
-    .buy-btn.white:hover { opacity: 0.92; }
-    .buy-btn.outline-white { background: transparent; color: white; border: 1.5px solid rgba(255,255,255,0.5); }
-    .buy-btn.outline-white:hover { border-color: white; }
-
-    /* ── DISCLAIMER ── */
-    .disclaimer { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-top: 4px; }
-    .disc-title { font-size: 0.67rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-    .disclaimer p { font-size: 0.75rem; color: var(--text3); line-height: 1.6; }
-
-    /* ── RESPONSIVE ── */
+    /* Responsive */
     @media (max-width: 700px) {
       .gate-card { grid-template-columns: 1fr; }
       .gate-left { display: none; }
-      .score-row { grid-template-columns: 1fr 1fr; }
-      .flags-grid { grid-template-columns: 1fr; }
-      .motiv-wrap { grid-template-columns: 1fr; }
-      .contact-grid { grid-template-columns: 1fr; }
-      .deal-grid { grid-template-columns: 1fr 1fr; }
-      .buy-btn-row { flex-direction: column; align-items: center; }
+      .gate-right { padding: 36px 28px; }
     }
-    @media print { #gate { display: none !important; } .topbar { display: none; } .buy-cta { display: none; } }
   </style>
 </head>
 <body>
 
-<!-- EMAIL GATE -->
-<div id="gate">
-  <div class="gate-card">
+<div class="gate-card">
 
-    <div class="gate-left">
-      <div class="gate-logo">
-        <div class="gate-logo-icon">🔍</div>
-        PropIntel
-      </div>
-      <div>
-        <div class="gate-headline">A full property brief in under 30 seconds</div>
-        <p class="gate-sub">This is a real Full Intel report for a Dallas commercial property. Every data point is sourced from a verified government record.</p>
+  <!-- LEFT: Preview panel -->
+  <div class="gate-left">
+    <div class="gate-logo">
+      <div class="gate-logo-icon">🔍</div>
+      PropIntel
+    </div>
 
-        <div class="gate-preview">
-          <div class="gate-preview-label">3625 McKinney Ave, Dallas TX</div>
-          <div class="gate-preview-row"><span class="gate-preview-key">Assessed Value</span><span class="gate-preview-val">$1,240,000</span></div>
-          <div class="gate-preview-row"><span class="gate-preview-key">Flood Zone</span><span class="gate-preview-val">Zone X ✓</span></div>
-          <div class="gate-preview-row"><span class="gate-preview-key">Owner Skip Trace</span><span class="gate-preview-val">✓ Phone found</span></div>
-          <div class="gate-preview-row"><span class="gate-preview-key">Motivation Score</span><span class="gate-preview-val">72 / 100 (HIGH)</span></div>
-          <div class="gate-preview-row"><span class="gate-preview-key">LOI Draft</span><span class="gate-preview-val">✓ Pre-filled</span></div>
+    <div>
+      <div class="gate-headline">Analyst-grade property intel in 30 seconds</div>
+      <p class="gate-sub">This is a real Full Intel report on a Dallas commercial property. Every data point is sourced from verified public records.</p>
+
+      <div class="gate-preview">
+        <div class="gate-preview-label">3625 McKinney Ave · Dallas TX 75204</div>
+        <div class="gate-preview-row">
+          <span class="gate-preview-key">Owner</span>
+          <span class="gate-preview-val">Absentee LLC</span>
         </div>
-      </div>
-      <div></div>
-    </div>
-
-    <div class="gate-right">
-      <div class="gate-title">See the full report</div>
-      <p class="gate-desc">This is exactly what you — or your clients — receive the moment they pay. Enter your email for instant access.</p>
-
-      <label class="gate-label" for="gate-email">Your email address</label>
-      <input type="email" id="gate-email" class="gate-input" placeholder="you@example.com" autocomplete="email" />
-      <button class="gate-btn" onclick="unlockDemo()">Show me the report →</button>
-      <p class="gate-note">No spam. No subscription. We'll send you one email with the sample report link.</p>
-
-      <div class="gate-what">
-        <div class="gate-what-title">What's in this demo</div>
-        <div class="gate-feature"><span class="gate-check">✓</span> Owner name, mailing address, skip trace</div>
-        <div class="gate-feature"><span class="gate-check">✓</span> Assessed value + tax record (DCAD)</div>
-        <div class="gate-feature"><span class="gate-check">✓</span> FEMA flood zone certification</div>
-        <div class="gate-feature"><span class="gate-check">✓</span> Seller motivation score — 7 indicators</div>
-        <div class="gate-feature"><span class="gate-check">✓</span> Deal analyzer + pre-filled LOI draft</div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- TOPBAR -->
-<div class="topbar">
-  <a href="index.html" class="topbar-logo">
-    <div class="logo-icon">🔍</div>
-    PropIntel
-  </a>
-  <div class="topbar-right">
-    <span class="topbar-badge">Sample Report · Full Intel</span>
-    <button class="print-btn" onclick="window.print()">Print / PDF</button>
-    <a href="index.html#pricing" class="topbar-cta">Get a Report →</a>
-  </div>
-</div>
-
-<!-- REPORT BODY -->
-<div class="report">
-
-  <!-- Header -->
-  <div class="report-header">
-    <div class="tier-badge">⭐ Full Intel Report · Pro</div>
-    <div class="prop-address">3625 McKinney Ave, Dallas TX 75204</div>
-    <p class="prop-sub">Dallas County · ZIP 75204 · Uptown Dallas · Report ID: DEMO-001</p>
-    <div class="header-tags">
-      <span class="htag green">Flood Zone X</span>
-      <span class="htag amber">Absentee Owner</span>
-      <span class="htag amber">HIGH Motivation</span>
-      <span class="htag green">Taxes Current</span>
-    </div>
-  </div>
-
-  <!-- Score Cards -->
-  <div class="score-row">
-    <div class="score-card">
-      <div class="sc-label">Assessed Value</div>
-      <div class="sc-val">$1,240,000</div>
-      <div class="sc-sub">Dallas CAD · 2025</div>
-    </div>
-    <div class="score-card">
-      <div class="sc-label">Building SF</div>
-      <div class="sc-val">7,200 SF</div>
-      <div class="sc-sub">Built 1998</div>
-    </div>
-    <div class="score-card">
-      <div class="sc-label">Flood Zone</div>
-      <div class="sc-val" style="color:var(--green)">Zone X</div>
-      <div class="sc-sub">Minimal risk</div>
-    </div>
-    <div class="score-card">
-      <div class="sc-label">Motivation Score</div>
-      <div class="sc-val" style="color:var(--red)">72 / 100</div>
-      <div class="sc-sub">HIGH — 5 signals</div>
-    </div>
-  </div>
-
-  <!-- Flags -->
-  <div class="section-card">
-    <div class="sec-head">
-      <div class="sec-title">🚦 Key Flags</div>
-      <div class="sec-src">Compiled from verified sources</div>
-    </div>
-    <div class="sec-body">
-      <div class="flags-grid">
-        <div class="flag-item green">Flood Zone X — Minimal risk, no flood insurance required (FEMA NFHL)</div>
-        <div class="flag-item green">Taxes current — No delinquency on record (Dallas CAD)</div>
-        <div class="flag-item amber">Absentee owner — Owner mailing address is Houston TX (DCAD)</div>
-        <div class="flag-item amber">Motivation score 72/100 HIGH — 5 verified indicators present</div>
-        <div class="flag-item amber">LLC ownership — MCKINNEY UPTOWN PARTNERS LLC (TX SOS)</div>
-        <div class="flag-item green">No active liens recorded (Dallas County Clerk)</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Parcel & Ownership -->
-  <div class="section-card">
-    <div class="sec-head">
-      <div class="sec-title">🏠 Parcel & Ownership</div>
-      <div class="sec-src"><a href="https://www.dcad.org/property-search/" target="_blank">Dallas Central Appraisal District · Regrid</a></div>
-    </div>
-    <div class="sec-body">
-      <div class="dr"><span class="dl">APN / Account</span><span class="dv">00C71520000S00100</span></div>
-      <div class="dr"><span class="dl">Owner of Record</span><span class="dv">MCKINNEY UPTOWN PARTNERS LLC <span class="badge absentee">ABSENTEE</span></span></div>
-      <div class="dr"><span class="dl">Owner Mailing</span><span class="dv">5151 Westheimer Rd, Houston TX 77056</span></div>
-      <div class="dr"><span class="dl">Data Source</span><span class="dv">Regrid / Dallas CAD</span></div>
-      <div class="dr"><span class="dl">Year Built</span><span class="dv">1998</span></div>
-      <div class="dr"><span class="dl">Building SF</span><span class="dv">7,200 SF</span></div>
-      <div class="dr"><span class="dl">Assessed — Land</span><span class="dv">$480,000</span></div>
-      <div class="dr"><span class="dl">Assessed — Improvement</span><span class="dv">$760,000</span></div>
-      <div class="dr"><span class="dl">Total Assessed Value</span><span class="dv">$1,240,000</span></div>
-      <div class="dr"><span class="dl">Tax Delinquency</span><span class="dv green">Current — No Delinquency</span></div>
-    </div>
-  </div>
-
-  <!-- FEMA Flood Zone -->
-  <div class="section-card">
-    <div class="sec-head">
-      <div class="sec-title">🌊 FEMA Flood Zone</div>
-      <div class="sec-src"><a href="https://msc.fema.gov/portal/home" target="_blank">FEMA National Flood Hazard Layer</a></div>
-    </div>
-    <div class="sec-body">
-      <div class="dr"><span class="dl">Flood Zone</span><span class="dv green">Zone X — Minimal Flood Hazard, outside 500-year floodplain</span></div>
-      <div class="dr"><span class="dl">FIRM Panel</span><span class="dv">48113C0340J</span></div>
-      <div class="dr"><span class="dl">Effective Date</span><span class="dv">2009-09-25</span></div>
-      <div class="dr"><span class="dl">Flood Insurance Required</span><span class="dv green">No (Zone X)</span></div>
-    </div>
-  </div>
-
-  <!-- Demographics -->
-  <div class="section-card">
-    <div class="sec-head">
-      <div class="sec-title">👥 Demographics</div>
-      <div class="sec-src"><a href="https://data.census.gov" target="_blank">U.S. Census Bureau — ACS 5-Year</a></div>
-    </div>
-    <div class="sec-body">
-      <div class="dr"><span class="dl">Population</span><span class="dv">42,180</span></div>
-      <div class="dr"><span class="dl">Median Household Income</span><span class="dv">$87,400</span></div>
-      <div class="dr"><span class="dl">Owner-Occupied Housing</span><span class="dv">31.2%</span></div>
-      <div class="dr"><span class="dl">Median Age</span><span class="dv">31.4</span></div>
-      <div class="dr"><span class="dl">Unemployment Rate</span><span class="dv">3.8%</span></div>
-    </div>
-  </div>
-
-  <!-- Owner Contact (PRO) -->
-  <div class="section-card">
-    <div class="sec-head">
-      <div class="sec-title">📞 Owner Contact <span class="pro-pill">PRO</span></div>
-      <div class="sec-src">DataZapp Skip Trace</div>
-    </div>
-    <div class="sec-body">
-      <div class="contact-grid">
-        <div class="contact-card">
-          <div class="contact-label">Phone Numbers</div>
-          <div class="contact-val">(713) 555-0184</div>
-          <div style="font-size:0.72rem;color:var(--text3);margin-top:2px">Mobile · Not on DNC</div>
-          <div class="contact-val" style="margin-top:8px">(713) 555-0261</div>
-          <div style="font-size:0.72rem;color:var(--text3);margin-top:2px">Landline</div>
+        <div class="gate-preview-row">
+          <span class="gate-preview-key">Flood Zone</span>
+          <span class="gate-preview-val">Zone X ✓</span>
         </div>
-        <div class="contact-card">
-          <div class="contact-label">Email Addresses</div>
-          <div class="contact-val" style="font-size:0.8rem">j.rodriguez@mupllc.com</div>
-          <div style="font-size:0.72rem;color:var(--text3);margin-top:2px">Business email</div>
-          <div class="contact-val" style="font-size:0.8rem;margin-top:8px">jrod1974@gmail.com</div>
-          <div style="font-size:0.72rem;color:var(--text3);margin-top:2px">Personal email</div>
+        <div class="gate-preview-row">
+          <span class="gate-preview-key">Est. Market Range</span>
+          <span class="gate-preview-val">$1.3M – $1.55M</span>
+        </div>
+        <div class="gate-preview-row">
+          <span class="gate-preview-key">Est. NOI</span>
+          <span class="gate-preview-val">$88K – $183K</span>
+        </div>
+        <div class="gate-preview-row">
+          <span class="gate-preview-key">Investment Verdict</span>
+          <span class="gate-preview-val">STRONG LEAD ↗</span>
         </div>
       </div>
     </div>
+
+    <div></div>
   </div>
 
-  <!-- Motivation Score (PRO) -->
-  <div class="section-card">
-    <div class="sec-head">
-      <div class="sec-title">🎯 Seller Motivation Score <span class="pro-pill">PRO</span></div>
-      <div class="sec-src">7 verified public record indicators</div>
+  <!-- RIGHT: Email gate -->
+  <div class="gate-right">
+    <div class="gate-title">See the full report</div>
+    <p class="gate-desc">This is exactly what you get the moment you pay — satellite map, value charts, financial model, owner entity intel, skip trace, LOI draft, and more. Enter your email for instant access.</p>
+
+    <label class="gate-label" for="gate-email">Your email address</label>
+    <input type="email" id="gate-email" class="gate-input" placeholder="you@example.com" autocomplete="email" />
+    <button class="gate-btn" id="gate-btn" onclick="unlockDemo()">
+      <span id="btn-text">Show me the report →</span>
+      <div class="spinner" id="btn-spinner"></div>
+    </button>
+    <p class="gate-note">No spam. No subscription required.</p>
+
+    <div class="gate-what">
+      <div class="gate-what-title">What's in this report</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> Satellite map + street view</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> Owner name, entity type, TX SOS status</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> Assessed value + estimated market range + value charts</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> Financial model — tax, NOI, cap rate</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> Neighborhood profile + Walk/Transit/Bike scores</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> FEMA flood zone certification</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> Owner skip trace — direct phone + email</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> Motivation score (7 indicators) + investment verdict</div>
+      <div class="gate-feature"><span class="gate-check">✓</span> Pre-filled LOI draft</div>
     </div>
-    <div class="sec-body">
-      <div class="motiv-wrap">
-        <div class="motiv-dial" style="border:3px solid var(--red)">
-          <div class="motiv-num" style="color:var(--red)">72</div>
-          <div class="motiv-max">/ 100</div>
-          <div class="motiv-tier-lbl" style="color:var(--red)">HIGH</div>
-        </div>
-        <div>
-          <p class="motiv-interp">Score 72/100 — HIGH motivation. Absentee LLC owner based in Houston, property held 12+ years, asking price reduced twice, 68 days on market. Multiple convergent signals.</p>
-          <div class="mi on"><span class="mi-dot"></span><span class="mi-lbl">Absentee Owner</span><span class="mi-pts">+15 pts</span></div>
-          <div class="mi on"><span class="mi-dot"></span><span class="mi-lbl">LLC / Entity Ownership</span><span class="mi-pts">+10 pts</span></div>
-          <div class="mi on"><span class="mi-dot"></span><span class="mi-lbl">Extended Days on Market (68 days)</span><span class="mi-pts">+10 pts</span></div>
-          <div class="mi on"><span class="mi-dot"></span><span class="mi-lbl">Recorded Price Reduction (×2)</span><span class="mi-pts">+20 pts</span></div>
-          <div class="mi on"><span class="mi-dot"></span><span class="mi-lbl">Long Hold Duration (12+ years)</span><span class="mi-pts">+15 pts</span></div>
-          <div class="mi"><span class="mi-dot"></span><span class="mi-lbl">Tax Delinquency</span><span class="mi-pts">—</span></div>
-          <div class="mi"><span class="mi-dot"></span><span class="mi-lbl">Out-of-State Owner</span><span class="mi-pts">—</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Deal Analyzer (PRO) -->
-  <div class="section-card">
-    <div class="sec-head">
-      <div class="sec-title">📊 Deal Analyzer <span class="pro-pill">PRO</span></div>
-      <div class="sec-src">Calculated from report data</div>
-    </div>
-    <div class="sec-body">
-      <div class="deal-grid">
-        <div class="deal-metric"><div class="deal-val">$2,100,000</div><div class="deal-label">Asking Price</div></div>
-        <div class="deal-metric"><div class="deal-val">$291.67</div><div class="deal-label">Price / SF</div></div>
-        <div class="deal-metric"><div class="deal-val">6.8%</div><div class="deal-label">Cap Rate</div></div>
-        <div class="deal-metric"><div class="deal-val">169%</div><div class="deal-label">Ask vs. Assessed</div></div>
-        <div class="deal-metric"><div class="deal-val">$1,240,000</div><div class="deal-label">Assessed Value</div></div>
-        <div class="deal-metric"><div class="deal-val" style="color:var(--amber)">1.18x</div><div class="deal-label">DSCR (est.)</div></div>
-      </div>
-      <p style="font-size:0.75rem;color:var(--text3)">DSCR estimated at 7% cap rate, 70% LTV, 30yr amortization, 7.5% rate. For illustration only — verify with actual rent roll.</p>
-    </div>
-  </div>
-
-  <!-- LOI (PRO) -->
-  <div class="section-card">
-    <div class="sec-head">
-      <div class="sec-title">📄 Letter of Intent Draft <span class="pro-pill">PRO</span></div>
-      <div class="sec-src">Pre-filled from report data · Edit before sending</div>
-    </div>
-    <div class="sec-body">
-      <div class="loi-box" id="loi-content">February 23, 2026
-
-To: MCKINNEY UPTOWN PARTNERS LLC
-Re: Letter of Intent — 3625 McKinney Ave, Dallas TX 75204
-
-Dear MCKINNEY UPTOWN PARTNERS LLC,
-
-I am writing to express my interest in acquiring the above-referenced property at 3625 McKinney Ave, Dallas TX 75204. This letter of intent outlines the proposed terms and is non-binding pending formal contract execution.
-
-PROPOSED PURCHASE PRICE:  $1,848,000
-EARNEST MONEY DEPOSIT:    $10,000 (refundable during inspection period)
-INSPECTION PERIOD:        14 days from contract execution
-CLOSING:                  30 days from expiration of inspection period
-FINANCING:                Cash — no financing contingency
-TITLE:                    Clear and marketable, conveyed by Warranty Deed
-
-This LOI is for discussion purposes only and does not constitute a binding agreement. Buyer reserves the right to conduct all customary due diligence including title search, environmental review, and physical inspection.
-
-Please contact me at your earliest convenience.
-
-Sincerely,
-[Your Name]
-[Your Phone] | [Your Email]</div>
-      <div class="loi-actions">
-        <button class="loi-btn" onclick="copyLOI()">📋 Copy LOI</button>
-        <button class="loi-btn" onclick="window.print()">🖨 Print / PDF</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Buy CTA -->
-  <div class="buy-cta">
-    <h3>Ready to run your own report?</h3>
-    <p>Full Intel reports like this one are $29.99. Starter reports (parcel, flood, demographics) are $9.99. No subscription required.</p>
-    <div class="buy-btn-row">
-      <a href="https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00" class="buy-btn outline-white" target="_blank">Starter — $9.99</a>
-      <a href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" class="buy-btn white" target="_blank">Full Intel Report — $29.99 →</a>
-    </div>
-  </div>
-
-  <!-- Disclaimer -->
-  <div class="disclaimer">
-    <div class="disc-title">Data Sources & Disclaimer</div>
-    <p>This is a sample report for demonstration purposes. All data shown is representative of real PropIntel report output and sourced from verified government records including Dallas Central Appraisal District (DCAD), FEMA NFHL, U.S. Census Bureau ACS, and DataZapp skip trace. Contact information shown is fictional for demo purposes. PropIntel is not a licensed broker, appraiser, or attorney. This report is for informational purposes only.</p>
   </div>
 
 </div>
 
 <script>
   const API = 'https://propintel-htij.onrender.com';
+  const DEMO_ADDRESS = '3625 McKinney Ave, Dallas TX 75204';
 
-  // Check if already unlocked
+  // Auto-fill if email already on file
   (function init() {
-    const unlocked = sessionStorage.getItem('demo_unlocked') || localStorage.getItem('demo_email');
-    if (unlocked) {
-      document.getElementById('gate').style.display = 'none';
-    }
-    // Pre-fill if email on file
-    const savedEmail = localStorage.getItem('demo_email');
-    if (savedEmail) document.getElementById('gate-email').value = savedEmail;
+    const saved = localStorage.getItem('demo_email');
+    if (saved) document.getElementById('gate-email').value = saved;
   })();
 
   async function unlockDemo() {
     const email = document.getElementById('gate-email').value.trim();
     if (!email || !email.includes('@')) {
-      document.getElementById('gate-email').focus();
-      document.getElementById('gate-email').style.borderColor = '#dc2626';
+      const input = document.getElementById('gate-email');
+      input.style.borderColor = '#dc2626';
+      input.focus();
       return;
     }
     document.getElementById('gate-email').style.borderColor = '';
 
-    // Save lead
-    localStorage.setItem('demo_email', email);
-    sessionStorage.setItem('demo_unlocked', '1');
+    // Show loading state
+    const btn = document.getElementById('gate-btn');
+    btn.disabled = true;
+    document.getElementById('btn-text').textContent = 'Loading report…';
+    document.getElementById('btn-spinner').style.display = 'block';
 
-    // Send to backend (non-blocking)
+    // Save email
+    localStorage.setItem('demo_email', email);
+
+    // Send lead to backend (non-blocking — don't wait)
     fetch(`${API}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: 'demo', tier: 'starter', email, format: 'json' })
+      body: JSON.stringify({ input: DEMO_ADDRESS, tier: 'starter', email, format: 'json' })
     }).catch(() => {});
 
-    document.getElementById('gate').style.display = 'none';
-  }
+    // Small delay so user sees the loading state, then redirect to live report
+    await new Promise(r => setTimeout(r, 800));
 
-  function copyLOI() {
-    const text = document.getElementById('loi-content').innerText;
-    navigator.clipboard.writeText(text).then(() => {
-      event.target.textContent = '✓ Copied';
-      setTimeout(() => event.target.textContent = '📋 Copy LOI', 2000);
+    // Redirect to report.html — it calls the API live and renders all current features
+    const params = new URLSearchParams({
+      address: DEMO_ADDRESS,
+      tier: 'pro',
+      demo: '1'
     });
+    window.location.href = `report.html?${params.toString()}`;
   }
 
-  // Enter key on email
   document.getElementById('gate-email').addEventListener('keydown', e => {
     if (e.key === 'Enter') unlockDemo();
   });
