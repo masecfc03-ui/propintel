@@ -8,7 +8,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from scrapers.geocode import geocode
 from scrapers.fema import get_flood_zone
 from scrapers.census import get_demographics
-from scrapers.dcad import search_by_address, search_by_apn
+from scrapers.dcad import search_by_address as dcad_by_address
+from scrapers.regrid import search_by_point as regrid_by_point, search_by_address as regrid_by_address
 from scrapers.txsos import search_by_address as txsos_address
 from scrapers.listing import parse_listing, is_address, detect_source
 from scrapers.datazapp import parse_owner_name
@@ -74,13 +75,29 @@ def run(input_str: str, tier: str = "starter") -> dict:
 
     # ── Step 3: Parallel data fetches ─────────────────────────────────────────
     tasks = {}
-    with ThreadPoolExecutor(max_workers=4) as ex:
+    with ThreadPoolExecutor(max_workers=5) as ex:
         if lat and lng:
             tasks["fema"] = ex.submit(get_flood_zone, lat, lng)
         if zip_code:
             tasks["census"] = ex.submit(get_demographics, zip_code)
-        if address:
-            tasks["dcad"] = ex.submit(search_by_address, address)
+
+        # Parcel lookup: Regrid (national) by coordinates, with address fallback
+        if lat and lng:
+            tasks["regrid"] = ex.submit(regrid_by_point, lat, lng)
+        elif address:
+            tasks["regrid"] = ex.submit(regrid_by_address, address)
+
+        # DCAD supplemental fetch for TX addresses (Dallas County extra fields: tax district, school, etc.)
+        # geocode doesn't always return county — use state + zip prefix as proxy
+        geo_state = geo.get("state", "").upper()
+        geo_zip = geo.get("zip", "")
+        is_dallas_county_likely = (
+            geo_state == "TX" and
+            any(geo_zip.startswith(p) for p in ("750", "751", "752"))
+        )
+        if address and is_dallas_county_likely:
+            tasks["dcad"] = ex.submit(dcad_by_address, address)
+
         if address and tier == "pro":
             # Parse just the street number + name for TX SOS search
             street_match = re.match(r"(\d+\s+[\w\s]+?)(?:,|\s+\w{2}\s+\d{5})", address)
@@ -94,14 +111,19 @@ def run(input_str: str, tier: str = "starter") -> dict:
             try:
                 results[key] = future.result(timeout=30)
             except _cf.TimeoutError:
-                results[key] = {"error": "timeout", "warning": "Request timed out (30s) — service may be slow from this region"}
-                report["errors"].append(f"{key}: timeout")
+                results[key] = {"error": "timeout", "warning": "Request timed out (30s)"}
+                report["errors"].append("{}: timeout".format(key))
             except Exception as e:
                 err_msg = str(e) or repr(e)
                 results[key] = {"error": err_msg}
-                report["errors"].append(f"{key}: {err_msg}")
+                report["errors"].append("{}: {}".format(key, err_msg))
 
-    report["parcel"] = results.get("dcad", {})
+    # ── Merge parcel data: Regrid primary, DCAD overlay for Dallas County ─────
+    regrid_data = results.get("regrid", {})
+    dcad_data = results.get("dcad", {})
+    parcel_data = _merge_parcel(regrid_data, dcad_data, address)
+
+    report["parcel"] = parcel_data
     report["flood"] = results.get("fema", {})
     report["demographics"] = results.get("census", {})
     report["businesses"] = results.get("txsos", [])
@@ -173,6 +195,59 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["flags"] = _build_flags(report)
 
     return report
+
+
+def _merge_parcel(regrid: dict, dcad: dict, address: str) -> dict:
+    """
+    Merge Regrid (primary, national) + DCAD (supplemental, Dallas County only).
+
+    Strategy:
+    - Use Regrid as base if it returned valid data (owner_name or apn present)
+    - Overlay DCAD fields that Regrid doesn't have (tax_district, school_district, etc.)
+    - Fall back to DCAD entirely if Regrid failed or returned outside-coverage error
+    - Fall back to address-only stub if both fail
+    """
+    regrid_ok = regrid and not regrid.get("error") and (regrid.get("owner_name") or regrid.get("apn"))
+    dcad_ok = dcad and not dcad.get("error") and (dcad.get("owner_name") or dcad.get("apn"))
+
+    if regrid_ok:
+        merged = dict(regrid)
+        # Overlay DCAD-specific fields that Regrid lacks
+        if dcad_ok:
+            for field in ("tax_district", "school_district", "use_code",
+                          "legal_description", "subdivision", "revalue_year",
+                          "assessed_yoy_pct", "dcad_direct_url"):
+                if dcad.get(field) and not merged.get(field):
+                    merged[field] = dcad[field]
+            # DCAD assessed values are often more up-to-date for TX
+            if dcad.get("assessed_total") and not merged.get("assessed_total"):
+                merged["assessed_total"] = dcad["assessed_total"]
+                merged["assessed_land"] = dcad.get("assessed_land")
+                merged["assessed_improvement"] = dcad.get("assessed_improvement")
+            # Tax delinquency from DCAD
+            if dcad.get("tax_delinquent"):
+                merged["tax_delinquent"] = True
+        merged["data_sources"] = "Regrid" + (" + DCAD" if dcad_ok else "")
+        return merged
+
+    if dcad_ok:
+        dcad["data_sources"] = "DCAD"
+        return dcad
+
+    # Both failed — return best error info available
+    regrid_err = regrid.get("error", "unknown") if regrid else "no response"
+    dcad_err = dcad.get("warning") or dcad.get("error", "") if dcad else ""
+
+    fallback = {
+        "source": "PropIntel",
+        "warning": "Parcel data unavailable — Regrid: {}".format(regrid_err),
+        "dcad_warning": dcad_err or None,
+        "data_sources": "none",
+    }
+    # Include DCAD manual link if available
+    if dcad and dcad.get("manual_url"):
+        fallback["manual_url"] = dcad["manual_url"]
+    return fallback
 
 
 def _analyze_deal(report: dict) -> dict:
