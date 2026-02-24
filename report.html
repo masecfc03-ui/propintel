@@ -1193,9 +1193,30 @@
       compRangeSub = 'Est. — no recent comps (AVM model)';
     }
 
+    // AVM card logic
+    let avmCard = null;
+    if (avm && avm.available && avm.method === 'internal_avm_v1') {
+      const confidenceColor = avm.confidence === 'high' ? 'green' : 
+                              avm.confidence === 'medium' ? 'amber' : 
+                              avm.confidence === 'low' ? 'red' : 'red';
+      const confidenceBorder = avm.confidence === 'high' ? 'sc-border-green' : 
+                               avm.confidence === 'medium' ? 'sc-border-amber' : 
+                               avm.confidence === 'low' ? 'sc-border-red' : 'sc-border-red';
+      
+      avmCard = {
+        label: 'PropIntel AVM Estimate', 
+        val: avm.value_fmt || fmt(avm.value), 
+        sub: `${avm.confidence} confidence • ${avm.comp_count} comps`,
+        tooltip: `${avm.basis} • Range: ${avm.range_fmt}`,
+        color: confidenceColor,
+        borderCls: confidenceBorder
+      };
+    }
+
     const scores = [
       { label: 'County Assessed (Tax)', val: parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A', sub: 'Official tax record', borderCls: 'sc-border-accent' },
       { label: 'Comp Sale Range', val: compRangeVal, sub: compRangeSub, tooltip: est.methodology || '', borderCls: 'sc-border-green' },
+      avmCard,
       { label: sfLabel, val: sfVal, sub: parcel.year_built ? `Built ${parcel.year_built}` : '', borderCls: 'sc-border-muted' },
       isPro && motiv.score !== undefined
         ? { label: 'Motivation Score', val: `${motiv.score}/100`, sub: motiv.tier || '',
