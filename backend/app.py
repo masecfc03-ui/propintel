@@ -261,6 +261,108 @@ def generate_token():
 _report_cache = {}
 
 
+@app.route("/api/admin/bulk-generate", methods=["POST"])
+def bulk_generate():
+    """
+    Admin endpoint — batch report generation for up to 10 addresses.
+    Useful for sending demo reports to a list of agent prospects.
+
+    POST {
+      "addresses": ["123 Main St Dallas TX", ...],  # max 10
+      "tier": "pro",
+      "email": "mason@example.com",   # optional — send report to this address
+      "dry_run": false                # if true, run pipeline but skip email
+    }
+    Auth: X-Admin-Key header or ?admin_key= query param
+    Returns: {"processed": N, "results": [{"address": "...", "status": "ok"|"error", "error": "..."}]}
+    """
+    if not _check_admin():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    body = request.get_json(force=True, silent=True) or {}
+    addresses = body.get("addresses", [])
+    tier = body.get("tier", "pro")
+    email = (body.get("email") or "").strip()
+    dry_run = bool(body.get("dry_run", False))
+
+    if not isinstance(addresses, list) or len(addresses) == 0:
+        return jsonify({"error": "addresses must be a non-empty list"}), 400
+
+    if len(addresses) > 10:
+        return jsonify({"error": "Maximum 10 addresses per request"}), 400
+
+    if tier not in ("starter", "pro"):
+        return jsonify({"error": "tier must be 'starter' or 'pro'"}), 400
+
+    should_email = bool(email and not dry_run)
+    log.info(
+        "bulk-generate: %d addresses, tier=%s, email=%s, dry_run=%s",
+        len(addresses), tier, email or "(none)", dry_run,
+    )
+
+    results = []
+    for raw_address in addresses:
+        address = (raw_address or "").strip()
+        if not address:
+            results.append({"address": raw_address, "status": "error", "error": "empty address"})
+            continue
+
+        log.info("bulk-generate processing: %s [%s]", address, tier)
+        try:
+            report_data = run_pipeline(address, tier)
+            report_data["generated_at"] = datetime.utcnow().isoformat()
+            report_id = "bulk-" + str(uuid.uuid4())[:8]
+            report_data["report_id"] = report_id
+
+            # Store in DB if available
+            report_token = str(uuid.uuid4())
+            try:
+                from orders import store_report
+                store_report(report_id, report_token, report_data)
+            except Exception as db_err:
+                log.warning("bulk-generate DB store skipped for %s: %s", address, db_err)
+                _report_cache[report_token] = {
+                    "id": report_id,
+                    "data": report_data,
+                    "ts": time.time(),
+                }
+
+            entry = {"address": address, "status": "ok"}
+
+            # Send email if requested
+            if should_email:
+                try:
+                    html = generate_html(report_data)
+                    mail_result = send_report(
+                        to_email=email,
+                        to_name="",
+                        address=address,
+                        tier=tier,
+                        report_html=html,
+                        report_id=report_id,
+                        report_token=report_token,
+                        report_data=report_data,
+                    )
+                    entry["emailed"] = mail_result.get("success", False)
+                    entry["email_method"] = mail_result.get("method")
+                    if not mail_result.get("success"):
+                        entry["email_error"] = mail_result.get("error")
+                except Exception as mail_err:
+                    log.error("bulk-generate email failed for %s: %s", address, mail_err)
+                    entry["emailed"] = False
+                    entry["email_error"] = str(mail_err)
+
+            results.append(entry)
+
+        except Exception as e:
+            log.error("bulk-generate pipeline failed for %s: %s", address, e, exc_info=True)
+            results.append({"address": address, "status": "error", "error": str(e)})
+
+    processed = sum(1 for r in results if r.get("status") == "ok")
+    log.info("bulk-generate complete: %d/%d succeeded", processed, len(addresses))
+    return jsonify({"processed": processed, "results": results})
+
+
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     """
