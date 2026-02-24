@@ -40,7 +40,7 @@ def _get(path: str, params: dict) -> dict:
     url = f"{BASE_URL}/{path.lstrip('/')}?{qs}"
     req = urllib.request.Request(
         url,
-        headers={"Authorization": f"Bearer {API_KEY}", "Accept": "application/json"},
+        headers={"Authorization": API_KEY, "Accept": "application/json"},
         method="GET",
     )
 
@@ -68,30 +68,49 @@ def _get(path: str, params: dict) -> dict:
     return {"error": "Max retries exceeded"}
 
 
-def _address_lookup(address: str) -> dict:
+def _address_lookup(address: str, state: str = "TX", zip_code: str = "") -> dict:
     """
-    Try known Realie address lookup endpoints.
-    Realie docs list 'Address Lookup' but the exact path needs confirmation.
-    Falls back gracefully if not found.
+    Look up a property by address using Realie's property search endpoint.
+    Endpoint: GET /public/property/search/?address=<street>&state=<ST>&zipCode=<zip>&limit=1
+
+    address: full address or just street portion (e.g. "3229 FOREST LN")
+    state:   2-letter state code (required by Realie API)
+    zip_code: optional, improves match accuracy
     """
-    candidates = [
-        ("public/property/", {"address": address}),
-        ("public/lookup/",   {"address": address}),
-        ("public/search/",   {"address": address, "limit": 1}),
-        ("public/properties/", {"address": address}),
-    ]
-    for path, params in candidates:
-        result = _get(path, params)
-        # If we get a non-error response with actual data, use it
-        if result and not result.get("error"):
-            return result
-        # If 404, try next candidate
-        if result.get("error", "").startswith("HTTP 404"):
-            continue
-        # Any other error (auth, etc.) — return it immediately
+    # Extract just the street portion if full address given
+    # "3229 Forest Ln, Garland TX 75042" → "3229 FOREST LN"
+    import re as _re
+    street_only = _re.split(r",\s*", address)[0].strip().upper()
+
+    # Also try to extract state from address if not provided
+    if not state or state == "TX":
+        state_match = _re.search(r"\b([A-Z]{2})\s+\d{5}", address.upper())
+        if state_match:
+            state = state_match.group(1)
+
+    # Extract zip if not provided
+    if not zip_code:
+        zip_match = _re.search(r"\b(\d{5})\b", address)
+        if zip_match:
+            zip_code = zip_match.group(1)
+
+    params = {
+        "address": street_only,
+        "state":   state,
+        "limit":   1,
+    }
+    if zip_code:
+        params["zipCode"] = zip_code
+
+    result = _get("public/property/search/", params)
+    if result.get("error"):
         return result
 
-    return {"error": "Address lookup endpoint not found — check Realie docs for current path"}
+    props = result.get("properties", [])
+    if not props:
+        return {"error": f"No property found for: {address}"}
+
+    return props[0]  # return first match directly
 
 
 # ─── PUBLIC FUNCTIONS (same interface as attom.py) ───────────────────────────
@@ -106,35 +125,42 @@ def get_property_detail(address: str) -> dict:
         return {"available": False, **data}
 
     try:
-        # Realie may return list or single object
-        prop = data if isinstance(data, dict) and data.get("parcelId") else \
-               (data[0] if isinstance(data, list) and data else data)
+        # _address_lookup returns the property dict directly
+        prop = data
 
-        assessed   = prop.get("assessedValue") or prop.get("totalAssessedValue")
-        market_val = prop.get("marketValue") or prop.get("totalMarketValue")
+        assessed   = prop.get("totalAssessedValue") or prop.get("assessedValue")
+        market_val = prop.get("totalMarketValue") or prop.get("marketValue")
         bldg_sf    = prop.get("buildingArea") or prop.get("squareFeet")
+        lot_sf     = prop.get("landArea") or prop.get("lotArea") or prop.get("lotSquareFeet")
 
         return {
             "available":      True,
             "parcel_id":      prop.get("parcelId"),
-            "address":        prop.get("addressFull") or prop.get("address"),
+            "address":        prop.get("address"),
             "city":           prop.get("city"),
             "state":          prop.get("state"),
             "zip":            prop.get("zipCode"),
             "county":         prop.get("county"),
             "year_built":     prop.get("yearBuilt"),
             "building_sf":    bldg_sf,
-            "lot_sf":         prop.get("lotArea") or prop.get("lotSquareFeet"),
-            "use_type":       prop.get("propertyType") or prop.get("landUse"),
-            "beds":           prop.get("bedrooms"),
-            "baths":          prop.get("bathrooms"),
+            "lot_sf":         lot_sf,
+            "acres":          prop.get("acres"),
+            "beds":           prop.get("totalBedrooms"),
+            "baths":          prop.get("totalBathrooms"),
+            "stories":        prop.get("stories"),
+            "pool":           prop.get("pool"),
+            "garage_count":   prop.get("garageCount"),
             "assessed_value": assessed,
             "assessed_fmt":   f"${assessed:,.0f}" if assessed else None,
+            "tax_value":      prop.get("taxValue"),
+            "tax_year":       prop.get("taxYear"),
             "market_value":   market_val,
             "market_fmt":     f"${market_val:,.0f}" if market_val else None,
-            "owner_name":     prop.get("ownerName") or prop.get("owner"),
+            "owner_name":     prop.get("ownerName"),
             "last_sale_date": prop.get("lastSaleDate") or prop.get("saleDate"),
             "last_sale_price":prop.get("lastSalePrice") or prop.get("salePrice"),
+            "subdivision":    prop.get("subdivision"),
+            "legal_desc":     prop.get("legalDesc"),
             "source":         "Realie",
             "_raw":           prop,
         }
@@ -145,31 +171,31 @@ def get_property_detail(address: str) -> dict:
 
 def get_avm(address: str, lat: float = None, lng: float = None) -> dict:
     """
-    Get Realie AVM (automated valuation model).
-    Realie includes AVM in property detail or comparables stats.
-    Returns value estimate + confidence range.
+    Get Realie AVM from property detail.
+    Realie field: modelValue (AVM), modelValueMin, modelValueMax.
+    Also returns equity + lien data from the same call.
     """
-    # AVM is typically in the property detail response
     detail = get_property_detail(address)
     if not detail.get("available"):
         return {"available": False, "error": detail.get("error", "Property not found")}
 
     raw = detail.get("_raw", {})
 
-    # Look for AVM fields — Realie may name these differently
-    avm_value = (
-        raw.get("estimatedValue") or
-        raw.get("avmValue") or
-        raw.get("avm") or
-        raw.get("automatedValuation") or
-        detail.get("market_value")  # fallback to market value
-    )
-    avm_low   = raw.get("estimatedValueLow") or raw.get("avmLow")
-    avm_high  = raw.get("estimatedValueHigh") or raw.get("avmHigh")
-    conf      = raw.get("avmConfidence") or raw.get("confidenceScore")
+    # Realie AVM fields (confirmed from API response)
+    avm_value = raw.get("modelValue")
+    avm_low   = raw.get("modelValueMin")
+    avm_high  = raw.get("modelValueMax")
+
+    # Fall back to totalMarketValue if model value not present
+    if not avm_value:
+        avm_value = raw.get("totalMarketValue")
 
     if not avm_value:
-        return {"available": False, "error": "AVM not returned by Realie for this address"}
+        return {"available": False, "error": "AVM not available for this property"}
+
+    equity    = raw.get("equityCurrentEstBal")
+    lien_bal  = raw.get("totalLienBalance")
+    ltv       = raw.get("LTVCurrentEstCombined")
 
     return {
         "available":        True,
@@ -178,7 +204,12 @@ def get_avm(address: str, lat: float = None, lng: float = None) -> dict:
         "value_high":       avm_high,
         "value_fmt":        f"${avm_value:,.0f}",
         "range_fmt":        f"${avm_low:,.0f} – ${avm_high:,.0f}" if avm_low and avm_high else None,
-        "confidence_score": conf,
+        "confidence_score": None,  # Realie doesn't expose confidence score
+        "equity_estimate":  equity,
+        "equity_fmt":       f"${equity:,.0f}" if equity else None,
+        "lien_balance":     lien_bal,
+        "lien_fmt":         f"${lien_bal:,.0f}" if lien_bal else None,
+        "ltv_pct":          ltv,
         "source":           "Realie AVM",
     }
 
@@ -223,9 +254,9 @@ def get_sold_comps(address: str, zipcode: str = "",
     if data.get("error"):
         return {"available": False, "comps": [], "error": data["error"]}
 
-    # Realie returns a list of properties or dict with results key
-    raw_props = data if isinstance(data, list) else \
-                data.get("results") or data.get("comparables") or data.get("properties") or []
+    # Realie returns {"comparables": [...], "metadata": {...}}
+    raw_props = data.get("comparables") or data.get("properties") or \
+                (data if isinstance(data, list) else [])
 
     if not raw_props:
         return {"available": False, "comps": [], "error": "No comps returned"}
@@ -233,52 +264,50 @@ def get_sold_comps(address: str, zipcode: str = "",
     comps = []
     for prop in raw_props:
         try:
-            sale_price = (
-                prop.get("salePrice") or
-                prop.get("lastSalePrice") or
-                prop.get("soldPrice") or
-                prop.get("price")
-            )
+            # Realie confirmed field names from API response
+            sale_price = prop.get("transferPrice")
             if not sale_price:
                 continue
 
-            sale_date = (
-                prop.get("saleDate") or
-                prop.get("lastSaleDate") or
-                prop.get("soldDate")
-            )
+            # transferDate format: "20250514" → normalize to "2025-05-14"
+            raw_date  = prop.get("transferDate") or prop.get("recordingDate")
+            sale_date = None
+            if raw_date and len(str(raw_date)) == 8:
+                d = str(raw_date)
+                sale_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
+            elif raw_date:
+                sale_date = str(raw_date)[:10]
 
-            bldg_sf = (
-                prop.get("buildingArea") or
-                prop.get("squareFeet") or
-                prop.get("livingArea")
-            )
-
+            bldg_sf      = prop.get("buildingArea")
             price_per_sf = round(sale_price / bldg_sf, 0) if bldg_sf and bldg_sf > 0 else None
-
-            addr_str = (
-                prop.get("addressFull") or
-                prop.get("address") or
-                f"{prop.get('streetNumber','')} {prop.get('street','')}".strip()
-            )
+            addr_str     = prop.get("addressFull") or prop.get("address", "")
+            avm          = prop.get("modelValue")
 
             comps.append({
-                "address":      addr_str,
-                "city":         prop.get("city", ""),
-                "state":        prop.get("state", ""),
-                "zip":          prop.get("zipCode", ""),
-                "sale_amount":  sale_price,
-                "sale_fmt":     f"${sale_price:,.0f}",
-                "sale_date":    sale_date,
-                "beds":         prop.get("bedrooms"),
-                "baths":        prop.get("bathrooms"),
-                "building_sf":  bldg_sf,
-                "sf_fmt":       f"{int(bldg_sf):,} SF" if bldg_sf else None,
-                "price_per_sf": price_per_sf,
-                "psf_fmt":      f"${price_per_sf:,.0f}/SF" if price_per_sf else None,
-                "year_built":   prop.get("yearBuilt"),
-                "use_type":     prop.get("propertyType") or prop.get("landUse"),
-                "distance_mi":  prop.get("distance") or prop.get("distanceMiles"),
+                "address":        addr_str,
+                "city":           prop.get("city", ""),
+                "state":          prop.get("state", ""),
+                "zip":            prop.get("zipCode", ""),
+                "sale_amount":    sale_price,
+                "sale_fmt":       f"${sale_price:,.0f}",
+                "sale_date":      sale_date,
+                "beds":           prop.get("totalBedrooms"),
+                "baths":          prop.get("totalBathrooms"),
+                "building_sf":    bldg_sf,
+                "sf_fmt":         f"{int(bldg_sf):,} SF" if bldg_sf else None,
+                "price_per_sf":   price_per_sf,
+                "psf_fmt":        f"${price_per_sf:,.0f}/SF" if price_per_sf else None,
+                "year_built":     prop.get("yearBuilt"),
+                "acres":          prop.get("acres"),
+                "avm":            avm,
+                "avm_fmt":        f"${avm:,.0f}" if avm else None,
+                "lien_balance":   prop.get("totalLienBalance"),
+                "equity_est":     prop.get("equityCurrentEstBal"),
+                "owner_name":     prop.get("ownerName"),
+                "owner_state":    prop.get("ownerState"),  # out-of-state signal
+                "lender_name":    prop.get("lenderName"),
+                "subdivision":    prop.get("subdivision"),
+                "owner_count":    prop.get("ownerParcelCount"),  # portfolio size
             })
         except Exception as ex:
             log.debug("Realie comp parse skip: %s", ex)
@@ -323,31 +352,43 @@ def get_ownership_history(address: str) -> dict:
     if not detail.get("available"):
         return {"available": False, "history": [], "error": detail.get("error")}
 
-    raw   = detail.get("_raw", {})
-    hist  = raw.get("saleHistory") or raw.get("transactionHistory") or raw.get("ownershipHistory") or []
+    raw  = detail.get("_raw", {})
+    # Realie: ownership history is in the "transfers" array
+    hist = raw.get("transfers") or []
+
+    def _norm_date(d):
+        """Normalize Realie date format 20250514 → 2025-05-14."""
+        d = str(d) if d else ""
+        if len(d) == 8 and d.isdigit():
+            return f"{d[:4]}-{d[4:6]}-{d[6:]}"
+        return d[:10] if d else None
 
     history = []
     if isinstance(hist, list):
         for h in hist:
-            sale_price = h.get("salePrice") or h.get("price") or h.get("amount")
+            price    = h.get("transferPrice")
+            raw_date = h.get("transferDate") or h.get("recordingDate")
             history.append({
-                "sale_date":     h.get("saleDate") or h.get("date"),
-                "sale_amount":   sale_price,
-                "sale_fmt":      f"${sale_price:,.0f}" if sale_price else None,
-                "buyer_name":    h.get("buyerName") or h.get("buyer"),
-                "document_type": h.get("documentType") or h.get("transactionType"),
+                "sale_date":     _norm_date(raw_date),
+                "sale_amount":   price,
+                "sale_fmt":      f"${price:,.0f}" if price else None,
+                "buyer_name":    h.get("grantee"),
+                "seller_name":   h.get("grantor"),
+                "document_type": h.get("transferDocType"),
+                "doc_number":    h.get("transferDocNum"),
             })
         history.sort(key=lambda x: x.get("sale_date") or "", reverse=True)
 
-    # Fallback: build single entry from last sale data
-    if not history and detail.get("last_sale_date"):
-        p = detail.get("last_sale_price")
+    # Fallback: build from current transfer data on the property itself
+    if not history and raw.get("transferPrice"):
+        price    = raw.get("transferPrice")
+        raw_date = raw.get("transferDate") or raw.get("recordingDate")
         history = [{
-            "sale_date":   detail["last_sale_date"],
-            "sale_amount": p,
-            "sale_fmt":    f"${p:,.0f}" if p else None,
-            "buyer_name":  detail.get("owner_name"),
-            "document_type": "Deed",
+            "sale_date":     _norm_date(raw_date),
+            "sale_amount":   price,
+            "sale_fmt":      f"${price:,.0f}" if price else None,
+            "buyer_name":    raw.get("ownerName"),
+            "document_type": raw.get("transferDocType"),
         }]
 
     hold_years = None
@@ -364,6 +405,43 @@ def get_ownership_history(address: str) -> dict:
         "history":    history,
         "hold_years": hold_years,
         "source":     "Realie",
+    }
+
+
+def get_mortgage_lien(address: str, zipcode: str = "") -> dict:
+    """
+    Get mortgage/lien/equity data from Realie property detail.
+    Fields: totalLienBalance, LTVCurrentEstCombined, equityCurrentEstBal, lenderName.
+    """
+    detail = get_property_detail(address)
+    if not detail.get("available"):
+        return {"available": False, "error": detail.get("error")}
+
+    raw = detail.get("_raw", {})
+
+    lien_bal  = raw.get("totalLienBalance")
+    equity    = raw.get("equityCurrentEstBal")
+    ltv       = raw.get("LTVCurrentEstCombined")
+    ltv_purch = raw.get("LTVPurchase")
+    lender    = raw.get("lenderName")
+    lien_cnt  = raw.get("totalLienCount")
+    fin_hist  = raw.get("totalFinancingHistCount")
+
+    if lien_bal is None and equity is None:
+        return {"available": False, "error": "No lien/equity data for this property"}
+
+    return {
+        "available":          True,
+        "open_lien_balance":  lien_bal,
+        "open_lien_fmt":      f"${lien_bal:,.0f}" if lien_bal else None,
+        "open_lien_count":    lien_cnt,
+        "equity_estimate":    equity,
+        "equity_fmt":         f"${equity:,.0f}" if equity else None,
+        "ltv_current":        ltv,
+        "ltv_purchase":       ltv_purch,
+        "lender_name":        lender,
+        "financing_hist_count": fin_hist,
+        "source":             "Realie",
     }
 
 

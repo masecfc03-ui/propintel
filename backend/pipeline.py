@@ -134,15 +134,17 @@ def run(input_str: str, tier: str = "starter") -> dict:
                 get_avm as realie_avm,
                 get_sold_comps as realie_comps,
                 get_ownership_history as realie_history,
+                get_mortgage_lien as realie_mortgage,
                 get_property_detail as realie_detail,
             )
             _lat = geo.get("lat")
             _lng = geo.get("lng")
-            tasks["realie_detail"]  = ex.submit(realie_detail, address)
-            tasks["realie_avm"]     = ex.submit(realie_avm, address, _lat, _lng)
-            tasks["realie_comps"]   = ex.submit(realie_comps, address, zip_code,
-                                                 _lat, _lng, 1.0, 18, 15)
-            tasks["realie_history"] = ex.submit(realie_history, address)
+            tasks["realie_detail"]   = ex.submit(realie_detail, address)
+            tasks["realie_avm"]      = ex.submit(realie_avm, address, _lat, _lng)
+            tasks["realie_comps"]    = ex.submit(realie_comps, address, zip_code,
+                                                  _lat, _lng, 1.0, 18, 15)
+            tasks["realie_history"]  = ex.submit(realie_history, address)
+            tasks["realie_mortgage"] = ex.submit(realie_mortgage, address)
 
         import concurrent.futures as _cf
         results = {}
@@ -175,15 +177,16 @@ def run(input_str: str, tier: str = "starter") -> dict:
     attom_mortgage = results.get("attom_mortgage", {})
     attom_history  = results.get("attom_history", {})
 
-    realie_avm_r   = results.get("realie_avm", {})
-    realie_comps_r = results.get("realie_comps", {})
-    realie_hist_r  = results.get("realie_history", {})
+    realie_avm_r      = results.get("realie_avm", {})
+    realie_comps_r    = results.get("realie_comps", {})
+    realie_hist_r     = results.get("realie_history", {})
+    realie_mortgage_r = results.get("realie_mortgage", {})
 
     # Merge: prefer ATTOM when available, fall back to Realie
-    _avm      = attom_avm     if attom_avm.get("available")     else realie_avm_r
-    _comps    = attom_comps   if attom_comps.get("available")   else realie_comps_r
-    _mortgage = attom_mortgage if attom_mortgage.get("available") else {}
-    _history  = attom_history if attom_history.get("available")  else realie_hist_r
+    _avm      = attom_avm      if attom_avm.get("available")      else realie_avm_r
+    _comps    = attom_comps    if attom_comps.get("available")    else realie_comps_r
+    _mortgage = attom_mortgage if attom_mortgage.get("available") else realie_mortgage_r
+    _history  = attom_history  if attom_history.get("available")  else realie_hist_r
 
     report["avm"]              = _avm      if _avm.get("available")     else {"available": False}
     report["sold_comps"]       = _comps    if _comps.get("available")   else {"available": False, "comps": []}
