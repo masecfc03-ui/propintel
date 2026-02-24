@@ -14,7 +14,6 @@ from scrapers.county_router import get_parcel_data as county_parcel_lookup
 from scrapers.txsos import search_by_address as txsos_address, search_entity as txsos_entity
 from scrapers.listing import parse_listing, is_address, detect_source
 from scrapers.datazapp import parse_owner_name
-from scrapers import pdl as pdl_skip
 from scrapers.walkscore import get_scores as walkscore_get
 from scrapers.permits import get_permits
 from motivation import score as motivation_score
@@ -299,33 +298,17 @@ def run(input_str: str, tier: str = "starter") -> dict:
         owner_state = parcel_data.get("owner_state", "TX")
         owner_zip = parcel_data.get("owner_zip", "")
 
-        if is_entity:
-            # Entities → PDL entity fallback (PDL is person-focused; returns a note)
-            report["skip_trace"] = pdl_skip.skip_trace_entity(
-                entity_name=owner_name,
-                mailing_address=owner_mail_addr,
-                mailing_city=owner_city,
-                mailing_state=owner_state,
-                mailing_zip=owner_zip,
-            )
-        elif first or last:
-            # Individual owner → PDL person enrichment
-            report["skip_trace"] = pdl_skip.skip_trace(
-                first_name=first,
-                last_name=last,
-                address=owner_mail_addr,
-                city=owner_city,
-                state=owner_state,
-                zip_code=owner_zip,
-            )
-        else:
-            report["skip_trace"] = {
-                "status": "no_owner",
-                "phones": [],
-                "emails": [],
-                "note": "Owner name not available from DCAD — manual skip trace required.",
-                "source": "People Data Labs",
-            }
+        # Skip trace — DataZapp ($0.03/match). Placeholder until DATAZAPP_API_KEY is set.
+        # When key is available: wire backend/scrapers/datazapp.py full lookup here.
+        report["skip_trace"] = {
+            "status": "pending",
+            "source": "datazapp",
+            "owner_name": owner_name,
+            "is_entity": is_entity,
+            "phones": [],
+            "emails": [],
+            "note": "DataZapp skip trace ready — add DATAZAPP_API_KEY to enable.",
+        }
 
         # Lien search placeholder
         report["liens"] = {

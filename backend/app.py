@@ -44,7 +44,7 @@ _REQUIRED = {
 }
 _OPTIONAL = {
     "MAILGUN_API_KEY":   "Email delivery disabled",
-    "PDL_API_KEY":       "Skip trace disabled (Pro reports show no owner contact)",
+    "DATAZAPP_API_KEY":  "Skip trace disabled (Pro reports show no owner contact)",
     "ADMIN_KEY":         "Using default admin key — change in production",
 }
 
@@ -136,8 +136,8 @@ def health():
         "stripe":           bool(STRIPE_LIVE_SECRET_KEY),
         "webhook":          bool(STRIPE_WEBHOOK_SECRET),
         "email":            bool(os.environ.get("SENDGRID_API_KEY") or os.environ.get("SMTP_USER") or os.environ.get("MAILGUN_API_KEY")),
-        "skip_trace":       bool(os.environ.get("PDL_API_KEY") or os.environ.get("DATAZAPP_API_KEY")),
-        "skip_trace_provider": "pdl" if os.environ.get("PDL_API_KEY") else ("datazapp" if os.environ.get("DATAZAPP_API_KEY") else "none"),
+        "skip_trace":       bool(os.environ.get("DATAZAPP_API_KEY")),
+        "skip_trace_provider": "datazapp" if os.environ.get("DATAZAPP_API_KEY") else "none",
         # Cache
         "cache": {
             "live_entries":  cache_stats["live"],
