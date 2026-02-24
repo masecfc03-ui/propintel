@@ -127,21 +127,21 @@
     /* ── REPORT HEADER ── */
     .report-header {
       background: var(--white); border: 1px solid var(--border);
-      border-radius: 16px; padding: 28px 32px; margin-bottom: 20px;
+      border-radius: 14px; padding: 18px 24px; margin-bottom: 12px;
       box-shadow: var(--shadow-sm);
     }
     .tier-badge {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 4px 12px; border-radius: 100px;
-      font-size: 0.72rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 0.68rem; font-weight: 700;
       letter-spacing: 0.5px; text-transform: uppercase;
-      margin-bottom: 14px;
+      margin-bottom: 8px;
     }
     .tier-badge.pro { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(37,99,235,0.2); }
     .tier-badge.starter { background: var(--bg2); color: var(--text2); border: 1px solid var(--border); }
-    .prop-address { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text); margin-bottom: 4px; }
-    .prop-sub { color: var(--text2); font-size: 0.875rem; margin-bottom: 20px; }
-    .header-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .prop-address { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text); margin-bottom: 2px; }
+    .prop-sub { color: var(--text2); font-size: 0.82rem; margin-bottom: 10px; }
+    .header-tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .htag {
       background: var(--bg); border: 1px solid var(--border);
       border-radius: 6px; padding: 4px 12px;
@@ -168,7 +168,7 @@
     /* ── SECTION CARDS ── */
     .section-card {
       background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); margin-bottom: 14px;
+      border-radius: var(--radius); margin-bottom: 12px;
       overflow: hidden; box-shadow: var(--shadow-sm);
     }
     .sec-head {
@@ -176,13 +176,13 @@
       display: flex; align-items: center; justify-content: space-between;
     }
     .sec-title {
-      font-size: 0.8rem; font-weight: 700;
+      font-size: 0.72rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.6px; color: var(--text);
       display: flex; align-items: center; gap: 8px;
     }
     .sec-src { font-size: 0.7rem; color: var(--text3); }
     .sec-src a { color: var(--accent); text-decoration: none; }
-    .sec-body { padding: 20px 24px; }
+    .sec-body { padding: 14px 20px; }
 
     /* ── DATA ROWS ── */
     .dr {
@@ -439,14 +439,14 @@
     @media (max-width: 600px) { #wl-bar { padding: 6px 16px; } }
 
     /* ── PROPERTY MAP ── */
-    .map-section { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: var(--shadow); }
-    #prop-map { height: 280px; }
-    .street-view-wrap { height: 280px; position: relative; background: #0f172a; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+    .map-section { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 14px; box-shadow: var(--shadow); }
+    #prop-map { height: 200px; }
+    .street-view-wrap { height: 200px; position: relative; background: #0f172a; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
     .sv-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
     .sv-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: background 0.15s; }
     .sv-btn:hover { background: rgba(255,255,255,0.2); }
     .map-tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
-    @media (max-width: 600px) { .map-section { grid-template-columns: 1fr; } .street-view-wrap { height: 200px; } #prop-map { height: 220px; } }
+    @media (max-width: 600px) { .map-section { grid-template-columns: 1fr; } .street-view-wrap { height: 160px; } #prop-map { height: 180px; } }
 
     /* ── INVESTMENT SUMMARY (PRO) ── */
     .inv-summary {
@@ -528,6 +528,44 @@
       #prop-map { height: 200px; }
     }
     .annotation-print { display: none; font-size: 0.9rem; color: #0f172a; line-height: 1.6; }
+
+    /* ── TWO-COLUMN DATA ROW GRID ── */
+    .dr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .dr-grid .dr { padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .dr-grid .dr:nth-last-child(-n+2):not(:nth-child(odd):last-child) { border-bottom: none; }
+    @media (max-width: 600px) { .dr-grid { grid-template-columns: 1fr; } }
+
+    /* ── SCORE CARD WITH LEFT BORDER ── */
+    .score-card-border { border-left: 3px solid var(--border); }
+
+    /* ── UNAVAILABLE NOTE (replaces verbose placeholder boxes) ── */
+    .unavailable-note {
+      font-size: 0.78rem; color: var(--text3); padding: 8px 0;
+      font-style: italic;
+    }
+
+    /* ── SKIP TRACE UPGRADE STATE ── */
+    .skip-upgrade { }
+    .skip-upgrade-title { font-size: 0.72rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+    .skip-upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media (max-width: 600px) { .skip-upgrade-grid { grid-template-columns: 1fr; } }
+    .skip-item {
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 0.82rem; border: 1px solid var(--border);
+      background: var(--bg); display: flex; align-items: center; gap: 8px;
+    }
+    .skip-item span { color: var(--text2); font-weight: 500; }
+    .skip-item.locked { opacity: 0.55; }
+    .skip-item.locked span { color: var(--text3); font-weight: 400; font-style: italic; }
+    .skip-item.found { background: var(--green-light); border-color: rgba(22,163,74,0.2); }
+    .skip-item.found span { color: var(--green); font-weight: 600; }
+
+    /* ── SCORE CARD ACCENT BORDER ── */
+    .sc-border-accent { border-left: 3px solid var(--accent) !important; }
+    .sc-border-green  { border-left: 3px solid var(--green) !important; }
+    .sc-border-amber  { border-left: 3px solid var(--amber) !important; }
+    .sc-border-red    { border-left: 3px solid var(--red) !important; }
+    .sc-border-muted  { border-left: 3px solid var(--text3) !important; }
   </style>
 </head>
 <body>
@@ -862,6 +900,15 @@
       <div class="sec-body" id="history-body"></div>
     </div>
 
+    <!-- Permit History -->
+    <div class="section-card" id="permits-section" style="display:none">
+      <div class="sec-head">
+        <div class="sec-title">🔨 Permit History</div>
+        <div class="sec-src">Building Permits</div>
+      </div>
+      <div class="sec-body" id="permits-body"></div>
+    </div>
+
     <!-- Due Diligence Checklist -->
     <div class="section-card" id="checklist-section" style="display:none">
       <div class="sec-head">
@@ -1068,6 +1115,17 @@
     const geo = data.geo || {};
     const listing = data.listing || {};
     const est = data.market_estimate || {};
+    const avm = data.avm || {};
+
+    // ── Property-type awareness ──────────────────────────────────────────────
+    const propClass = data.property_class || 'COMMERCIAL';
+    const isResidential = ['RESIDENTIAL', 'MULTIFAMILY'].includes(propClass);
+    const isLand = propClass === 'LAND';
+    function propLabel(residential, commercial, land) {
+      if (isResidential) return residential;
+      if (isLand) return (land || commercial);
+      return commercial;
+    }
 
     var _addr = data.resolved_address || data.input || 'Report';
     if (window._wlBranding && window._wlBranding.company) {
@@ -1103,37 +1161,28 @@
       `<span class="htag ${t.cls}">${t.text}</span>`
     ).join('');
 
-    // Score cards
+    // Score cards — max 4: Assessed, AVM Est., Building SF, Motivation Score
+    // Flood zone lives in the header tags row, not a score card
+    const avmVal = avm.available ? avm.value_fmt : (est.available ? est.range_fmt : 'N/A');
+    const avmSub = avm.available ? (avm.source || 'AVM') : (est.available ? (est.property_type || 'Estimate') + ' · estimate' : 'API not configured');
+    const sfLabel = propLabel('Living Area', 'Rentable SF', 'Lot SF');
+    const sfVal = parcel.building_sf
+      ? Number(parcel.building_sf).toLocaleString() + ' SF'
+      : (isLand && parcel.lot_acres ? parseFloat(parcel.lot_acres).toFixed(2) + ' ac' : (listing.building_sf ? listing.building_sf + ' SF' : 'N/A'));
+
     const scores = [
-      {
-        label: 'County Assessed (Tax)',
-        val: parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A',
-        sub: 'Official tax record · not market value'
-      },
-      {
-        label: 'Est. Market Range',
-        val: est.available ? est.range_fmt : (parcel.assessed_total ? 'See below' : 'N/A'),
-        sub: est.available ? `${est.property_type} · DFW multiplier` : 'Assessed value required',
-        tooltip: est.methodology || ''
-      },
-      {
-        label: 'Building SF',
-        val: parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : (listing.building_sf ? listing.building_sf + ' SF' : 'N/A'),
-        sub: parcel.year_built ? `Built ${parcel.year_built}` : ''
-      },
-      {
-        label: 'Flood Zone',
-        val: flood.zone || 'N/A',
-        sub: flood.zone === 'X' ? 'Minimal risk' : (flood.description || ''),
-        color: flood.zone && flood.zone !== 'X' && (flood.zone.startsWith('A') || flood.zone.startsWith('V')) ? 'red' : undefined
-      },
+      { label: 'County Assessed (Tax)', val: parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A', sub: 'Official tax record', borderCls: 'sc-border-accent' },
+      { label: 'AVM Est.', val: avmVal, sub: avmSub, tooltip: est.methodology || '', borderCls: 'sc-border-green' },
+      { label: sfLabel, val: sfVal, sub: parcel.year_built ? `Built ${parcel.year_built}` : '', borderCls: 'sc-border-muted' },
       isPro && motiv.score !== undefined
-        ? { label: 'Motivation Score', val: `${motiv.score}/100`, sub: motiv.tier || '', color: motiv.score >= 70 ? 'red' : motiv.score >= 40 ? 'amber' : 'green' }
+        ? { label: 'Motivation Score', val: `${motiv.score}/100`, sub: motiv.tier || '',
+            color: motiv.score >= 70 ? 'red' : motiv.score >= 40 ? 'amber' : 'green',
+            borderCls: motiv.score >= 70 ? 'sc-border-red' : motiv.score >= 40 ? 'sc-border-amber' : 'sc-border-green' }
         : null
     ].filter(Boolean);
 
     document.getElementById('score-row').innerHTML = scores.map(s =>
-      `<div class="score-card" ${s.tooltip ? `title="${s.tooltip.replace(/"/g,"'")}"` : ''}>
+      `<div class="score-card ${s.borderCls || ''}" ${s.tooltip ? `title="${s.tooltip.replace(/"/g,"'")}"` : ''}>
         <div class="sc-label">${s.label}</div>
         <div class="sc-val" ${s.color ? `style="color:var(--${s.color})"` : ''}>${s.val}</div>
         <div class="sc-sub">${s.sub || ''}</div>
@@ -1184,20 +1233,29 @@
     const delinqCls = parcel.tax_delinquent ? 'red' : 'green';
     const delinqTxt = parcel.tax_delinquent ? '⚠ Delinquent — verify with county' : 'Current — No Delinquency';
 
+    const sfRowLabel = propLabel('Living Area', 'Rentable SF', 'Lot SF');
+    const ownerRowLabel = propLabel('Owner', 'Owner / Operator', 'Owner');
+    const bedsRow = (isResidential && parcel.bedrooms)
+      ? row('Beds / Baths', (parcel.bedrooms || '—') + ' bd / ' + (parcel.bathrooms || '—') + ' ba')
+      : '';
+
     document.getElementById('parcel-body').innerHTML =
+      '<div class="dr-grid">' +
       row('APN / Account', safe(parcel.apn)) +
-      row('Owner of Record', safe(parcel.owner_name) + absenteeBadge + oosBadge) +
+      row(ownerRowLabel, safe(parcel.owner_name) + absenteeBadge + oosBadge) +
       row('Owner Mailing', safe(parcel.owner_mailing)) +
       row('Data Source', safe(parcel.source)) +
       row('Year Built', safe(parcel.year_built)) +
-      row('Building SF', parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : 'N/A') +
+      row(sfRowLabel, parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : 'N/A') +
+      bedsRow +
       row('Assessed Land Value', parcel.assessed_land ? fmt(parcel.assessed_land) : 'N/A') +
       row('Assessed Improvement', parcel.assessed_improvement ? fmt(parcel.assessed_improvement) : 'N/A') +
       row('County Assessed (Tax)', parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A') +
-      (est.available ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">Est. Market Range <span style="color:var(--text3);font-size:0.7em;cursor:help" title="${(est.methodology||'').replace(/"/g,"'")}">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${est.range_fmt}</span></div>` : '') +
+      (est.available ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">AVM Est. <span style="color:var(--text3);font-size:0.7em;cursor:help">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${est.range_fmt}</span></div>` : '') +
       row('Tax Delinquency', delinqTxt, delinqCls) +
       row('Permit Records', permLink) +
-      row('Assessor Portal', assessLink);
+      row('Assessor Portal', assessLink) +
+      '</div>';
     } // end else (parcel data available)
 
     // Flood
@@ -1241,43 +1299,61 @@
 
     // PRO sections
     if (isPro) {
-      // Skip trace / Owner contact — always show section for PRO, with clear status
+      // Skip trace / Owner contact — always show section for PRO
       document.getElementById('contact-section').style.display = '';
-      if (skip.status === 'hit' || (skip.phones && skip.phones.length)) {
+      {
         const phones = (skip.phones || []).filter(p => p && p !== 'N/A');
         const emails = (skip.emails || []).filter(e => e && e !== 'N/A');
         const dnc = skip.dnc || [];
+        const hasData = skip.status === 'hit' || phones.length > 0;
 
-        document.getElementById('contact-body').innerHTML = `
-          <div class="contact-grid">
-            <div class="contact-card">
-              <div class="contact-label">Phone Numbers</div>
-              ${phones.length ? phones.map((p, i) => `
-                <div class="contact-val">${p} ${dnc[i] ? '<span style="color:var(--red);font-size:0.68rem;font-weight:700">DNC</span>' : ''}</div>
-                <div class="contact-sub">Mobile</div>
-              `).join('') : '<div class="contact-val" style="color:var(--text3)">No result</div>'}
+        if (hasData) {
+          // Full data available
+          document.getElementById('contact-body').innerHTML = `
+            <div class="contact-grid">
+              <div class="contact-card">
+                <div class="contact-label">Phone Numbers</div>
+                ${phones.length ? phones.map((p, i) => `
+                  <div class="contact-val">${p} ${dnc[i] ? '<span style="color:var(--red);font-size:0.68rem;font-weight:700">DNC</span>' : ''}</div>
+                  <div class="contact-sub">Mobile</div>
+                `).join('') : '<div class="contact-val" style="color:var(--text3)">No result</div>'}
+              </div>
+              <div class="contact-card">
+                <div class="contact-label">Email Addresses</div>
+                ${emails.length ? emails.map(e => `
+                  <div class="contact-val" style="font-size:0.8rem">${e}</div>
+                `).join('') : '<div class="contact-val" style="color:var(--text3)">No result</div>'}
+              </div>
             </div>
-            <div class="contact-card">
-              <div class="contact-label">Email Addresses</div>
-              ${emails.length ? emails.map(e => `
-                <div class="contact-val" style="font-size:0.8rem">${e}</div>
-              `).join('') : '<div class="contact-val" style="color:var(--text3)">No result</div>'}
-            </div>
-          </div>
-          ${skip.note ? `<p style="font-size:0.72rem;color:var(--text3);margin-top:10px">${skip.note}</p>` : ''}`;
-      } else {
-        // Skip trace failed — show clear reason, not blank
-        const skipReason = skip.status === 'entity'
-          ? 'This property is owned by an entity (LLC/Corp). Direct phone skip trace requires a corporate registry lookup — contact info may be available via the TX SOS registered agent above.'
-          : skip.status === 'no_hit'
-          ? (skip.note || 'No contact data found for this owner in the skip trace database.')
-          : skip.status === 'disabled'
-          ? 'Owner contact skip trace requires DataZapp API key. Once activated, this section shows direct phone numbers and emails for the owner.'
-          : 'Skip trace returned no results for this owner.';
-        document.getElementById('contact-body').innerHTML = `
-          <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px 16px;color:var(--text2);font-size:0.85rem;line-height:1.5">
-            ${skipReason}
-          </div>`;
+            ${skip.note ? `<p style="font-size:0.72rem;color:var(--text3);margin-top:10px">${skip.note}</p>` : ''}`;
+        } else {
+          // Show locked/found upgrade state
+          const skipName = skip.name || skip.full_name || '';
+          const skipMail = skip.mailing_address || '';
+          const nameCls = skipName ? 'found' : 'locked';
+          const mailCls = skipMail ? 'found' : 'locked';
+
+          let statusNote = '';
+          if (skip.status === 'entity') {
+            statusNote = '<div class="unavailable-note" style="margin-top:10px">Entity owner — phone/email lookup requires DataZapp API. TX SOS registered agent may be reachable above.</div>';
+          } else if (skip.status === 'disabled') {
+            statusNote = '<div class="unavailable-note" style="margin-top:10px">Phone + email require DataZapp API key — add DATAZAPP_API_KEY to unlock.</div>';
+          } else if (skip.status === 'no_hit') {
+            statusNote = '<div class="unavailable-note" style="margin-top:10px">' + (skip.note || 'No contact data in skip trace database for this owner.') + '</div>';
+          }
+
+          document.getElementById('contact-body').innerHTML = `
+            <div class="skip-upgrade">
+              <div class="skip-upgrade-title">Owner Contact Intel</div>
+              <div class="skip-upgrade-grid">
+                <div class="skip-item locked">📞 Phone <span>Requires DataZapp API</span></div>
+                <div class="skip-item locked">✉️ Email <span>Requires DataZapp API</span></div>
+                <div class="skip-item ${nameCls}">👤 Name <span>${skipName || 'Not available'}</span></div>
+                <div class="skip-item ${mailCls}">📬 Mailing <span>${skipMail || 'Not available'}</span></div>
+              </div>
+              ${statusNote}
+            </div>`;
+        }
       }
 
       // Motivation Score
@@ -1328,8 +1404,8 @@
           </div>`;
       }
 
-      // Deal Analyzer
-      if (listing.asking_price || parcel.assessed_total) {
+      // Deal Analyzer (not shown for land — no rentable SF or NOI to model)
+      if (!isLand && (listing.asking_price || parcel.assessed_total)) {
         document.getElementById('deal-section').style.display = '';
         const ask = listing.asking_price || 0;
         const assessed = parcel.assessed_total || 0;
@@ -1650,10 +1726,7 @@
         (avm.ltv_pct != null ? row('Loan-to-Value (LTV)', avm.ltv_pct + '%') : '') +
         row('Source', avm.source || 'Realie');
     } else {
-      document.getElementById('avm-body').innerHTML = `
-        <div style="background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:20px 24px;text-align:center;color:var(--text3);font-size:0.85rem">
-          Data unavailable for this property
-        </div>`;
+      document.getElementById('avm-body').innerHTML = '<div class="unavailable-note">AVM data unavailable — add REALIE_API_KEY or ATTOM_API_KEY to unlock</div>';
     }
 
     // ── PURCHASE SCENARIO MODELING (PRO) ──
@@ -1731,17 +1804,18 @@
         </div>
         <div style="font-size:0.72rem;color:var(--text3)">Source: Realie · Lien balance is an estimate — order full title search before closing.</div>`;
     } else {
-      document.getElementById('mortgage-body').innerHTML = `
-        <div style="background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:20px 24px;text-align:center;color:var(--text3);font-size:0.85rem">
-          Data unavailable for this property
-        </div>`;
+      document.getElementById('mortgage-body').innerHTML = '<div class="unavailable-note">Mortgage & lien data unavailable — add REALIE_API_KEY or ATTOM_API_KEY to unlock</div>';
     }
 
-    // ── SOLD COMPS (ATTOM) ──
+    // ── SOLD COMPS ──
     const compsData = data.sold_comps || {};
     document.getElementById('sold-comps-section').style.display = '';
+    if (compsData.source) document.getElementById('comps-src').textContent = compsData.source || 'Realie';
     if (compsData.available && compsData.comps && compsData.comps.length > 0) {
       const stats = compsData.stats || {};
+      const radiusNote = (compsData.radius_used || compsData.radius_miles)
+        ? `${compsData.radius_used || compsData.radius_miles} mi · ${compsData.months_back || 18} months · Source: ${compsData.source || 'Realie'}`
+        : `Source: ${compsData.source || 'Realie'}`;
       const statHtml = `
         <div class="comp-stats">
           <div class="comp-stat"><div class="comp-stat-val">${stats.comp_count || compsData.comps.length}</div><div class="comp-stat-label">Comps Found</div></div>
@@ -1749,40 +1823,28 @@
           <div class="comp-stat"><div class="comp-stat-val">${stats.median_psf_fmt || 'N/A'}</div><div class="comp-stat-label">Median $/SF</div></div>
           <div class="comp-stat"><div class="comp-stat-val">${stats.price_range_fmt || 'N/A'}</div><div class="comp-stat-label">Price Range</div></div>
         </div>`;
+      const showBedBa = isResidential;
       const compRows = compsData.comps.slice(0, 20).map(c => `<tr>
-        <td>${(c.address || '—').substring(0, 30)}</td>
+        <td>${(c.address || '—').substring(0, 32)}</td>
         <td>${(c.sale_date || '—').substring(0, 10)}</td>
         <td class="accent">${c.sale_fmt || '—'}</td>
-        <td>${c.sf_fmt || '—'}</td>
         <td>${c.psf_fmt || '—'}</td>
-        <td>${c.beds != null ? c.beds : '—'}/${c.baths != null ? c.baths : '—'}</td>
+        <td>${c.sf_fmt || '—'}</td>
+        ${showBedBa ? `<td>${c.beds != null ? c.beds : '—'}/${c.baths != null ? c.baths : '—'}</td>` : ''}
         <td>${c.year_built || '—'}</td>
-        <td>${c.owner_state || '—'}</td>
       </tr>`).join('');
       document.getElementById('sold-comps-body').innerHTML = statHtml + `
         <div style="overflow-x:auto">
         <table class="data-table">
-          <thead><tr><th>Address</th><th>Sold Date</th><th>Price</th><th>Bldg SF</th><th>$/SF</th><th>Bed/Ba</th><th>Yr Built</th><th>Owner State</th></tr></thead>
+          <thead><tr><th>Address</th><th>Sold Date</th><th>Price</th><th>$/SF</th><th>SF</th>${showBedBa ? '<th>Bed/Ba</th>' : ''}<th>Yr Built</th></tr></thead>
           <tbody>${compRows}</tbody>
         </table>
         </div>
-        <div style="font-size:0.72rem;color:var(--text3);margin-top:8px">Source: Realie</div>`;
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:8px">Found within ${radiusNote}</div>`;
     } else if (compsData.available === false) {
-      document.getElementById('sold-comps-body').innerHTML = `
-        <div style="background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:20px 24px;text-align:center;color:var(--text3);font-size:0.85rem">
-          Data unavailable for this property
-        </div>`;
+      document.getElementById('sold-comps-body').innerHTML = '<div class="unavailable-note">Comparable sales data unavailable for this property</div>';
     } else {
-      document.getElementById('sold-comps-body').innerHTML = `
-        <div class="pending-box">
-          <div class="pending-title">📈 Sold Comparable Sales</div>
-          <div class="pending-sub">Activates when API is configured</div>
-          <ul class="pending-list">
-            <li>• Up to 20 sold comps within 0.5 miles</li>
-            <li>• Sale price, $/SF, beds/baths, owner state</li>
-            <li>• Median and average comp statistics with price range</li>
-          </ul>
-        </div>`;
+      document.getElementById('sold-comps-body').innerHTML = '<div class="unavailable-note">Sold comps require Realie or ATTOM API key — add REALIE_API_KEY to unlock</div>';
     }
 
     // ── OWNERSHIP HISTORY (ATTOM) ──
@@ -1809,41 +1871,77 @@
         </div>
         <div style="font-size:0.72rem;color:var(--text3);margin-top:8px">Source: Realie · Deed and transfer history</div>`;
     } else if (histData.available === false) {
-      document.getElementById('history-body').innerHTML = `
-        <div style="background:var(--bg);border:1px dashed var(--border);border-radius:10px;padding:20px 24px;text-align:center;color:var(--text3);font-size:0.85rem">
-          Data unavailable for this property
-        </div>`;
+      document.getElementById('history-body').innerHTML = '<div class="unavailable-note">Deed history unavailable for this property</div>';
     } else {
-      document.getElementById('history-body').innerHTML = `
-        <div class="pending-box">
-          <div class="pending-title">📜 Deed & Ownership History</div>
-          <div class="pending-sub">Activates when API is configured</div>
-          <ul class="pending-list">
-            <li>• Full transaction history — every sale, 20+ years back</li>
-            <li>• Buyer and seller names on each transaction</li>
-            <li>• Purchase prices and recording dates</li>
-            <li>• Hold duration: how long has current owner held?</li>
-            <li>• Document type: deed, transfer, foreclosure, etc.</li>
-          </ul>
-        </div>`;
+      document.getElementById('history-body').innerHTML = '<div class="unavailable-note">Ownership history requires REALIE_API_KEY or ATTOM_API_KEY</div>';
     }
 
-    // ── DUE DILIGENCE CHECKLIST ──
+    // ── PERMIT HISTORY ──
+    {
+      const permits = data.permits || {};
+      document.getElementById('permits-section').style.display = '';
+      if (permits.available && permits.list && permits.list.length > 0) {
+        const permRows = permits.list.map(p => `<tr>
+          <td>${p.date || '—'}</td>
+          <td>${p.type || '—'}</td>
+          <td>${p.description || '—'}</td>
+          <td class="${p.status && p.status.toLowerCase().includes('final') ? 'green' : ''}">${p.status || '—'}</td>
+          <td>${p.value ? '$' + Number(p.value).toLocaleString() : '—'}</td>
+        </tr>`).join('');
+        document.getElementById('permits-body').innerHTML = `
+          <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Status</th><th>Value</th></tr></thead>
+            <tbody>${permRows}</tbody>
+          </table>
+          </div>`;
+      } else {
+        document.getElementById('permits-body').innerHTML = '<div class="unavailable-note">Permit data requires ATTOM API — add ATTOM_API_KEY to unlock (issue #9)</div>';
+      }
+    }
+
+    // ── DUE DILIGENCE CHECKLIST — property-type aware ──
     document.getElementById('checklist-section').style.display = '';
-    const checks = [
-      'Order Phase I Environmental Study — required for commercial financing',
-      'Pull full title search — confirm no liens, easements, or encumbrances',
-      'Request current rent roll and lease abstracts from seller',
-      'Obtain T-12 income statement and last 2 years P&amp;L',
-      'Verify actual NOI and cap rate against seller\'s stated numbers',
-      'Walk property — note deferred maintenance, HVAC age, roof condition',
-      'Confirm zoning compliance with current use',
-      'Pull all open permits — confirm no unpermitted work',
-      'Verify flood insurance requirement and cost with insurance agent',
-      'Order survey if boundary lines are unclear',
-      'Confirm property tax amounts directly with county appraisal district',
-      'Review 12 months of utility bills',
-    ];
+    let checks;
+    if (isResidential) {
+      checks = [
+        'Order full title search — confirm no liens, easements, or encumbrances',
+        'Schedule home inspection — structure, roof, HVAC, plumbing, electrical',
+        'Order survey — confirm boundaries and easements',
+        'Verify flood insurance requirement and get cost estimate',
+        'Obtain HOA docs, bylaws, and 12 months of meeting minutes (if applicable)',
+        'Request 12 months of utility bills from seller',
+        'Search for open or unpermitted building permits at city portal',
+        'Order independent appraisal before closing',
+      ];
+    } else if (isLand) {
+      checks = [
+        'Order Phase I Environmental Study — check for contamination or prior use issues',
+        'Pull full title search — confirm no liens, easements, or encumbrances',
+        'Order ALTA/NSPS survey — confirm legal description, boundaries, and access',
+        'Verify zoning and allowable uses with the municipality',
+        'Confirm utility availability and tap fees (water, sewer, electric, gas)',
+        'Check for flood zone overlay and wetlands restrictions (FEMA + Army Corps)',
+        'Review soil report or geo-tech study if structure is planned',
+        'Confirm access — legal ingress/egress, road frontage, easements',
+      ];
+    } else {
+      // Commercial, Industrial, Multifamily
+      checks = [
+        'Order Phase I Environmental Study — required for commercial financing',
+        'Pull full title search — confirm no liens, easements, or encumbrances',
+        'Request current rent roll and lease abstracts from seller',
+        'Obtain T-12 income statement and last 2 years of P&amp;L',
+        'Verify actual NOI and cap rate against seller\'s stated numbers',
+        'Walk property — note deferred maintenance, roof, HVAC, MEP systems',
+        'Confirm zoning compliance with current use and any planned use',
+        'Pull all open permits — confirm no unpermitted work',
+        'Verify ADA compliance — assess cost of any required improvements',
+        'Review 12 months of utility bills',
+        'Confirm property tax amounts directly with county appraisal district',
+        'Order ALTA survey if boundary lines or easements are unclear',
+      ];
+    }
     document.getElementById('checklist-body').innerHTML = `
       <ul class="checklist">${checks.map(c =>
         `<li class="cl-item"><span class="cl-check">☐</span><span>${c}</span></li>`
