@@ -206,6 +206,24 @@ def run(input_str: str, tier: str = "starter") -> dict:
     _mortgage = attom_mortgage if attom_mortgage.get("available") else realie_mortgage_r
     _history  = attom_history  if attom_history.get("available")  else realie_hist_r
 
+    # AVM fallback: Texas counties assess at 100% market value per TX Property Tax Code Sec 23.01
+    # If ATTOM/Realie AVM unavailable, use county assessed value as AVM
+    if not _avm.get("available"):
+        _assessed = parcel_data.get("assessed_total")
+        if _assessed and isinstance(_assessed, (int, float)) and _assessed > 0:
+            _avm = {
+                "available":     True,
+                "value":         _assessed,
+                "value_low":     None,
+                "value_high":    None,
+                "value_fmt":     f"${_assessed:,.0f}",
+                "range_fmt":     None,
+                "confidence_score": None,
+                "equity_estimate": None,
+                "source":        "County Assessed Value (TX 100% market value)",
+                "note":          "Texas appraises at 100% of market value (Tax Code Sec 23.01). County assessed value used as AVM baseline.",
+            }
+
     report["avm"]              = _avm      if _avm.get("available")     else {"available": False}
     report["sold_comps"]       = _comps    if _comps.get("available")   else {"available": False, "comps": []}
     report["mortgage"]         = _mortgage if _mortgage.get("available") else {"available": False}
