@@ -392,7 +392,8 @@ def analyze():
     {
       "input": "3229 Forest Ln Garland TX 75042",
       "tier": "starter" | "pro",
-      "format": "json" | "html" | "pdf"
+      "format": "json" | "html" | "pdf",
+      "persona": "buyer" | "seller" | "agent"
     }
     """
     # Rate limit: 10 requests/IP/hour (protects Regrid quota)
@@ -408,6 +409,7 @@ def analyze():
     tier = body.get("tier", "starter").lower()
     fmt = body.get("format", "json").lower()
     email = (body.get("email") or "").strip().lower()
+    persona = body.get("persona", "seller").lower()
 
     # ── SUBSCRIPTION USAGE CHECK ─────────────────────────────────────────────
     # If X-Account-Email header is present, enforce monthly report limits.
@@ -434,6 +436,8 @@ def analyze():
         return jsonify({"error": "Missing 'input' field"}), 400
     if tier not in ("starter", "pro"):
         return jsonify({"error": "tier must be 'starter' or 'pro'"}), 400
+    if persona not in ("buyer", "seller", "agent"):
+        persona = "seller"  # fallback to default
 
     # Capture lead email (non-blocking)
     if email and "@" in email:
@@ -445,9 +449,13 @@ def analyze():
 
     # ── CACHE CHECK ──────────────────────────────────────────────────────────
     # Rule: Every demo burns real API credits. Cache 24h to protect Regrid quota.
-    cached = report_cache.get(input_str, tier)
+    cache_key = f"{input_str}||{persona}"
+    cached = report_cache.get(cache_key, tier)
     if cached:
-        log.info("Serving cached report: %s [%s]", input_str[:40], tier)
+        log.info("Serving cached report: %s [%s] persona=%s", input_str[:40], tier, persona)
+        # Ensure persona is in cached data
+        if "persona" not in cached:
+            cached["persona"] = persona
         if fmt == "json":
             return jsonify(cached)
         html = generate_html(cached)
@@ -455,15 +463,19 @@ def analyze():
             return Response(html, mimetype="text/html")
 
     # ── LIVE PIPELINE ────────────────────────────────────────────────────────
-    log.info("Running pipeline: %s [%s]", input_str[:40], tier)
+    log.info("Running pipeline: %s [%s] persona=%s", input_str[:40], tier, persona)
     try:
         report_data = run_pipeline(input_str, tier)
+        # Add persona to report data for use in report templates
+        report_data["persona"] = persona
     except Exception as e:
         log.error("Pipeline failed for %s: %s", input_str[:40], e, exc_info=True)
         return jsonify({"error": f"Pipeline failed: {str(e)}"}), 500
 
     # Store in cache (never blocks — errors are swallowed in cache.set)
-    report_cache.set(input_str, tier, report_data)
+    # Note: cache key should include persona for proper caching
+    cache_key = f"{input_str}||{persona}"
+    report_cache.set(cache_key, tier, report_data)
 
     # Increment subscription usage counter
     if _account:

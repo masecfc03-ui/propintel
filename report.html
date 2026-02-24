@@ -1112,9 +1112,141 @@
         }, 100);
       }
 
+      // ── PERSONA-BASED TEMPLATE REORGANIZATION ──
+      reorganizeSectionsByPersona(persona, isPro);
+
       // Show report
       document.getElementById('loading').style.display = 'none';
       document.getElementById('report-content').style.display = 'block';
+    }
+
+    // ── PERSONA TEMPLATE FUNCTIONS ──
+    function reorganizeSectionsByPersona(persona, isPro) {
+      const container = document.querySelector('.report-body') || document.querySelector('main') || document.body;
+      if (!container) return;
+
+      // Get all section elements
+      const sections = Array.from(container.children).filter(el => 
+        el.classList.contains('section') || el.id.includes('-section') || el.classList.contains('report-section')
+      );
+
+      // Define section priorities for each persona
+      const sectionPriorities = {
+        buyer: [
+          'motivation-section', 'deal-section', 'scenario-section', 'sold-comps-section', 
+          'avm-section', 'flags-section', 'flood-section', 'parcel-section',
+          'demographics-section', 'permits-section', 'history-section'
+        ],
+        seller: [
+          'avm-section', 'market-value-section', 'sold-comps-section', 'parcel-section',
+          'demographics-section', 'flood-section', 'permits-section', 'history-section',
+          'flags-section'
+        ],
+        agent: [
+          'parcel-section', 'avm-section', 'sold-comps-section', 'motivation-section',
+          'deal-section', 'flood-section', 'demographics-section', 'permits-section',
+          'history-section', 'flags-section'
+        ]
+      };
+
+      const priority = sectionPriorities[persona] || sectionPriorities.seller;
+      
+      // Create a map of section elements by ID
+      const sectionMap = new Map();
+      sections.forEach(section => {
+        if (section.id) {
+          sectionMap.set(section.id, section);
+        }
+      });
+
+      // Reorganize sections based on priority
+      const fragment = document.createDocumentFragment();
+      
+      // Add sections in priority order
+      priority.forEach(sectionId => {
+        const section = sectionMap.get(sectionId);
+        if (section && section.parentNode) {
+          section.remove();
+          fragment.appendChild(section);
+          sectionMap.delete(sectionId);
+        }
+      });
+
+      // Add remaining sections that weren't in the priority list
+      sectionMap.forEach(section => {
+        if (section.parentNode) {
+          section.remove();
+          fragment.appendChild(section);
+        }
+      });
+
+      // Append all sections back to container
+      container.appendChild(fragment);
+
+      // Add persona-specific header text
+      addPersonaHeaderText(persona);
+    }
+
+    function addPersonaHeaderText(persona) {
+      // Find the property header area
+      const headerArea = document.querySelector('.prop-header') || document.querySelector('h1').parentElement;
+      if (!headerArea) return;
+
+      // Remove existing persona text
+      const existingPersonaText = headerArea.querySelector('.persona-context');
+      if (existingPersonaText) {
+        existingPersonaText.remove();
+      }
+
+      // Add persona-specific context text
+      const personaTexts = {
+        buyer: {
+          icon: '🏠',
+          title: 'Investment Analysis',
+          subtitle: 'Due diligence report for property acquisition'
+        },
+        seller: {
+          icon: '💰',
+          title: 'Market Valuation',
+          subtitle: 'Current market value and competitive positioning'
+        },
+        agent: {
+          icon: '🤝',
+          title: 'Professional Property Report',
+          subtitle: 'Client-ready analysis with market insights'
+        }
+      };
+
+      const config = personaTexts[persona] || personaTexts.seller;
+      
+      const personaElement = document.createElement('div');
+      personaElement.className = 'persona-context';
+      personaElement.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0;
+        padding: 8px 12px;
+        background: var(--accent-light);
+        border: 1px solid rgba(37,99,235,0.15);
+        border-radius: 8px;
+        font-size: 0.8rem;
+        color: var(--text2);
+      `;
+      
+      personaElement.innerHTML = `
+        <span style="font-size: 1rem;">${config.icon}</span>
+        <div>
+          <div style="font-weight: 600; color: var(--accent);">${config.title}</div>
+          <div style="font-size: 0.75rem; color: var(--text3);">${config.subtitle}</div>
+        </div>
+      `;
+
+      // Insert after the main property title
+      const propSub = document.getElementById('prop-sub');
+      if (propSub && propSub.parentNode) {
+        propSub.parentNode.insertBefore(personaElement, propSub.nextSibling);
+      }
     }
 
     // Main load function
@@ -1143,10 +1275,27 @@
           data = await res.json();
         } else if (address) {
           // Generate new report
+          let persona = 'seller'; // default
+          try {
+            // Get persona from URL params or sessionStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlPersona = urlParams.get('persona');
+            if (urlPersona && ['buyer', 'seller', 'agent'].includes(urlPersona)) {
+              persona = urlPersona;
+            } else {
+              const sessionPersona = sessionStorage.getItem('propintel_persona');
+              if (sessionPersona && ['buyer', 'seller', 'agent'].includes(sessionPersona)) {
+                persona = sessionPersona;
+              }
+            }
+          } catch (e) {
+            console.warn('Persona detection failed in loadReport:', e);
+          }
+          
           const res = await fetch(`${API}/api/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ input: address, tier, format: 'json' })
+            body: JSON.stringify({ input: address, tier, format: 'json', persona: persona })
           });
           if (!res.ok) throw new Error(`Analysis failed (${res.status})`);
           data = await res.json();

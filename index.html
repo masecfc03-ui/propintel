@@ -233,7 +233,7 @@ nav {
 }
 /* analyze form */
 .analyze-form {
-  display: flex; gap: 8px; max-width: 520px;
+  display: flex; flex-direction: column; gap: 16px; max-width: 520px;
   animation: fadeUp 0.7s 0.24s ease both;
 }
 .analyze-wrap {
@@ -260,6 +260,51 @@ nav {
   background: var(--bg3);
   box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
 }
+
+/* persona selector */
+.persona-selector {
+  display: flex; gap: 8px; width: 100%;
+  animation: fadeUp 0.7s 0.28s ease both;
+}
+.persona-option {
+  flex: 1; display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer; transition: all 0.2s ease;
+  font-family: 'Satoshi', sans-serif;
+}
+.persona-option:hover {
+  border-color: var(--border-hi);
+  background: var(--bg3);
+}
+.persona-option.active {
+  border-color: var(--blue-m);
+  background: rgba(37,99,235,0.08);
+  box-shadow: 0 0 0 1px rgba(37,99,235,0.15);
+}
+.persona-icon {
+  font-size: 16px; flex-shrink: 0;
+}
+.persona-text {
+  display: flex; flex-direction: column; gap: 1px;
+  min-width: 0;
+}
+.persona-title {
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--white);
+}
+.persona-sub {
+  font-size: 0.68rem; color: var(--g3);
+  line-height: 1.2;
+}
+.persona-option.active .persona-title {
+  color: var(--blue-l);
+}
+.persona-option.active .persona-sub {
+  color: var(--blue-m);
+}
+
 .analyze-btn {
   background: linear-gradient(135deg, var(--blue) 0%, #1a4fc4 100%);
   color: white; border: none; padding: 14px 24px;
@@ -269,6 +314,7 @@ nav {
   font-family: 'Satoshi', sans-serif;
   transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
   box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+  align-self: flex-start;
 }
 .analyze-btn:hover {
   transform: translateY(-1px);
@@ -1177,6 +1223,32 @@ footer {
         <input class="analyze-input" id="address-input" type="text"
           placeholder="Enter any US property address…" autocomplete="off" required/>
       </div>
+      
+      <!-- Persona Selector -->
+      <div class="persona-selector">
+        <div class="persona-option" data-persona="buyer">
+          <div class="persona-icon">🏠</div>
+          <div class="persona-text">
+            <div class="persona-title">Buyer</div>
+            <div class="persona-sub">I'm evaluating a purchase</div>
+          </div>
+        </div>
+        <div class="persona-option active" data-persona="seller">
+          <div class="persona-icon">💰</div>
+          <div class="persona-text">
+            <div class="persona-title">Seller</div>
+            <div class="persona-sub">I want to know my home's value</div>
+          </div>
+        </div>
+        <div class="persona-option" data-persona="agent">
+          <div class="persona-icon">🤝</div>
+          <div class="persona-text">
+            <div class="persona-title">Agent</div>
+            <div class="persona-sub">I'm preparing a client report</div>
+          </div>
+        </div>
+      </div>
+      
       <button class="analyze-btn" id="analyze-btn" type="submit">Analyze →</button>
     </form>
     <p class="hero-note">No subscription required. <a href="#pricing">Pay per report.</a> · <a href="demo.html">See a sample report →</a></p>
@@ -1967,6 +2039,23 @@ const counterObserver = new IntersectionObserver(entries => {
 }, { threshold: 0.5 });
 document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
 
+/* ─── PERSONA SELECTOR ─── */
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize persona selector
+  const personaOptions = document.querySelectorAll('.persona-option');
+  personaOptions.forEach(option => {
+    option.addEventListener('click', function() {
+      personaOptions.forEach(opt => opt.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+});
+
+function getSelectedPersona() {
+  const active = document.querySelector('.persona-option.active');
+  return active ? active.dataset.persona : 'seller';
+}
+
 /* ─── ANALYZE ─── */
 const API = 'https://propintel-htij.onrender.com';
 
@@ -1974,6 +2063,7 @@ async function handleAnalyze(e) {
   e.preventDefault();
   const input = document.getElementById('address-input').value.trim();
   if (!input) return;
+  const persona = getSelectedPersona();
   const btn = document.getElementById('analyze-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Analyzing…';
@@ -1986,13 +2076,16 @@ async function handleAnalyze(e) {
     } else {
       sessionStorage.removeItem('propintel_wl_active');
     }
+    
+    /* Store selected persona for report.html */
+    sessionStorage.setItem('propintel_persona', persona);
   } catch(e) {}
 
   try {
     const res = await fetch(API + '/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: input, tier: 'starter' })
+      body: JSON.stringify({ input: input, tier: 'starter', persona: persona })
     });
     if (res.status === 429) throw new Error('Rate limit reached — try again in an hour.');
     if (!res.ok) throw new Error(`Server error (${res.status})`);
