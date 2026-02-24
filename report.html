@@ -405,6 +405,39 @@
       .contact-grid { grid-template-columns: 1fr; }
       .deal-grid { grid-template-columns: 1fr 1fr; }
     }
+    /* ── WHITE-LABEL BAR ── */
+    #wl-bar {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 6px 32px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.74rem;
+      color: #64748b;
+    }
+    #wl-bar .wl-bar-left {
+      display: flex; align-items: center; gap: 10px;
+    }
+    #wl-bar .wl-bar-logo {
+      max-height: 20px; max-width: 80px;
+      border-radius: 3px; object-fit: contain;
+      vertical-align: middle;
+    }
+    #wl-bar .wl-bar-prepared {
+      font-size: 0.7rem; color: #94a3b8;
+      white-space: nowrap;
+    }
+    #wl-bar .wl-bar-agent {
+      font-weight: 600; color: #475569;
+    }
+    #wl-bar .wl-bar-right {
+      font-size: 0.7rem; color: #94a3b8;
+    }
+    @media (max-width: 600px) { #wl-bar { padding: 6px 16px; } }
+
     /* ── PROPERTY MAP ── */
     .map-section { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: var(--shadow); }
     #prop-map { height: 280px; }
@@ -534,7 +567,7 @@
   </div>
 
   <div class="topbar">
-    <a href="index.html" class="topbar-logo">
+    <a href="index.html" class="topbar-logo" id="topbar-logo-link">
       <svg width="100" height="26" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:26px;width:auto">
         <rect width="40" height="40" rx="10" fill="#2563EB"/>
         <rect x="11" y="20" width="5" height="10" rx="1" fill="white" opacity="0.85"/>
@@ -548,6 +581,16 @@
       <span id="topbar-ts" style="font-size:0.75rem;color:var(--text3)"></span>
       <button class="print-btn" onclick="window.print()">Print / PDF</button>
     </div>
+  </div>
+
+  <!-- White-label "Prepared by" bar — subtle, just below nav -->
+  <div id="wl-bar">
+    <div class="wl-bar-left">
+      <span id="wl-bar-logo-wrap"></span>
+      <span class="wl-bar-prepared">Prepared by</span>
+      <span class="wl-bar-agent" id="wl-bar-agent"></span>
+    </div>
+    <div class="wl-bar-right" id="wl-bar-right"></div>
   </div>
 
   <div class="report">
@@ -869,35 +912,94 @@
 
   function renderBranding() {
     try {
-      const b = JSON.parse(localStorage.getItem('propintel_brand') || 'null');
-      if (!b || (!b.company && !b.name)) return;
+      /* Priority: sessionStorage (set by index.html on Analyze) → localStorage propintel_wl
+         → localStorage propintel_brand (legacy) */
+      var raw = sessionStorage.getItem('propintel_wl_active')
+             || localStorage.getItem('propintel_wl')
+             || localStorage.getItem('propintel_brand')
+             || 'null';
+      var b = JSON.parse(raw);
+      if (!b) return;
 
-      document.getElementById('brand-header').style.display = '';
-      document.getElementById('brand-company').textContent = b.company || b.name;
-      document.getElementById('brand-agent').textContent = b.name && b.company ? b.name : '';
+      /* Normalise field names: propintel_wl uses {company,agent,...},
+         propintel_brand uses {company,name,...} */
+      var company = b.company || '';
+      var agentName = b.agent || b.name || '';
+      var phone = b.phone || '';
+      var email = b.email || '';
+      var logo  = b.logo  || '';
 
-      // Logo
-      const logoWrap = document.getElementById('brand-logo-wrap');
-      if (b.logo) {
-        logoWrap.innerHTML = `<img src="${b.logo}" class="brand-logo" alt="${b.company}" onerror="this.style.display='none'" />`;
-      } else {
-        const initials = (b.company || b.name).substring(0, 2).toUpperCase();
-        logoWrap.innerHTML = `<div class="brand-logo-placeholder">${initials}</div>`;
+      if (!company && !agentName) return;
+
+      /* ── Subtle "Prepared by" bar ── */
+      var wlBar = document.getElementById('wl-bar');
+      wlBar.style.display = 'flex';
+
+      /* Logo in bar */
+      var wlBarLogoWrap = document.getElementById('wl-bar-logo-wrap');
+      if (logo) {
+        wlBarLogoWrap.innerHTML = '<img src="' + logo + '" class="wl-bar-logo" alt="' + company + '" onerror="this.style.display=\'none\'" />';
       }
 
-      // Contact
-      const parts = [];
-      if (b.phone) parts.push(b.phone);
-      if (b.email) parts.push(`<a href="mailto:${b.email}">${b.email}</a>`);
-      document.getElementById('brand-contact').innerHTML = parts.join('<br />');
+      /* Agent/company text in bar */
+      var agentBarText = agentName
+        ? agentName + (company ? ' \u00b7 ' + company : '')
+        : company;
+      document.getElementById('wl-bar-agent').textContent = agentBarText;
 
-      // Override topbar logo text to show company name
-      document.querySelector('.topbar-logo').innerHTML =
-        `<div class="logo-icon">🔍</div>${b.company || b.name} <span style="color:var(--text3);font-weight:400;font-size:0.75rem;margin-left:6px">via PropIntel</span>`;
+      /* Contact in bar right */
+      var barRightParts = [];
+      if (phone) barRightParts.push(phone);
+      if (email) barRightParts.push(email);
+      document.getElementById('wl-bar-right').textContent = barRightParts.join(' \u00b7 ');
 
-      // Show annotation panel for branded users
+      /* ── Page title ── */
+      if (company) {
+        /* Will be refined in renderReport() once address is known */
+        document.title = company + ' \u2014 Property Report';
+      }
+
+      /* ── Topbar: replace PropIntel branding with company name ── */
+      var topbarLogoLink = document.getElementById('topbar-logo-link');
+      if (topbarLogoLink) {
+        var logoHTML = '';
+        if (logo) {
+          logoHTML = '<img src="' + logo + '" style="max-height:26px;max-width:100px;object-fit:contain;border-radius:4px;vertical-align:middle" alt="' + company + '" onerror="this.style.display=\'none\'" />';
+        } else {
+          var initials = (company || agentName).substring(0, 2).toUpperCase();
+          logoHTML = '<div class="logo-icon">' + initials + '</div>';
+        }
+        topbarLogoLink.innerHTML = logoHTML
+          + '<span style="font-size:0.88rem;font-weight:800;color:var(--text);letter-spacing:-0.3px;margin-left:8px">'
+          + (company || agentName)
+          + '</span>';
+      }
+
+      /* ── Brand Header block (existing, in the report body) ── */
+      document.getElementById('brand-header').style.display = '';
+      document.getElementById('brand-company').textContent = company;
+      document.getElementById('brand-agent').textContent = agentName && company ? agentName : agentName;
+
+      var logoWrap = document.getElementById('brand-logo-wrap');
+      if (logo) {
+        logoWrap.innerHTML = '<img src="' + logo + '" class="brand-logo" alt="' + company + '" onerror="this.style.display=\'none\'" />';
+      } else {
+        var initials2 = (company || agentName).substring(0, 2).toUpperCase();
+        logoWrap.innerHTML = '<div class="brand-logo-placeholder">' + initials2 + '</div>';
+      }
+
+      var contactParts = [];
+      if (phone) contactParts.push(phone);
+      if (email) contactParts.push('<a href="mailto:' + email + '">' + email + '</a>');
+      document.getElementById('brand-contact').innerHTML = contactParts.join('<br />');
+
+      /* ── Annotation panel (agent-facing) ── */
       document.getElementById('wl-annotations').style.display = '';
       loadAnnotations();
+
+      /* ── Store branding ref globally so renderReport() can refine title ── */
+      window._wlBranding = { company: company, agentName: agentName };
+
     } catch(e) {}
   }
 
@@ -967,7 +1069,12 @@
     const listing = data.listing || {};
     const est = data.market_estimate || {};
 
-    document.title = `PropIntel — ${data.resolved_address || data.input || 'Report'}`;
+    var _addr = data.resolved_address || data.input || 'Report';
+    if (window._wlBranding && window._wlBranding.company) {
+      document.title = window._wlBranding.company + ' \u2014 ' + _addr + ' Property Report';
+    } else {
+      document.title = 'PropIntel \u2014 ' + _addr;
+    }
 
     // Timestamp
     const ts = (data.generated_at || '').replace('T',' ').substring(0,16) + ' UTC';
