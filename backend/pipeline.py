@@ -206,8 +206,18 @@ def run(input_str: str, tier: str = "starter") -> dict:
     _mortgage = attom_mortgage if attom_mortgage.get("available") else realie_mortgage_r
     _history  = attom_history  if attom_history.get("available")  else realie_hist_r
 
-    # AVM fallback: Texas counties assess at 100% market value per TX Property Tax Code Sec 23.01
-    # If ATTOM/Realie AVM unavailable, use county assessed value as AVM
+    # AVM Tier 3: RentCast AVM (national) — if ATTOM/Realie both failed
+    if not _avm.get("available") and _os.environ.get("RENTCAST_API_KEY"):
+        try:
+            from scrapers.rentcast import get_avm as _rc_avm
+            _rc_result = _rc_avm(address)
+            if _rc_result.get("available"):
+                _avm = _rc_result
+        except Exception:
+            pass
+
+    # AVM Tier 4: TX county assessed value (100% market value per TX Property Tax Code Sec 23.01)
+    # If ATTOM/Realie/RentCast AVM all unavailable, use county assessed value as baseline
     if not _avm.get("available"):
         _assessed = parcel_data.get("assessed_total")
         if _assessed and isinstance(_assessed, (int, float)) and _assessed > 0:
