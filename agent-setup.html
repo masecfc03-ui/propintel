@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PropIntel Agent Setup - Get Your Branded Reports</title>
+  
+  <!-- Fontshare CDN for Cabinet Grotesk (display) + Satoshi (body) -->
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,600,500&f[]=satoshi@700,600,500,400&display=swap" rel="stylesheet" />
+  
+  <!-- QR Code Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* Dark Design System */
+      --dark-base: #08080a;
+      --dark-surface: #0f0f11;
+      --dark-elevated: #161619;
+      --dark-border: #27272a;
+      --dark-border-hover: #3f3f46;
+      
+      /* Accent Colors */
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+      --green: #10b981;
+      --purple: #8b5cf6;
+      --rose: #f43f5e;
+      --slate: #64748b;
+      
+      --accent-primary: var(--amber);
+      --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      --accent-light: rgba(245, 158, 11, 0.1);
+      
+      /* Content Colors */
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      
+      /* State Colors */
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.1);
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,0.4);
+      
+      /* Radius */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--dark-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+
+    /* Typography */
+    .font-display { font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif; }
+    
+    /* Layout */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+    
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--accent-gradient);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+    }
+    
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 800;
+      font-family: 'Cabinet Grotesk', sans-serif;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .header p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    /* Progress Bar */
+    .progress-container {
+      margin-bottom: 48px;
+    }
+    
+    .progress-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .progress-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--dark-surface);
+      border: 2px solid var(--dark-border);
+      border-radius: var(--radius-md);
+      transition: all 0.3s ease;
+      min-width: 180px;
+    }
+    
+    .progress-step.active {
+      border-color: var(--accent-primary);
+      background: var(--accent-light);
+      color: var(--accent-primary);
+    }
+    
+    .progress-step.completed {
+      border-color: var(--success);
+      background: var(--success-bg);
+      color: var(--success);
+    }
+    
+    .step-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--dark-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    
+    .progress-step.active .step-number {
+      background: var(--accent-primary);
+      color: white;
+    }
+    
+    .progress-step.completed .step-number {
+      background: var(--success);
+      color: white;
+    }
+    
+    .step-label {
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    
+    /* Main Content */
+    .main-content {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      margin-bottom: 32px;
+    }
+    
+    .step-content {
+      display: none;
+    }
+    
+    .step-content.active {
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .step-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+    
+    .step-subtitle {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+    }
+    
+    /* Form Elements */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    .form-label {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+    
+    .form-input {
+      background: var(--dark-base);
+      border: 2px solid var(--dark-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+    
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      background: var(--dark-elevated);
+    }
+    
+    /* Color Picker */
+    .color-picker {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+    
+    .color-option {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+    
+    .color-option.selected {
+      border-color: var(--text-primary);
+      transform: scale(1.1);
+    }
+    
+    .color-option::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-weight: 800;
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    .color-option.selected::after {
+      opacity: 1;
+    }
+    
+    /* Preview Card */
+    .preview-section {
+      background: var(--dark-base);
+      border: 2px solid var(--dark-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .preview-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+    
+    .preview-card {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .preview-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #f1f5f9;
+    }
+    
+    .preview-photo {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #64748b;
+    }
+    
+    .preview-info {
+      flex: 1;
+    }
+    
+    .preview-name {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+    
+    .preview-details {
+      color: #64748b;
+      font-size: 0.875rem;
+    }
+    
+    /* Link Section */
+    .link-section {
+      margin-bottom: 32px;
+    }
+    
+    .link-label {
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      font-size: 1.125rem;
+    }
+    
+    .link-container {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .link-input {
+      flex: 1;
+      background: var(--dark-base);
+      border: 2px solid var(--dark-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-family: 'Monaco', 'Menlo', monospace;
+      word-break: break-all;
+    }
+    
+    .copy-btn {
+      background: var(--accent-gradient);
+      border: none;
+      color: white;
+      padding: 16px 24px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .copy-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    
+    .copy-btn.copied {
+      background: var(--success);
+    }
+    
+    /* QR Code */
+    .qr-section {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    
+    .qr-code {
+      background: white;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .qr-info h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+    
+    .qr-info p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+    
+    .download-qr-btn {
+      background: var(--dark-elevated);
+      border: 2px solid var(--dark-border);
+      color: var(--text-primary);
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    
+    .download-qr-btn:hover {
+      border-color: var(--accent-primary);
+      background: var(--accent-light);
+    }
+    
+    /* Email Template */
+    .email-template {
+      background: var(--dark-base);
+      border: 2px solid var(--dark-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    
+    .email-template h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+    
+    .email-template textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      resize: vertical;
+      min-height: 120px;
+    }
+    
+    .email-template textarea:focus {
+      outline: none;
+      color: var(--text-primary);
+    }
+    
+    /* Navigation */
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+    }
+    
+    .btn {
+      background: var(--accent-gradient);
+      border: none;
+      color: white;
+      padding: 16px 32px;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+    
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: var(--dark-elevated);
+      border: 2px solid var(--dark-border);
+      color: var(--text-primary);
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--accent-primary);
+      background: var(--accent-light);
+    }
+    
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--dark-border);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px;
+    }
+    
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* Success */
+    .success-message {
+      background: var(--success-bg);
+      border: 2px solid var(--success);
+      color: var(--success);
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      display: none;
+    }
+    
+    /* Error */
+    .error-message {
+      background: var(--danger-bg);
+      border: 2px solid var(--danger);
+      color: var(--danger);
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      display: none;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { padding: 24px 16px; }
+      .main-content { padding: 24px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .progress-bar { flex-direction: column; }
+      .qr-section { grid-template-columns: 1fr; text-align: center; }
+      .nav-buttons { flex-direction: column; gap: 12px; }
+      .header h1 { font-size: 2rem; }
+      .color-picker { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <a href="/" class="logo">
+        <div class="logo-icon">PI</div>
+        <div class="logo-text">PropIntel</div>
+      </a>
+      <h1>Agent Setup</h1>
+      <p>Get your branded property reports that make you look like the pro you are</p>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-step active" id="progress-1">
+          <div class="step-number">1</div>
+          <div class="step-label">Your Profile</div>
+        </div>
+        <div class="progress-step" id="progress-2">
+          <div class="step-number">2</div>
+          <div class="step-label">Live Preview</div>
+        </div>
+        <div class="progress-step" id="progress-3">
+          <div class="step-number">3</div>
+          <div class="step-label">Get Your Link</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Success/Error Messages -->
+      <div class="success-message" id="success-message"></div>
+      <div class="error-message" id="error-message"></div>
+      
+      <!-- Step 1: Profile -->
+      <div class="step-content active" id="step-1">
+        <div class="step-title">Your Profile</div>
+        <div class="step-subtitle">Tell us about yourself so we can brand your reports</div>
+        
+        <form id="agent-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="name">Full Name *</label>
+              <input type="text" id="name" class="form-input" placeholder="Sarah Johnson" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="brokerage">Brokerage</label>
+              <input type="text" id="brokerage" class="form-input" placeholder="Compass">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone Number</label>
+              <input type="tel" id="phone" class="form-input" placeholder="(214) 555-0100">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="email">Email</label>
+              <input type="email" id="email" class="form-input" placeholder="sarah@compass.com">
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label" for="photo-url">Profile Photo URL (optional)</label>
+              <input type="url" id="photo-url" class="form-input" placeholder="https://...">
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">Accent Color</label>
+              <div class="color-picker">
+                <div class="color-option selected" data-color="#f59e0b" style="background: #f59e0b;"></div>
+                <div class="color-option" data-color="#3b82f6" style="background: #3b82f6;"></div>
+                <div class="color-option" data-color="#10b981" style="background: #10b981;"></div>
+                <div class="color-option" data-color="#8b5cf6" style="background: #8b5cf6;"></div>
+                <div class="color-option" data-color="#f43f5e" style="background: #f43f5e;"></div>
+                <div class="color-option" data-color="#64748b" style="background: #64748b;"></div>
+              </div>
+            </div>
+          </div>
+        </form>
+        
+        <div class="nav-buttons">
+          <div></div>
+          <button class="btn" onclick="goToStep(2)">Next: Preview →</button>
+        </div>
+      </div>
+      
+      <!-- Step 2: Preview -->
+      <div class="step-content" id="step-2">
+        <div class="step-title">Live Preview</div>
+        <div class="step-subtitle">See exactly how your branded report will look</div>
+        
+        <div class="preview-section">
+          <div class="preview-title">Your Report Header</div>
+          <div class="preview-card">
+            <div class="preview-header" id="preview-header">
+              <div class="preview-photo" id="preview-photo">SJ</div>
+              <div class="preview-info">
+                <div class="preview-name" id="preview-name">Sarah Johnson</div>
+                <div class="preview-details" id="preview-details">Compass | (214) 555-0100</div>
+              </div>
+            </div>
+            <div style="padding: 16px 0; color: #64748b; font-size: 14px;">
+              Property Intelligence Report<br>
+              <span style="color: #1e293b; font-weight: 600;">3229 Forest Ln, Garland TX 75042</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+          <button class="btn" onclick="goToStep(3)">Next: Get Link →</button>
+        </div>
+      </div>
+      
+      <!-- Step 3: Get Link -->
+      <div class="step-content" id="step-3">
+        <div class="step-title">Get Your Link</div>
+        <div class="step-subtitle">Your branded report link is ready!</div>
+        
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Creating your agent profile...</p>
+        </div>
+        
+        <div id="link-content" style="display: none;">
+          <div class="link-section">
+            <div class="link-label">Your Branded Report Link:</div>
+            <div class="link-container">
+              <input type="text" class="link-input" id="report-link" readonly>
+              <button class="copy-btn" onclick="copyLink()">Copy</button>
+            </div>
+          </div>
+          
+          <div class="qr-section">
+            <div class="qr-code">
+              <canvas id="qr-canvas"></canvas>
+            </div>
+            <div class="qr-info">
+              <h3>QR Code for Business Cards</h3>
+              <p>Print this QR code on business cards, flyers, or open house materials. Clients scan to get their property report.</p>
+              <a href="#" class="download-qr-btn" onclick="downloadQR()">Download QR Code</a>
+            </div>
+          </div>
+          
+          <div class="email-template">
+            <h3>Email Template (Copy & Customize)</h3>
+            <textarea id="email-template" readonly>Hi [client name],
+
+I've put together a full property intelligence report on the home at [address]. This includes market value estimates, comparable sales, ownership history, and investment analysis.
+
+Click here to see everything: [LINK]
+
+Best regards,
+[YOUR NAME]
+[YOUR BROKERAGE]</textarea>
+          </div>
+        </div>
+        
+        <div class="nav-buttons">
+          <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+          <a href="/" class="btn">Start Creating Reports →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    let currentStep = 1;
+    let selectedColor = '#f59e0b';
+    let agentData = null;
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      updatePreview();
+      setupEventListeners();
+    });
+    
+    function setupEventListeners() {
+      // Form inputs
+      ['name', 'brokerage', 'phone'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updatePreview);
+      });
+      
+      // Color picker
+      document.querySelectorAll('.color-option').forEach(option => {
+        option.addEventListener('click', function() {
+          // Remove selected from all
+          document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+          // Add selected to this one
+          this.classList.add('selected');
+          selectedColor = this.dataset.color;
+          updatePreview();
+        });
+      });
+    }
+    
+    function updatePreview() {
+      const name = document.getElementById('name').value || 'Your Name';
+      const brokerage = document.getElementById('brokerage').value || 'Your Brokerage';
+      const phone = document.getElementById('phone').value || '(555) 123-4567';
+      
+      // Update preview
+      document.getElementById('preview-name').textContent = name;
+      document.getElementById('preview-details').textContent = `${brokerage} | ${phone}`;
+      
+      // Update initials
+      const initials = name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('preview-photo').textContent = initials;
+      
+      // Update header border color
+      const header = document.getElementById('preview-header');
+      header.style.borderColor = selectedColor;
+      
+      // Update CSS custom property for accent color
+      document.documentElement.style.setProperty('--accent-primary', selectedColor);
+      
+      // Update accent gradient
+      const darkerColor = adjustColor(selectedColor, -30);
+      document.documentElement.style.setProperty('--accent-gradient', 
+        `linear-gradient(135deg, ${selectedColor} 0%, ${darkerColor} 100%)`);
+    }
+    
+    function adjustColor(hex, percent) {
+      const num = parseInt(hex.replace("#", ""), 16);
+      const amt = Math.round(2.55 * percent);
+      const R = (num >> 16) + amt;
+      const G = (num >> 8 & 0x00FF) + amt;
+      const B = (num & 0x0000FF) + amt;
+      return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255))
+        .toString(16).slice(1);
+    }
+    
+    function goToStep(step) {
+      if (step === 3 && !agentData) {
+        // Register agent when going to step 3
+        registerAgent();
+        return;
+      }
+      
+      // Update progress
+      document.querySelectorAll('.progress-step').forEach((el, index) => {
+        el.classList.remove('active', 'completed');
+        if (index + 1 < step) {
+          el.classList.add('completed');
+        } else if (index + 1 === step) {
+          el.classList.add('active');
+        }
+      });
+      
+      // Show/hide steps
+      document.querySelectorAll('.step-content').forEach((el, index) => {
+        el.classList.remove('active');
+        if (index + 1 === step) {
+          el.classList.add('active');
+        }
+      });
+      
+      currentStep = step;
+    }
+    
+    async function registerAgent() {
+      const name = document.getElementById('name').value.trim();
+      const brokerage = document.getElementById('brokerage').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const photoUrl = document.getElementById('photo-url').value.trim();
+      
+      if (!name) {
+        showError('Please enter your full name');
+        return;
+      }
+      
+      // Show loading
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('link-content').style.display = 'none';
+      
+      try {
+        const response = await fetch('/api/agents/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: name,
+            brokerage: brokerage,
+            phone: phone,
+            email: email,
+            photo_url: photoUrl,
+            accent_color: selectedColor
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Registration failed');
+        }
+        
+        agentData = data;
+        
+        // Update UI
+        document.getElementById('report-link').value = data.report_url;
+        updateEmailTemplate(data);
+        generateQRCode(data.report_url);
+        
+        // Hide loading, show content
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('link-content').style.display = 'block';
+        
+        // Go to step 3
+        goToStep(3);
+        
+        showSuccess('Agent profile created successfully!');
+        
+      } catch (error) {
+        console.error('Registration error:', error);
+        showError(error.message || 'Registration failed. Please try again.');
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+    
+    function updateEmailTemplate(data) {
+      const name = data.agent.name;
+      const brokerage = data.agent.brokerage || 'Your Brokerage';
+      const link = data.report_url;
+      
+      const template = `Hi [client name],
+
+I've put together a full property intelligence report on the home at [address]. This includes market value estimates, comparable sales, ownership history, and investment analysis.
+
+Click here to see everything: ${link}
+
+Best regards,
+${name}
+${brokerage}`;
+      
+      document.getElementById('email-template').value = template;
+    }
+    
+    function generateQRCode(url) {
+      const canvas = document.getElementById('qr-canvas');
+      QRCode.toCanvas(canvas, url, {
+        width: 150,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+    }
+    
+    function copyLink() {
+      const linkInput = document.getElementById('report-link');
+      linkInput.select();
+      linkInput.setSelectionRange(0, 99999); // For mobile
+      navigator.clipboard.writeText(linkInput.value);
+      
+      const btn = document.querySelector('.copy-btn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+    
+    function downloadQR() {
+      const canvas = document.getElementById('qr-canvas');
+      const link = document.createElement('a');
+      link.download = `${agentData.agent.name.replace(/\s+/g, '-').toLowerCase()}-qr-code.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+    
+    function showSuccess(message) {
+      const el = document.getElementById('success-message');
+      el.textContent = message;
+      el.style.display = 'block';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 5000);
+    }
+    
+    function showError(message) {
+      const el = document.getElementById('error-message');
+      el.textContent = message;
+      el.style.display = 'block';
+      setTimeout(() => {
+        el.style.display = 'none';
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

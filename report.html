@@ -1281,6 +1281,11 @@
       const ts = (data.generated_at || '').replace('T',' ').substring(0,16) + ' UTC';
       document.getElementById('topbar-ts').textContent = `Generated ${ts}`;
 
+      // Agent branding injection
+      if (data._agent) {
+        injectAgentBranding(data._agent, addr);
+      }
+
       // Tier badge
       const badge = document.getElementById('tier-badge');
       badge.textContent = isPro ? 'Full Intel Report · Pro' : 'Public Record Report · Starter';
@@ -1831,10 +1836,134 @@
         if (data.error) throw new Error(data.error);
         
         stepDone('step-done');
+        
+        // Check for agent branding
+        const urlParams = new URLSearchParams(window.location.search);
+        const agentId = urlParams.get('agent');
+        
+        if (agentId) {
+          try {
+            // Fetch agent profile
+            const agentRes = await fetch(`${API}/api/agents/${agentId}`);
+            if (agentRes.ok) {
+              const agent = await agentRes.json();
+              data._agent = agent;
+              
+              // Increment agent report count (fire and forget)
+              fetch(`${API}/api/agents/${agentId}/increment`, { method: 'POST' }).catch(() => {});
+            }
+          } catch (e) {
+            console.warn('Agent branding failed:', e);
+          }
+        }
+        
         setTimeout(() => renderReport(data), 300);
       } catch (err) {
         showError(`Could not generate report: ${err.message}<br><br><a href="/" style="color:var(--accent-primary);font-weight:600">← Return to PropIntel</a>`);
       }
+    }
+
+    function injectAgentBranding(agent, address) {
+      // Update page title
+      document.title = `${agent.name} - Property Report: ${address}`;
+      
+      // Apply agent accent color
+      if (agent.accent_color) {
+        const accentColor = agent.accent_color;
+        const darkerColor = adjustColor(accentColor, -30);
+        
+        document.documentElement.style.setProperty('--accent-primary', accentColor);
+        document.documentElement.style.setProperty('--accent-secondary', darkerColor);
+        document.documentElement.style.setProperty('--accent-gradient', 
+          `linear-gradient(135deg, ${accentColor} 0%, ${darkerColor} 100%)`);
+        document.documentElement.style.setProperty('--accent-light', 
+          `${accentColor}20`);
+      }
+      
+      // Update topbar logo to show agent info
+      const topbarLogo = document.querySelector('.topbar-logo');
+      if (topbarLogo) {
+        topbarLogo.innerHTML = `
+          <div class="logo-icon">${getAgentInitials(agent.name)}</div>
+          <span>${agent.name}</span>
+        `;
+      }
+      
+      // Create agent header
+      const agentHeader = document.createElement('div');
+      agentHeader.className = 'agent-header';
+      agentHeader.style.cssText = `
+        background: var(--dark-surface);
+        border-bottom: 2px solid var(--accent-primary);
+        padding: 24px 32px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        justify-content: space-between;
+      `;
+      
+      const photoHtml = agent.photo_url 
+        ? `<img src="${agent.photo_url}" alt="${agent.name}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">`
+        : `<div style="width: 48px; height: 48px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px;">${getAgentInitials(agent.name)}</div>`;
+      
+      agentHeader.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 20px;">
+          ${photoHtml}
+          <div>
+            <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">${agent.name}</div>
+            <div style="color: var(--text-secondary); font-size: 0.875rem;">
+              ${agent.brokerage ? agent.brokerage + (agent.phone ? ' | ' : '') : ''}
+              ${agent.phone || ''}
+            </div>
+          </div>
+        </div>
+        <div style="text-align: right; color: var(--text-muted); font-size: 0.75rem;">
+          Powered by PropIntel
+        </div>
+      `;
+      
+      // Insert agent header after topbar
+      const topbar = document.querySelector('.topbar');
+      if (topbar && topbar.nextSibling) {
+        topbar.parentNode.insertBefore(agentHeader, topbar.nextSibling);
+      }
+      
+      // Add agent footer
+      const report = document.querySelector('.report');
+      if (report) {
+        const agentFooter = document.createElement('div');
+        agentFooter.style.cssText = `
+          text-align: center;
+          padding: 32px;
+          border-top: 1px solid var(--dark-border);
+          margin-top: 48px;
+          color: var(--text-muted);
+          font-size: 0.875rem;
+        `;
+        agentFooter.innerHTML = `
+          Prepared by <strong style="color: var(--text-primary);">${agent.name}</strong>
+          ${agent.brokerage ? `, <strong style="color: var(--text-primary);">${agent.brokerage}</strong>` : ''}
+          <br>
+          <span style="font-size: 0.75rem;">Powered by PropIntel</span>
+        `;
+        report.appendChild(agentFooter);
+      }
+    }
+    
+    function getAgentInitials(name) {
+      return name.split(' ').map(part => part[0]).join('').toUpperCase().slice(0, 2);
+    }
+    
+    function adjustColor(hex, percent) {
+      const num = parseInt(hex.replace("#", ""), 16);
+      const amt = Math.round(2.55 * percent);
+      const R = (num >> 16) + amt;
+      const G = (num >> 8 & 0x00FF) + amt;
+      const B = (num & 0x0000FF) + amt;
+      return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255))
+        .toString(16).slice(1);
     }
 
     loadReport();
