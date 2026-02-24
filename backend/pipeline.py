@@ -245,10 +245,32 @@ def run(input_str: str, tier: str = "starter") -> dict:
             "price_reduced": report["listing"].get("price_reduced", False),
             "price_reduction_amount": report["listing"].get("price_reduction_amount", 0),
         }
+
+        # Extract hold_years from Realie/ATTOM ownership history when available.
+        # report["ownership_history"] is set earlier from either source.
+        _ownership = report.get("ownership_history", {})
+        _hold_years = None
+        if isinstance(_ownership, dict) and _ownership.get("available"):
+            _hold_years = _ownership.get("hold_years")
+            # Some sources nest it under the first history entry
+            if _hold_years is None:
+                _hist_list = _ownership.get("history", [])
+                if _hist_list and isinstance(_hist_list[0], dict):
+                    _hold_years = _hist_list[0].get("hold_years")
+        # Validate: must be a non-negative number
+        if _hold_years is not None:
+            try:
+                _hold_years = float(_hold_years)
+                if _hold_years < 0:
+                    _hold_years = None
+            except (TypeError, ValueError):
+                _hold_years = None
+
         report["motivation"] = motivation_score(
             parcel=parcel_data,
             listing=listing_meta,
             deed_history=parcel_data.get("deed_history", []),
+            hold_years=_hold_years,
         )
 
         # DataZapp skip trace

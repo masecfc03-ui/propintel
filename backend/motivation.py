@@ -7,7 +7,7 @@ from datetime import datetime, date
 import re
 
 
-def score(parcel: dict, listing: dict, deed_history: list = None) -> dict:
+def score(parcel: dict, listing: dict, deed_history: list = None, hold_years: float = None) -> dict:
     """
     Returns:
     {
@@ -46,8 +46,16 @@ def score(parcel: dict, listing: dict, deed_history: list = None) -> dict:
     })
 
     # ── 2. Long hold duration ─────────────────────────────────────────────────
+    # Prefer hold_years from Realie ownership history (authoritative).
+    # Fall back to computing from deed_history if hold_years is not provided.
     years_held = None
-    if deed_history and len(deed_history) > 0:
+    hold_source = "Dallas County Clerk deed records — acquisition date"
+
+    if hold_years is not None and hold_years >= 0:
+        # Realie-supplied hold duration — most reliable
+        years_held = float(hold_years)
+        hold_source = "Realie ownership history — hold duration"
+    elif deed_history and len(deed_history) > 0:
         latest = deed_history[0]
         deed_date_str = latest.get("date", "")
         try:
@@ -60,15 +68,35 @@ def score(parcel: dict, listing: dict, deed_history: list = None) -> dict:
             except Exception:
                 pass
 
-    long_hold = years_held is not None and years_held >= 5
-    pts = 20 if years_held and years_held >= 7 else (12 if long_hold else 0)
+    # Scoring tiers:
+    #   VERY_LONG_HOLD (20+ yr): +15 pts — owner almost certainly open to exit
+    #   LONG_HOLD (10+ yr):      +10 pts — elevated motivation signal
+    #   Moderate hold (5-9 yr):  +5 pts  — mild signal
+    #   Under 5 years:           +0 pts
+    if years_held is not None and years_held >= 20:
+        pts = 15
+        signal_name = "Very Long Hold Duration (20+ yr)"
+        long_hold = True
+    elif years_held is not None and years_held >= 10:
+        pts = 10
+        signal_name = "Long Hold Duration (10+ yr)"
+        long_hold = True
+    elif years_held is not None and years_held >= 5:
+        pts = 5
+        signal_name = "Long Hold Duration (5+ yr)"
+        long_hold = True
+    else:
+        pts = 0
+        signal_name = "Long Hold Duration"
+        long_hold = False
+
     total += pts
     indicators.append({
-        "name": "Long Hold Duration",
+        "name": signal_name,
         "triggered": long_hold,
         "points": pts,
-        "evidence": f"{years_held:.1f} years held" if years_held else "Deed date not available",
-        "source": "Dallas County Clerk deed records — acquisition date",
+        "evidence": "{:.1f} years held".format(years_held) if years_held is not None else "Deed date not available",
+        "source": hold_source,
     })
 
     # ── 3. LLC / entity ownership ─────────────────────────────────────────────
