@@ -128,6 +128,22 @@ def run(input_str: str, tier: str = "starter") -> dict:
             tasks["attom_mortgage"] = ex.submit(get_mortgage_lien, attom_addr, attom_zip)
             tasks["attom_history"]  = ex.submit(get_ownership_history, attom_addr, attom_zip)
 
+        # ── Realie enrichment (activates when REALIE_API_KEY set; ATTOM takes priority) ──
+        elif _os.environ.get("REALIE_API_KEY"):
+            from scrapers.realie import (
+                get_avm as realie_avm,
+                get_sold_comps as realie_comps,
+                get_ownership_history as realie_history,
+                get_property_detail as realie_detail,
+            )
+            _lat = geo.get("lat")
+            _lng = geo.get("lng")
+            tasks["realie_detail"]  = ex.submit(realie_detail, address)
+            tasks["realie_avm"]     = ex.submit(realie_avm, address, _lat, _lng)
+            tasks["realie_comps"]   = ex.submit(realie_comps, address, zip_code,
+                                                 _lat, _lng, 1.0, 18, 15)
+            tasks["realie_history"] = ex.submit(realie_history, address)
+
         import concurrent.futures as _cf
         results = {}
         for key, future in tasks.items():
@@ -153,31 +169,42 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["nearby"]       = [p for p in (results.get("nearby") or []) if p and not p.get("error")]
     report["walkscore"]    = results.get("walkscore", {"available": False})
 
-    # ── ATTOM enrichment (only populated when ATTOM_API_KEY is set) ──────────
+    # ── Property enrichment: ATTOM (priority) or Realie (fallback) ──────────
     attom_avm      = results.get("attom_avm", {})
     attom_comps    = results.get("attom_comps", {})
     attom_mortgage = results.get("attom_mortgage", {})
     attom_history  = results.get("attom_history", {})
 
-    report["avm"]              = attom_avm      if attom_avm.get("available")  else {"available": False}
-    report["sold_comps"]       = attom_comps    if attom_comps.get("available") else {"available": False, "comps": []}
-    report["mortgage"]         = attom_mortgage if attom_mortgage.get("available") else {"available": False}
-    report["ownership_history"]= attom_history  if attom_history.get("available")  else {"available": False, "history": []}
+    realie_avm_r   = results.get("realie_avm", {})
+    realie_comps_r = results.get("realie_comps", {})
+    realie_hist_r  = results.get("realie_history", {})
 
-    # If ATTOM AVM is available, use it to improve market estimate
-    if attom_avm.get("available") and attom_avm.get("value"):
+    # Merge: prefer ATTOM when available, fall back to Realie
+    _avm      = attom_avm     if attom_avm.get("available")     else realie_avm_r
+    _comps    = attom_comps   if attom_comps.get("available")   else realie_comps_r
+    _mortgage = attom_mortgage if attom_mortgage.get("available") else {}
+    _history  = attom_history if attom_history.get("available")  else realie_hist_r
+
+    report["avm"]              = _avm      if _avm.get("available")     else {"available": False}
+    report["sold_comps"]       = _comps    if _comps.get("available")   else {"available": False, "comps": []}
+    report["mortgage"]         = _mortgage if _mortgage.get("available") else {"available": False}
+    report["ownership_history"]= _history  if _history.get("available")  else {"available": False, "history": []}
+
+    # If AVM is available (from either source), improve market estimate
+    if _avm.get("available") and _avm.get("value"):
+        _avm_source = _avm.get("source", "AVM")
         report["market_estimate"] = {
             "available":   True,
             "assessed":    parcel_data.get("assessed_total"),
             "assessed_fmt":f"${parcel_data.get('assessed_total',0):,.0f}" if parcel_data.get("assessed_total") else None,
-            "market_low":  attom_avm.get("value_low") or attom_avm.get("value"),
-            "market_high": attom_avm.get("value_high") or attom_avm.get("value"),
-            "market_mid":  attom_avm.get("value"),
-            "range_fmt":   attom_avm.get("range_fmt") or attom_avm.get("value_fmt"),
-            "confidence":  f"{attom_avm.get('confidence_score')}%" if attom_avm.get("confidence_score") else "ATTOM AVM",
-            "methodology": "ATTOM Automated Valuation Model (AVM)",
-            "source":      "ATTOM",
-            "avm_date":    attom_avm.get("calc_date"),
+            "market_low":  _avm.get("value_low") or _avm.get("value"),
+            "market_high": _avm.get("value_high") or _avm.get("value"),
+            "market_mid":  _avm.get("value"),
+            "range_fmt":   _avm.get("range_fmt") or _avm.get("value_fmt"),
+            "confidence":  f"{_avm.get('confidence_score')}%" if _avm.get("confidence_score") else _avm_source,
+            "methodology": f"{_avm_source} Automated Valuation Model (AVM)",
+            "source":      _avm_source,
+            "avm_date":    _avm.get("calc_date"),
         }
 
     # ── Owner entity intelligence (all tiers — public TX SOS data) ────────────
