@@ -825,10 +825,11 @@ nav {
    PRICING
 ═══════════════════════════════════════════ */
 .pricing-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 16px; margin-top: 56px; max-width: 760px;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-top: 56px; max-width: 1200px;
 }
-@media(max-width:600px) { .pricing-grid { grid-template-columns: 1fr; } }
+@media(max-width:1024px) { .pricing-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width:600px)  { .pricing-grid { grid-template-columns: 1fr; } }
 
 .price-card {
   background: var(--bg1);
@@ -839,20 +840,22 @@ nav {
 }
 .price-card:hover { transform: translateY(-2px); }
 .price-card.featured {
-  background: linear-gradient(135deg, rgba(37,99,235,0.07) 0%, rgba(124,58,237,0.04) 100%);
-  border-color: rgba(96,165,250,0.3);
-  box-shadow: 0 0 40px rgba(37,99,235,0.08), inset 0 1px 0 rgba(96,165,250,0.12);
+  background: linear-gradient(135deg, rgba(37,99,235,0.09) 0%, rgba(124,58,237,0.05) 100%);
+  border-color: rgba(96,165,250,0.45);
+  box-shadow: 0 0 0 1px rgba(96,165,250,0.25), 0 0 40px rgba(37,99,235,0.18), inset 0 1px 0 rgba(96,165,250,0.15);
+  transform: translateY(-4px);
 }
 .price-card.featured:hover {
-  box-shadow: 0 20px 60px rgba(37,99,235,0.12), 0 4px 16px rgba(0,0,0,0.2);
+  box-shadow: 0 0 0 1px rgba(96,165,250,0.35), 0 20px 60px rgba(37,99,235,0.22), 0 4px 16px rgba(0,0,0,0.2);
+  transform: translateY(-6px);
 }
 
 .price-popular {
-  position: absolute; top: 20px; right: 20px;
+  display: inline-block; margin-bottom: 14px;
   font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
   color: var(--blue-l);
-  background: rgba(37,99,235,0.12); border: 1px solid rgba(96,165,250,0.25);
-  padding: 4px 10px; border-radius: 8px;
+  background: rgba(37,99,235,0.18); border: 1px solid rgba(96,165,250,0.35);
+  padding: 4px 12px; border-radius: 20px;
 }
 .price-tier {
   font-size: 0.68rem; font-weight: 700; color: var(--g3);
@@ -1656,44 +1659,73 @@ footer {
 <!-- PRICING -->
 <div class="section" id="pricing">
   <div class="section-eyebrow reveal">Pricing</div>
-  <h2 class="section-title reveal reveal-delay-1">Pay for what you need.</h2>
-  <p class="section-sub reveal reveal-delay-2">No subscription. No seat fees. One report, one price — yours to keep forever.</p>
+  <h2 class="section-title reveal reveal-delay-1">Start free. Scale up.</h2>
+  <p class="section-sub reveal reveal-delay-2">One report or unlimited. Your call — no lock-in, no seat fees.</p>
 
   <div class="pricing-grid">
-    <div class="price-card reveal">
-      <div class="price-tier">Starter</div>
-      <div class="price-amount">$9.99</div>
-      <div class="price-per">per report — no subscription</div>
-      <ul class="price-list">
-        <li><span class="price-check">✓</span> Owner of record + mailing address</li>
-        <li><span class="price-check">✓</span> Tax assessed value</li>
-        <li><span class="price-check">✓</span> FEMA flood zone designation</li>
-        <li><span class="price-check">✓</span> Year built, lot size, use type</li>
-        <li><span class="price-check">✓</span> Census demographics (income, population)</li>
-        <li><span class="price-check">✓</span> PDF report — 5 pages</li>
-        <li><span class="price-check">✓</span> Shareable link</li>
-      </ul>
-      <a class="price-btn" href="https://buy.stripe.com/4gMaEQd1S0zO8Tod6jfrW00" target="_blank">Get Starter report →</a>
-    </div>
 
-    <div class="price-card featured reveal reveal-delay-1">
-      <div class="price-popular">Most popular</div>
-      <div class="price-tier">Pro</div>
+    <!-- Pay Per Report -->
+    <div class="price-card reveal">
+      <div class="price-tier">Pay Per Report</div>
       <div class="price-amount">$29.99</div>
       <div class="price-per">per report — no subscription</div>
       <ul class="price-list">
-        <li><span class="price-check">✓</span> Everything in Starter</li>
-        <li><span class="price-check">✓</span> Seller motivation score (0–100)</li>
-        <li><span class="price-check">✓</span> AVM — real market value estimate</li>
-        <li><span class="price-check">✓</span> Sold comps — 90d / 6mo / 12mo</li>
-        <li><span class="price-check">✓</span> Mortgage & equity position</li>
-        <li><span class="price-check">✓</span> Ownership history</li>
-        <li><span class="price-check">✓</span> Skip trace — phones & email</li>
-        <li><span class="price-check">✓</span> Deal analyzer — 3 purchase scenarios</li>
-        <li><span class="price-check">✓</span> PDF report — 13+ pages</li>
+        <li><span class="price-check">✓</span> Full property intelligence report</li>
+        <li><span class="price-check">✓</span> AVM + sold comps + ownership history</li>
+        <li><span class="price-check">✓</span> Motivation score + deal analyzer</li>
+        <li><span class="price-check">✓</span> PDF + email delivery</li>
+        <li><span class="price-check">✓</span> No subscription required</li>
       </ul>
-      <a class="price-btn cta" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank">Get Pro report →</a>
+      <a class="price-btn" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank">Buy Report →</a>
     </div>
+
+    <!-- Agent Plan — Most Popular -->
+    <div class="price-card featured reveal reveal-delay-1">
+      <div class="price-popular">Most Popular</div>
+      <div class="price-tier">Agent Plan</div>
+      <div class="price-amount">$79</div>
+      <div class="price-per">per month — billed monthly</div>
+      <ul class="price-list">
+        <li><span class="price-check">✓</span> 25 branded reports/month</li>
+        <li><span class="price-check">✓</span> 3 client email templates</li>
+        <li><span class="price-check">✓</span> White-label — your name &amp; brokerage</li>
+        <li><span class="price-check">✓</span> Client email delivery built-in</li>
+        <li><span class="price-check">✓</span> Perfect for 1–5 agent teams</li>
+      </ul>
+      <a class="price-btn cta" href="https://buy.stripe.com/14AaEQe5W2HW3z48Q3frW02" target="_blank">Start Free Trial →</a>
+    </div>
+
+    <!-- Broker Plan -->
+    <div class="price-card reveal reveal-delay-2">
+      <div class="price-tier">Broker Plan</div>
+      <div class="price-amount">$299</div>
+      <div class="price-per">per month — billed monthly</div>
+      <ul class="price-list">
+        <li><span class="price-check">✓</span> Unlimited reports</li>
+        <li><span class="price-check">✓</span> 10 team seats</li>
+        <li><span class="price-check">✓</span> All templates + API access</li>
+        <li><span class="price-check">✓</span> Custom brokerage branding</li>
+        <li><span class="price-check">✓</span> Priority support</li>
+      </ul>
+      <a class="price-btn" href="#contact">Get Started →</a>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="price-card reveal reveal-delay-3">
+      <div class="price-tier">Enterprise</div>
+      <div class="price-amount">$999</div>
+      <div class="price-per">per month — billed monthly</div>
+      <ul class="price-list">
+        <li><span class="price-check">✓</span> Everything in Broker</li>
+        <li><span class="price-check">✓</span> Permit history on every report</li>
+        <li><span class="price-check">✓</span> LLC pierce + ownership tree</li>
+        <li><span class="price-check">✓</span> Bulk export (CSV/PDF batch)</li>
+        <li><span class="price-check">✓</span> Dedicated account manager</li>
+        <li><span class="price-check">✓</span> ATTOM data integration</li>
+      </ul>
+      <a class="price-btn" href="#contact">Contact Sales →</a>
+    </div>
+
   </div>
 </div>
 
