@@ -505,8 +505,8 @@ def get_mortgage_lien(address: str, zipcode: str = "") -> dict:
     lender    = raw.get("lenderName")
     lien_cnt  = raw.get("totalLienCount")
     fin_hist  = raw.get("totalFinancingHistCount")
-    orig_loan = raw.get("loanAmount") or raw.get("originalLoanAmount")
-    loan_date = raw.get("loanOriginationDate") or raw.get("loanDate")
+    orig_loan = raw.get("loanAmount") or raw.get("originalLoanAmount") or raw.get("openLoanAmount")
+    loan_date = raw.get("loanOriginationDate") or raw.get("loanDate") or raw.get("loanRecordingDate")
 
     if lien_bal is None and equity is None:
         return {"available": False, "error": "No lien/equity data for this property"}
