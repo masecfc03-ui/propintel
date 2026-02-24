@@ -1,11 +1,14 @@
 """
 Mailer — sends PropIntel reports via email.
-Supports SendGrid API (preferred) and SMTP fallback.
+
+Delivery chain: Mailgun (primary) → SMTP fallback → log error.
 
 Setup:
-  Option A: Set SENDGRID_API_KEY in .env (free tier = 100/day)
-  Option B: Set SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS in .env
+  Primary:  MAILGUN_API_KEY, MAILGUN_DOMAIN
+  Fallback: SMTP_HOST (default smtp.gmail.com), SMTP_PORT (default 587),
+            SMTP_USER, SMTP_PASS
 """
+import logging
 import os
 import smtplib
 import json
@@ -14,6 +17,8 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 from typing import Optional
+
+log = logging.getLogger(__name__)
 
 SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
 MAILGUN_API_KEY = os.environ.get("MAILGUN_API_KEY", "")
@@ -36,12 +41,16 @@ def send_report(to_email: str, to_name: str, address: str,
     Send the PropIntel report to a customer.
     Attaches a PDF copy when report_data is provided.
 
-    Returns: {"success": True/False, "method": "sendgrid|smtp|none", "error": str}
+    Delivery chain: Mailgun → SMTP → log error.
+
+    Returns: {"success": True/False, "method": "mailgun|smtp|none", "error": str}
     """
     if not to_email:
         return {"success": False, "method": "none", "error": "No recipient email"}
 
-    subject = f"PropIntel {'Full Intel' if tier == 'pro' else 'Public Record'} Report — {address}"
+    subject = "PropIntel {} Report — {}".format(
+        "Full Intel" if tier == "pro" else "Public Record", address
+    )
     html_body = _build_email_body(to_name, address, tier, report_html, report_id, order_id, report_token)
 
     # Generate PDF attachment
@@ -53,41 +62,45 @@ def send_report(to_email: str, to_name: str, address: str,
             from pdf_builder import generate_pdf_bytes
             pdf_bytes = generate_pdf_bytes(report_data)
             safe_addr = address.replace(",", "").replace(" ", "_")[:40]
-            pdf_filename = f"PropIntel_Report_{safe_addr}.pdf"
+            pdf_filename = "PropIntel_Report_{}.pdf".format(safe_addr)
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).warning("PDF generation failed (sending without): %s", e)
+            log.warning("PDF generation failed (sending without): %s", e)
             pdf_error = str(e)
 
-    last_error = "No email provider configured"
+    mailgun_error = "Mailgun: not configured"
 
-    # Try Mailgun first (already configured)
+    # 1. Try Mailgun first
     if MAILGUN_API_KEY and MAILGUN_DOMAIN:
         result = _send_mailgun(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
         if result["success"]:
             if pdf_error:
                 result["pdf_error"] = pdf_error
             return result
-        last_error = f"Mailgun: {result.get('error', 'unknown')}"
+        mailgun_error = "Mailgun: {}".format(result.get("error", "unknown"))
+        log.warning("Mailgun delivery failed — falling back to SMTP. %s", mailgun_error)
 
-    # Try SendGrid
-    if SENDGRID_API_KEY:
-        result = _send_sendgrid(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
-        if result["success"]:
-            if pdf_error:
-                result["pdf_error"] = pdf_error
-            return result
-        last_error = f"SendGrid: {result.get('error', 'unknown')}"
-
-    # Fallback to SMTP
-    if SMTP_USER and SMTP_PASS:
-        r = _send_smtp(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
+    # 2. Fallback to SMTP
+    smtp_result = _send_smtp(to_email, to_name, subject, html_body, pdf_bytes, pdf_filename)
+    if smtp_result["success"]:
         if pdf_error:
-            r["pdf_error"] = pdf_error
-        return r
+            smtp_result["pdf_error"] = pdf_error
+        return smtp_result
 
-    return {"success": False, "method": "none", "error": last_error,
-            "pdf_error": pdf_error}
+    smtp_error = "SMTP: {}".format(smtp_result.get("error", "unknown"))
+    log.error(
+        "All email providers failed for %s | %s | %s",
+        to_email, mailgun_error, smtp_error,
+    )
+
+    failure = {
+        "success": False,
+        "method": "none",
+        "error": "All email providers failed",
+        "last_error": smtp_error,
+    }
+    if pdf_error:
+        failure["pdf_error"] = pdf_error
+    return failure
 
 
 def _build_email_body(name: str, address: str, tier: str,
