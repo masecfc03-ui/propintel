@@ -10,11 +10,13 @@ from scrapers.fema import get_flood_zone
 from scrapers.census import get_demographics
 from scrapers.dcad import search_by_address as dcad_by_address
 from scrapers.regrid import search_by_point as regrid_by_point, search_by_address as regrid_by_address, search_nearby as regrid_nearby
+from scrapers.county_router import get_parcel_data as county_parcel_lookup
 from scrapers.txsos import search_by_address as txsos_address, search_entity as txsos_entity
 from scrapers.listing import parse_listing, is_address, detect_source
 from scrapers.datazapp import parse_owner_name
 from scrapers import pdl as pdl_skip
 from scrapers.walkscore import get_scores as walkscore_get
+from scrapers.permits import get_permits
 from motivation import score as motivation_score
 
 
@@ -98,6 +100,15 @@ def run(input_str: str, tier: str = "starter") -> dict:
         if lat and lng and address:
             tasks["walkscore"] = ex.submit(walkscore_get, address, lat, lng)
 
+        # Permits — free city open data (Dallas/Houston/Austin/San Antonio)
+        if address:
+            tasks["permits"] = ex.submit(get_permits, address, geo)
+
+        # County router: free direct county scraper (all TX counties + more)
+        # Runs in parallel with Regrid. Merge logic prefers county router > Regrid > Realie fallback.
+        if address:
+            tasks["county_router"] = ex.submit(county_parcel_lookup, address, geo)
+
         # DCAD supplemental fetch for TX addresses (Dallas County extra fields: tax district, school, etc.)
         # geocode doesn't always return county — use state + zip prefix as proxy
         geo_state = geo.get("state", "").upper()
@@ -159,10 +170,12 @@ def run(input_str: str, tier: str = "starter") -> dict:
                 results[key] = {"error": err_msg}
                 report["errors"].append("{}: {}".format(key, err_msg))
 
-    # ── Merge parcel data: Regrid primary, DCAD overlay for Dallas County ─────
-    regrid_data = results.get("regrid", {})
-    dcad_data = results.get("dcad", {})
-    parcel_data = _merge_parcel(regrid_data, dcad_data, address)
+    # ── Merge parcel data: county_router > Regrid > DCAD overlay > Realie fallback ──
+    county_data = results.get("county_router") or {}
+    regrid_data = results.get("regrid") or {}
+    dcad_data = results.get("dcad") or {}
+    realie_detail_data = results.get("realie_detail") or {}
+    parcel_data = _merge_parcel(county_data, regrid_data, dcad_data, address, realie_detail_data)
 
     report["parcel"]       = parcel_data
     report["flood"]        = results.get("fema", {})
@@ -174,8 +187,8 @@ def run(input_str: str, tier: str = "starter") -> dict:
     # ── Property type classification ──────────────────────────────────────────
     report["property_class"] = _detect_property_class(parcel_data)
 
-    # ── Permits (placeholder — activates with ATTOM_API_KEY, see issue #9) ───
-    report["permits"] = {"available": False, "list": []}
+    # ── Permits — free city open data portals (Dallas/Houston/Austin/San Antonio) ──
+    report["permits"] = results.get("permits", {"available": False, "permits": [], "summary": {"total": 0}})
 
     # ── Property enrichment: ATTOM (priority) or Realie (fallback) ──────────
     attom_avm      = results.get("attom_avm", {})
@@ -337,6 +350,8 @@ def _detect_property_class(parcel):
     and fallback signals. Returns a string: RESIDENTIAL, MULTIFAMILY, COMMERCIAL,
     INDUSTRIAL, or LAND.
     """
+    if not parcel or not isinstance(parcel, dict):
+        return "COMMERCIAL"
     use = (parcel.get("use_description") or "").upper()
     if any(x in use for x in ["SINGLE FAMILY", "RESIDENCE", "RESIDENTIAL", "SFR",
                                 "CONDO", "TOWNHOME", "DUPLEX", "TRIPLEX", "FOURPLEX"]):
@@ -524,56 +539,112 @@ def _estimate_financials(parcel: dict, market_est: dict) -> dict:
     return result
 
 
-def _merge_parcel(regrid: dict, dcad: dict, address: str) -> dict:
+def _merge_parcel(county, regrid, dcad, address, realie=None):
     """
-    Merge Regrid (primary, national) + DCAD (supplemental, Dallas County only).
+    Merge county_router (primary, free direct) + Regrid (national fallback) +
+    DCAD overlay (Dallas County extra fields) + Realie as last-resort fallback.
 
-    Strategy:
-    - Use Regrid as base if it returned valid data (owner_name or apn present)
-    - Overlay DCAD fields that Regrid doesn't have (tax_district, school_district, etc.)
-    - Fall back to DCAD entirely if Regrid failed or returned outside-coverage error
-    - Fall back to address-only stub if both fail
+    Priority order:
+      1. County router (direct CAD scraper — free, authoritative for covered counties)
+      2. Regrid (national parcel database — broad coverage)
+      3. DCAD overlay (supplemental TX fields like tax_district, school_district)
+      4. Realie property data (mapped to parcel fields — any US address)
+      5. Structured error stub
+
+    Args:
+        county: dict from county_router (may have "available": False or "error" on miss)
+        regrid: dict from Regrid API
+        dcad: dict from DCAD direct scraper (Dallas County only)
+        address: original address string
+        realie: dict from realie.get_property_detail (optional, parcel fallback)
     """
-    regrid_ok = regrid and not regrid.get("error") and (regrid.get("owner_name") or regrid.get("apn"))
-    dcad_ok = dcad and not dcad.get("error") and (dcad.get("owner_name") or dcad.get("apn"))
+    # Normalize None → empty dict
+    county = county or {}
+    regrid = regrid or {}
+    dcad = dcad or {}
+    realie = realie or {}
 
+    def _has_data(d):
+        """True if the dict has meaningful parcel data (owner or apn)."""
+        return bool(
+            d and
+            not d.get("error") and
+            d.get("available", True) is not False and
+            (d.get("owner_name") or d.get("apn"))
+        )
+
+    county_ok = _has_data(county)
+    regrid_ok = _has_data(regrid)
+    dcad_ok = _has_data(dcad)
+
+    # ── Priority 1: County router data (direct CAD, most authoritative) ──────
+    if county_ok:
+        merged = dict(county)
+        # Overlay DCAD-specific fields that county scrapers may lack
+        if dcad_ok:
+            for field in ("tax_district", "school_district",
+                          "assessed_yoy_pct", "dcad_direct_url", "revalue_year"):
+                if dcad.get(field) and not merged.get(field):
+                    merged[field] = dcad[field]
+            if dcad.get("tax_delinquent"):
+                merged["tax_delinquent"] = True
+        # Supplement with Regrid national fields (lot_sf, lat, lng, etc.)
+        if regrid_ok:
+            for field in ("lot_sf", "lat", "lng", "acreage", "zoning"):
+                if regrid.get(field) and not merged.get(field):
+                    merged[field] = regrid[field]
+        sources = [county.get("source", "County CAD")]
+        if dcad_ok:
+            sources.append("DCAD")
+        if regrid_ok:
+            sources.append("Regrid")
+        merged["data_sources"] = " + ".join(sources)
+        return merged
+
+    # ── Priority 2: Regrid national data ─────────────────────────────────────
     if regrid_ok:
         merged = dict(regrid)
-        # Overlay DCAD-specific fields that Regrid lacks
+        # Overlay DCAD-specific fields
         if dcad_ok:
             for field in ("tax_district", "school_district", "use_code",
                           "legal_description", "subdivision", "revalue_year",
                           "assessed_yoy_pct", "dcad_direct_url"):
                 if dcad.get(field) and not merged.get(field):
                     merged[field] = dcad[field]
-            # DCAD assessed values are often more up-to-date for TX
             if dcad.get("assessed_total") and not merged.get("assessed_total"):
                 merged["assessed_total"] = dcad["assessed_total"]
                 merged["assessed_land"] = dcad.get("assessed_land")
                 merged["assessed_improvement"] = dcad.get("assessed_improvement")
-            # Tax delinquency from DCAD
             if dcad.get("tax_delinquent"):
                 merged["tax_delinquent"] = True
         merged["data_sources"] = "Regrid" + (" + DCAD" if dcad_ok else "")
         return merged
 
+    # ── Priority 3: DCAD direct (Dallas County fallback) ─────────────────────
     if dcad_ok:
         dcad["data_sources"] = "DCAD"
         return dcad
 
-    # Both failed — return structured error (never silently return N/A)
+    # ── Priority 4: Realie property data mapped to parcel fields ─────────────
+    realie_parcel = _realie_as_parcel(realie)
+    if realie_parcel:
+        realie_parcel["data_sources"] = "Realie (property data fallback)"
+        return realie_parcel
+
+    # ── Priority 5: All sources failed — structured error stub ───────────────
     regrid_err = regrid.get("error", "unknown") if regrid else "no response"
     regrid_err_type = regrid.get("error_type", "") if regrid else ""
+    county_err = county.get("error", "") if county else ""
     dcad_err = dcad.get("warning") or dcad.get("error", "") if dcad else ""
 
-    # Human-readable reason for the report UI
-    if "expired" in regrid_err.lower() or "auth" in regrid_err_type:
+    regrid_err_lower = (regrid_err or "").lower()
+    if "expired" in regrid_err_lower or "auth" in (regrid_err_type or ""):
         user_reason = "Parcel data service key expired. Contact PropIntel support."
         action = "renew_key"
-    elif "coverage" in regrid_err_type or "outside" in regrid_err.lower():
+    elif "coverage" in (regrid_err_type or "") or "outside" in regrid_err_lower:
         user_reason = "This address is currently outside our covered service area. We're expanding coverage — check back soon."
         action = "outside_coverage"
-    elif "timeout" in regrid_err.lower():
+    elif "timeout" in regrid_err_lower:
         user_reason = "Parcel data request timed out. Please try again in a moment."
         action = "retry"
     else:
@@ -586,13 +657,84 @@ def _merge_parcel(regrid: dict, dcad: dict, address: str) -> dict:
         "parcel_error_reason": user_reason,
         "parcel_error_action": action,
         "warning": "Parcel data unavailable — {}".format(regrid_err),
+        "county_warning": county_err or None,
         "dcad_warning": dcad_err or None,
         "data_sources": "none",
     }
-    # Include DCAD manual link if available
-    if dcad and dcad.get("manual_url"):
+    if county and county.get("manual_url"):
+        fallback["manual_url"] = county["manual_url"]
+    elif dcad and dcad.get("manual_url"):
         fallback["manual_url"] = dcad["manual_url"]
     return fallback
+
+
+def _realie_as_parcel(realie_data):
+    """
+    Use Realie property data as parcel fallback when no county scraper or Regrid available.
+    Maps Realie property fields to PropIntel parcel field names.
+    Returns empty dict if realie_data is missing or has an error.
+    """
+    if not realie_data:
+        return {}
+    if realie_data.get("error"):
+        return {}
+    # realie_detail returns 'available' key; also check _raw
+    raw = realie_data.get("_raw") or realie_data
+    if not raw:
+        return {}
+
+    owner_state = (raw.get("ownerState") or "").upper()
+    out_of_state = owner_state not in ("TX", "")
+
+    return {
+        "source": "Realie (property data fallback)",
+        "owner_name": raw.get("ownerName") or realie_data.get("owner_name") or "",
+        "assessed_total": (
+            raw.get("totalAssessedValue") or
+            realie_data.get("assessed_value")
+        ),
+        "building_sf": (
+            raw.get("buildingArea") or
+            realie_data.get("building_sf")
+        ),
+        "year_built": (
+            raw.get("yearBuilt") or
+            realie_data.get("year_built")
+        ),
+        "bedrooms": (
+            raw.get("totalBedrooms") or
+            realie_data.get("beds")
+        ),
+        "bathrooms": (
+            raw.get("totalBathrooms") or
+            realie_data.get("baths")
+        ),
+        "apn": (
+            raw.get("parcelId") or
+            realie_data.get("parcel_id") or
+            ""
+        ),
+        "county": (
+            raw.get("county") or
+            realie_data.get("county") or
+            ""
+        ),
+        "use_description": (
+            raw.get("propertyType") or
+            raw.get("landUse") or
+            ""
+        ),
+        "out_of_state_owner": out_of_state,
+        "absentee_owner": False,
+        "tax_delinquent": False,
+        "lot_sf": raw.get("landArea") or realie_data.get("lot_sf"),
+        "last_sale_date": realie_data.get("last_sale_date"),
+        "last_sale_price": realie_data.get("last_sale_price"),
+        "subdivision": (
+            raw.get("subdivision") or
+            realie_data.get("subdivision")
+        ),
+    }
 
 
 def _analyze_deal(report: dict) -> dict:
