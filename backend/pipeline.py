@@ -16,6 +16,7 @@ from scrapers.listing import parse_listing, is_address, detect_source
 from scrapers.datazapp import parse_owner_name
 from scrapers.walkscore import get_scores as walkscore_get
 from scrapers.permits import get_permits
+from scrapers.avm import calculate_avm
 from motivation import score as motivation_score
 
 
@@ -216,7 +217,25 @@ def run(input_str: str, tier: str = "starter") -> dict:
         except Exception:
             pass
 
-    # AVM Tier 4: TX county assessed value (100% market value per TX Property Tax Code Sec 23.01)
+    # AVM Tier 4: PropIntel Internal AVM — built from existing comp data (no paid API)
+    if not _avm.get("available") and _comps.get("available") and _comps.get("comps"):
+        try:
+            # Prepare subject property data for AVM calculation
+            subject_property = {
+                **parcel_data,
+                "lat": lat,
+                "lng": lng,
+                "property_class": report["property_class"]
+            }
+            
+            # Calculate internal AVM using comp data
+            internal_avm = calculate_avm(subject_property, _comps.get("comps", []))
+            if internal_avm.get("available"):
+                _avm = internal_avm
+        except Exception as ex:
+            log.warning("Internal AVM calculation failed: %s", ex)
+
+    # AVM Tier 5: TX county assessed value (100% market value per TX Property Tax Code Sec 23.01)
     # If ATTOM/Realie/RentCast AVM all unavailable, use county assessed value as baseline
     if not _avm.get("available"):
         _assessed = parcel_data.get("assessed_total")

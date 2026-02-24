@@ -78,6 +78,7 @@ from accounts import (
 from mailer import send_report
 import cache as report_cache
 import idempotency
+from migrate import migrate
 
 app = Flask(__name__)
 CORS(app, origins=["*"])
@@ -102,6 +103,22 @@ def _check_rate_limit(ip: str) -> bool:
         _rate_store[ip] = hits
         return True
 log.info("PropIntel API starting up")
+
+# ─── DATABASE MIGRATION ─────────────────────────────────────────────────────
+# Run database migrations on startup - creates tables if they don't exist
+# Safe to run multiple times (idempotent)
+log.info("Running database migrations...")
+try:
+    migrate()
+except Exception as e:
+    log.critical("Database migration failed: %s", e)
+    if os.environ.get("RENDER"):
+        # In production: halt on migration failure
+        log.critical("Halting - fix database issues")
+        sys.exit(1)
+    else:
+        # Locally: warn but continue (maybe running with SQLite fallback)
+        log.warning("Migration failed locally - continuing with potential issues")
 
 REPORTS_DIR = os.path.join(os.path.dirname(__file__), "reports_cache")
 os.makedirs(REPORTS_DIR, exist_ok=True)
