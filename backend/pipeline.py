@@ -171,6 +171,12 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["nearby"]       = [p for p in (results.get("nearby") or []) if p and not p.get("error")]
     report["walkscore"]    = results.get("walkscore", {"available": False})
 
+    # ── Property type classification ──────────────────────────────────────────
+    report["property_class"] = _detect_property_class(parcel_data)
+
+    # ── Permits (placeholder — activates with ATTOM_API_KEY, see issue #9) ───
+    report["permits"] = {"available": False, "list": []}
+
     # ── Property enrichment: ATTOM (priority) or Realie (fallback) ──────────
     attom_avm      = results.get("attom_avm", {})
     attom_comps    = results.get("attom_comps", {})
@@ -323,6 +329,33 @@ def run(input_str: str, tier: str = "starter") -> dict:
     report["flags"] = _build_flags(report)
 
     return report
+
+
+def _detect_property_class(parcel):
+    """
+    Classify a parcel into one of five property classes based on use_description
+    and fallback signals. Returns a string: RESIDENTIAL, MULTIFAMILY, COMMERCIAL,
+    INDUSTRIAL, or LAND.
+    """
+    use = (parcel.get("use_description") or "").upper()
+    if any(x in use for x in ["SINGLE FAMILY", "RESIDENCE", "RESIDENTIAL", "SFR",
+                                "CONDO", "TOWNHOME", "DUPLEX", "TRIPLEX", "FOURPLEX"]):
+        return "RESIDENTIAL"
+    if any(x in use for x in ["MULTI", "APARTMENT", "MULTIFAMILY"]):
+        return "MULTIFAMILY"
+    if any(x in use for x in ["COMMERCIAL", "OFFICE", "RETAIL", "SHOPPING",
+                                "STRIP", "HOTEL", "MOTEL"]):
+        return "COMMERCIAL"
+    if any(x in use for x in ["INDUSTRIAL", "WAREHOUSE", "MANUFACTURING", "FLEX"]):
+        return "INDUSTRIAL"
+    if any(x in use for x in ["LAND", "VACANT", "ACREAGE", "AGRICULTURAL",
+                                "FARM", "RANCH"]):
+        return "LAND"
+    # Fallback: bedrooms present → residential
+    beds = parcel.get("bedrooms") or parcel.get("total_bedrooms")
+    if beds:
+        return "RESIDENTIAL"
+    return "COMMERCIAL"  # default for unknowns
 
 
 def _get_permit_portal(city: str, state: str) -> dict:

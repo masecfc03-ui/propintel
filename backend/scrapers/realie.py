@@ -214,19 +214,136 @@ def get_avm(address: str, lat: float = None, lng: float = None) -> dict:
     }
 
 
-def get_sold_comps(address: str, zipcode: str = "",
-                   lat: float = None, lng: float = None,
-                   radius_miles: float = 1.0,
-                   months_back: int = 18,
-                   max_results: int = 10) -> dict:
+# Progressive radius + timeframe expansion for comps
+_RADIUS_STEPS = [0.5, 1, 2, 5, 10, 20]
+_TIME_STEPS   = [18, 36, 60]
+_TARGET_COMPS = 5
+
+
+def _parse_comp(prop):
+    """Parse a single Realie comparable property dict. Returns None if invalid."""
+    try:
+        sale_price = prop.get("transferPrice")
+        if not sale_price:
+            return None
+
+        # Always skip bad-data records
+        if sale_price < 10_000:
+            return None
+        if sale_price > 5_000_000:
+            return None
+
+        # transferDate format: "20250514" → normalize to "2025-05-14"
+        raw_date  = prop.get("transferDate") or prop.get("recordingDate")
+        sale_date = None
+        if raw_date and len(str(raw_date)) == 8:
+            d = str(raw_date)
+            sale_date = "{}-{}-{}".format(d[:4], d[4:6], d[6:])
+        elif raw_date:
+            sale_date = str(raw_date)[:10]
+
+        bldg_sf      = prop.get("buildingArea")
+        price_per_sf = round(sale_price / bldg_sf, 0) if bldg_sf and bldg_sf > 0 else None
+        addr_str     = prop.get("addressFull") or prop.get("address", "")
+        avm          = prop.get("modelValue")
+
+        return {
+            "address":      addr_str,
+            "city":         prop.get("city", ""),
+            "state":        prop.get("state", ""),
+            "zip":          prop.get("zipCode", ""),
+            "sale_amount":  sale_price,
+            "sale_fmt":     "${:,.0f}".format(sale_price),
+            "sale_date":    sale_date,
+            "beds":         prop.get("totalBedrooms"),
+            "baths":        prop.get("totalBathrooms"),
+            "building_sf":  bldg_sf,
+            "sf_fmt":       "{:,} SF".format(int(bldg_sf)) if bldg_sf else None,
+            "price_per_sf": price_per_sf,
+            "psf_fmt":      "${:,.0f}/SF".format(price_per_sf) if price_per_sf else None,
+            "year_built":   prop.get("yearBuilt"),
+            "acres":        prop.get("acres"),
+            "avm":          avm,
+            "avm_fmt":      "${:,.0f}".format(avm) if avm else None,
+            "lien_balance": prop.get("totalLienBalance"),
+            "equity_est":   prop.get("equityCurrentEstBal"),
+            "owner_name":   prop.get("ownerName"),
+            "owner_state":  prop.get("ownerState"),
+            "lender_name":  prop.get("lenderName"),
+            "subdivision":  prop.get("subdivision"),
+            "owner_count":  prop.get("ownerParcelCount"),
+            "_is_residential": prop.get("residential"),
+        }
+    except Exception as ex:
+        log.debug("Realie comp parse skip: %s", ex)
+        return None
+
+
+def _filter_comps(raw_props, is_residential):
+    """Filter and parse a list of raw comp dicts."""
+    results = []
+    for prop in raw_props:
+        c = _parse_comp(prop)
+        if c is None:
+            continue
+        # Residential-specific filters
+        if is_residential:
+            if c.get("_is_residential") is False:
+                continue
+            if c.get("building_sf") and c["building_sf"] > 20_000:
+                continue
+        results.append(c)
+    results.sort(key=lambda x: x.get("sale_date") or "", reverse=True)
+    return results
+
+
+def _build_comps_result(comps, radius_used, months_back, max_results=10):
+    """Build the standardized comps return dict from a filtered list."""
+    limited = comps[:max_results]
+    prices   = [c["sale_amount"] for c in limited if c["sale_amount"]]
+    psf_vals = [c["price_per_sf"] for c in limited if c.get("price_per_sf")]
+
+    stats = {}
+    if prices:
+        stats["comp_count"]       = len(prices)
+        stats["median_price"]     = sorted(prices)[len(prices) // 2]
+        stats["avg_price"]        = round(sum(prices) / len(prices), 0)
+        stats["low_price"]        = min(prices)
+        stats["high_price"]       = max(prices)
+        stats["median_price_fmt"] = "${:,.0f}".format(stats["median_price"])
+        stats["avg_price_fmt"]    = "${:,.0f}".format(stats["avg_price"])
+        stats["price_range_fmt"]  = "${:,.0f} \u2013 ${:,.0f}".format(stats["low_price"], stats["high_price"])
+    if psf_vals:
+        stats["median_psf"]     = round(sorted(psf_vals)[len(psf_vals) // 2], 0)
+        stats["median_psf_fmt"] = "${:,.0f}/SF".format(stats["median_psf"])
+
+    return {
+        "available":    len(limited) > 0,
+        "comps":        limited,
+        "stats":        stats,
+        "radius_miles": radius_used,
+        "radius_used":  radius_used,
+        "months_back":  months_back,
+        "source":       "Realie",
+    }
+
+
+def get_sold_comps(address=None, zipcode="",
+                   lat=None, lng=None,
+                   radius_miles=1.0,
+                   months_back=18,
+                   max_results=10,
+                   property_type=None):
     """
-    Get sold comparable properties within radius over the past N months.
-    Requires lat/lng — use geocode.py to get them from address.
+    Get sold comparable properties using progressive radius + timeframe expansion.
+    Guarantees at least _TARGET_COMPS (5) comps when data is available.
+    Tries radii 0.5→1→2→5→10→20 mi and timeframes 18→36→60 months.
 
     Returns list of comps with address, price, SF, sold date, $/SF.
+    Also returns radius_used and months_back so the report can display context.
     """
+    # 1. Resolve lat/lng
     if not lat or not lng:
-        # Try to geocode from address
         try:
             from .geocode import geocode_address
             geo = geocode_address(address)
@@ -236,7 +353,6 @@ def get_sold_comps(address: str, zipcode: str = "",
             pass
 
     if not lat or not lng:
-        # Fallback: use Realie's own property search to get lat/lng
         detail = _address_lookup(address)
         if not detail.get("error"):
             lat = detail.get("latitude") or detail.get("lat")
@@ -244,117 +360,65 @@ def get_sold_comps(address: str, zipcode: str = "",
 
     if not lat or not lng:
         return {
-            "available": False,
-            "comps": [],
-            "error": "lat/lng required for Realie comps — geocoding failed",
+            "available":   False,
+            "comps":       [],
+            "error":       "lat/lng required for Realie comps — geocoding failed",
+            "radius_used": None,
+            "months_back": None,
         }
 
-    params = {
-        "latitude":   round(lat, 6),
-        "longitude":  round(lng, 6),
-        "radius":     radius_miles,
-        "timeFrame":  months_back,
-        "maxResults": min(max_results, 50),
-    }
+    is_residential = (property_type or "").upper() in ("RESIDENTIAL", "MULTIFAMILY")
 
-    data = _get("public/premium/comparables/", params)
-    if data.get("error"):
-        return {"available": False, "comps": [], "error": data["error"]}
+    best_comps  = []
+    best_radius = _RADIUS_STEPS[-1]
+    best_time   = _TIME_STEPS[-1]
 
-    # Realie returns {"comparables": [...], "metadata": {...}}
-    raw_props = data.get("comparables") or data.get("properties") or \
-                (data if isinstance(data, list) else [])
+    for time_frame in _TIME_STEPS:
+        for radius in _RADIUS_STEPS:
+            params = {
+                "latitude":   round(lat, 6),
+                "longitude":  round(lng, 6),
+                "radius":     radius,
+                "timeFrame":  time_frame,
+                "maxResults": 50,   # fetch max from API; we filter + cap locally
+            }
 
-    if not raw_props:
-        return {"available": False, "comps": [], "error": "No comps returned"}
-
-    comps = []
-    for prop in raw_props:
-        try:
-            # Realie confirmed field names from API response
-            sale_price = prop.get("transferPrice")
-            if not sale_price:
+            resp = _get("public/premium/comparables/", params)
+            if resp.get("error"):
+                # API error — skip this combination but keep trying
+                log.debug("Realie comps error at radius=%s mo=%s: %s", radius, time_frame, resp["error"])
                 continue
 
-            # transferDate format: "20250514" → normalize to "2025-05-14"
-            raw_date  = prop.get("transferDate") or prop.get("recordingDate")
-            sale_date = None
-            if raw_date and len(str(raw_date)) == 8:
-                d = str(raw_date)
-                sale_date = f"{d[:4]}-{d[4:6]}-{d[6:]}"
-            elif raw_date:
-                sale_date = str(raw_date)[:10]
+            raw_props = (
+                resp.get("comparables")
+                or resp.get("properties")
+                or (resp if isinstance(resp, list) else [])
+            )
 
-            bldg_sf      = prop.get("buildingArea")
-            price_per_sf = round(sale_price / bldg_sf, 0) if bldg_sf and bldg_sf > 0 else None
-            addr_str     = prop.get("addressFull") or prop.get("address", "")
-            avm          = prop.get("modelValue")
+            filtered = _filter_comps(raw_props, is_residential)
 
-            # Filter out commercial / non-residential properties
-            if prop.get("residential") is False:
-                continue
-            if sale_price > 5_000_000:
-                continue
-            if bldg_sf and bldg_sf > 20_000:
-                continue
+            # Track best result seen so far
+            if len(filtered) > len(best_comps):
+                best_comps  = filtered
+                best_radius = radius
+                best_time   = time_frame
 
-            comps.append({
-                "address":        addr_str,
-                "city":           prop.get("city", ""),
-                "state":          prop.get("state", ""),
-                "zip":            prop.get("zipCode", ""),
-                "sale_amount":    sale_price,
-                "sale_fmt":       f"${sale_price:,.0f}",
-                "sale_date":      sale_date,
-                "beds":           prop.get("totalBedrooms"),
-                "baths":          prop.get("totalBathrooms"),
-                "building_sf":    bldg_sf,
-                "sf_fmt":         f"{int(bldg_sf):,} SF" if bldg_sf else None,
-                "price_per_sf":   price_per_sf,
-                "psf_fmt":        f"${price_per_sf:,.0f}/SF" if price_per_sf else None,
-                "year_built":     prop.get("yearBuilt"),
-                "acres":          prop.get("acres"),
-                "avm":            avm,
-                "avm_fmt":        f"${avm:,.0f}" if avm else None,
-                "lien_balance":   prop.get("totalLienBalance"),
-                "equity_est":     prop.get("equityCurrentEstBal"),
-                "owner_name":     prop.get("ownerName"),
-                "owner_state":    prop.get("ownerState"),  # out-of-state signal
-                "lender_name":    prop.get("lenderName"),
-                "subdivision":    prop.get("subdivision"),
-                "owner_count":    prop.get("ownerParcelCount"),  # portfolio size
-            })
-        except Exception as ex:
-            log.debug("Realie comp parse skip: %s", ex)
-            continue
+            if len(filtered) >= _TARGET_COMPS:
+                log.info("Realie comps: %d found at radius=%smi mo=%s", len(filtered), radius, time_frame)
+                return _build_comps_result(filtered, radius, time_frame, max_results)
 
-    comps.sort(key=lambda x: x.get("sale_date") or "", reverse=True)
-
-    # Stats
-    prices   = [c["sale_amount"] for c in comps if c["sale_amount"]]
-    psf_vals = [c["price_per_sf"] for c in comps if c.get("price_per_sf")]
-
-    stats = {}
-    if prices:
-        stats["comp_count"]       = len(prices)
-        stats["median_price"]     = sorted(prices)[len(prices) // 2]
-        stats["avg_price"]        = round(sum(prices) / len(prices), 0)
-        stats["low_price"]        = min(prices)
-        stats["high_price"]       = max(prices)
-        stats["median_price_fmt"] = f"${stats['median_price']:,.0f}"
-        stats["avg_price_fmt"]    = f"${stats['avg_price']:,.0f}"
-        stats["price_range_fmt"]  = f"${stats['low_price']:,.0f} – ${stats['high_price']:,.0f}"
-    if psf_vals:
-        stats["median_psf"]     = round(sorted(psf_vals)[len(psf_vals) // 2], 0)
-        stats["median_psf_fmt"] = f"${stats['median_psf']:,.0f}/SF"
+    # Exhausted all combinations — return best we found
+    if best_comps:
+        log.info("Realie comps: only %d found after full expansion (best: %smi/%smo)",
+                 len(best_comps), best_radius, best_time)
+        return _build_comps_result(best_comps, best_radius, best_time, max_results)
 
     return {
-        "available":    len(comps) > 0,
-        "comps":        comps,
-        "stats":        stats,
-        "radius_miles": radius_miles,
-        "months_back":  months_back,
-        "source":       "Realie",
+        "available":   False,
+        "comps":       [],
+        "error":       "No comps found after progressive expansion (max 20mi / 60mo)",
+        "radius_used": _RADIUS_STEPS[-1],
+        "months_back": _TIME_STEPS[-1],
     }
 
 
