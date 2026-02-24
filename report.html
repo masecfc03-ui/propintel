@@ -4,2138 +4,1166 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PropIntel Report</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <!-- Fontshare CDN for Cabinet Grotesk (display) + Satoshi (body) -->
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700,600,500&f[]=satoshi@700,600,500,400&display=swap" rel="stylesheet" />
+  
   <!-- Leaflet.js — property map -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Chart.js — data visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --white: #ffffff;
-      --bg: #f8fafc;
-      --bg2: #f1f5f9;
-      --border: #e2e8f0;
-      --accent: #2563eb;
-      --accent-light: #eff6ff;
-      --green: #16a34a;
-      --green-light: #f0fdf4;
-      --red: #dc2626;
-      --red-light: #fef2f2;
-      --amber: #d97706;
-      --amber-light: #fffbeb;
-      --text: #0f172a;
-      --text2: #475569;
-      --text3: #94a3b8;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow-md: 0 4px 16px rgba(0,0,0,0.07);
-      --radius: 12px;
+      /* Dark Design System */
+      --dark-base: #08080a;
+      --dark-surface: #0f0f11;
+      --dark-elevated: #161619;
+      --dark-border: #27272a;
+      --dark-border-hover: #3f3f46;
+      
+      /* Accent Gradient */
+      --accent-primary: #8b5cf6;
+      --accent-secondary: #3b82f6;
+      --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+      --accent-light: rgba(139, 92, 246, 0.1);
+      
+      /* Content Colors */
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      
+      /* State Colors */
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.1);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.1);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.1);
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 40px rgba(0,0,0,0.4);
+      
+      /* Radius */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
     }
 
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--dark-base);
+      color: var(--text-primary);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
     }
 
+    /* Typography */
+    .font-display { font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif; }
+    
     /* ── LOADING ── */
     #loading {
       display: flex; flex-direction: column; align-items: center;
-      justify-content: center; min-height: 100vh; gap: 14px; padding: 24px;
+      justify-content: center; min-height: 100vh; gap: 24px; padding: 32px;
+      background: var(--dark-base);
       text-align: center;
     }
+    
     .load-spinner {
-      width: 48px; height: 48px; border-radius: 50%;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 3px solid var(--dark-border);
+      border-top-color: var(--accent-primary);
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .load-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-    .load-sub { font-size: 0.85rem; color: var(--text3); }
+    
+    .load-title { 
+      font-size: 1.5rem; font-weight: 700; color: var(--text-primary);
+      font-family: 'Cabinet Grotesk', sans-serif;
+    }
+    .load-sub { font-size: 1rem; color: var(--text-secondary); }
+    
     .load-steps {
-      display: flex; flex-direction: column; gap: 8px;
-      margin-top: 20px; width: 100%; max-width: 300px;
+      display: flex; flex-direction: column; gap: 12px;
+      margin-top: 32px; width: 100%; max-width: 400px;
     }
     .load-step {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 16px; background: var(--white);
-      border: 1px solid var(--border); border-radius: 8px;
-      font-size: 0.8rem; color: var(--text3); transition: all 0.3s;
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 20px; background: var(--dark-surface);
+      border: 1px solid var(--dark-border); border-radius: var(--radius-md);
+      font-size: 0.875rem; color: var(--text-muted); transition: all 0.3s;
     }
-    .load-step.active { border-color: rgba(37,99,235,0.35); color: var(--accent); background: var(--accent-light); }
-    .load-step.done { border-color: rgba(22,163,74,0.3); color: var(--green); background: var(--green-light); }
-    .step-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
-    .load-step.active .step-dot { background: var(--accent); animation: blink 1s infinite; }
-    .load-step.done .step-dot { background: var(--green); }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .load-step.active { 
+      border-color: var(--accent-primary); 
+      color: var(--accent-primary); 
+      background: var(--accent-light); 
+    }
+    .load-step.done { 
+      border-color: var(--success); 
+      color: var(--success); 
+      background: var(--success-bg); 
+    }
+    .step-dot { 
+      width: 10px; height: 10px; border-radius: 50%; 
+      background: var(--dark-border); flex-shrink: 0; 
+    }
+    .load-step.active .step-dot { 
+      background: var(--accent-primary); 
+      animation: pulse 2s infinite; 
+    }
+    .load-step.done .step-dot { background: var(--success); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
     /* ── ERROR ── */
     #error-state {
       display: none; flex-direction: column; align-items: center;
-      justify-content: center; min-height: 100vh; gap: 12px;
-      text-align: center; padding: 24px;
+      justify-content: center; min-height: 100vh; gap: 20px;
+      text-align: center; padding: 32px;
+      background: var(--dark-base);
     }
-    .error-icon { font-size: 2.5rem; margin-bottom: 8px; }
-    .error-title { font-size: 1.2rem; font-weight: 700; color: var(--text); }
-    .error-sub { color: var(--text2); font-size: 0.875rem; max-width: 400px; line-height: 1.6; }
-    .error-link { margin-top: 8px; color: var(--accent); text-decoration: none; font-size: 0.875rem; font-weight: 600; }
+    .error-icon { font-size: 4rem; margin-bottom: 16px; color: var(--danger); }
+    .error-title { 
+      font-size: 1.5rem; font-weight: 700; color: var(--text-primary);
+      font-family: 'Cabinet Grotesk', sans-serif;
+    }
+    .error-sub { 
+      color: var(--text-secondary); font-size: 1rem; 
+      max-width: 500px; line-height: 1.6; 
+    }
+    .error-link { 
+      margin-top: 16px; color: var(--accent-primary); 
+      text-decoration: none; font-size: 1rem; font-weight: 600; 
+    }
 
     /* ── TOPBAR ── */
     #report-content { display: none; }
     .topbar {
-      background: var(--white); border-bottom: 1px solid var(--border);
-      padding: 0 32px; height: 60px;
+      background: var(--dark-surface); 
+      border-bottom: 1px solid var(--dark-border);
+      padding: 0 32px; height: 72px;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 100;
-      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(20px);
     }
     .topbar-logo {
-      font-size: 0.9rem; font-weight: 800;
-      display: flex; align-items: center; gap: 8px;
-      text-decoration: none; color: var(--text);
+      font-size: 1.1rem; font-weight: 800;
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none; color: var(--text-primary);
+      font-family: 'Cabinet Grotesk', sans-serif;
     }
     .logo-icon {
-      width: 28px; height: 28px; border-radius: 7px;
-      background: var(--accent); color: white;
+      width: 40px; height: 40px; border-radius: var(--radius-sm);
+      background: var(--accent-gradient);
       display: flex; align-items: center; justify-content: center;
-      font-size: 12px;
+      font-size: 16px; color: white; font-weight: 800;
     }
-    .topbar-right { display: flex; align-items: center; gap: 12px; }
-    .topbar-right a {
-      color: var(--text2); text-decoration: none;
-      font-size: 0.8rem; font-weight: 500;
+    .topbar-right { display: flex; align-items: center; gap: 20px; }
+    .topbar-right span {
+      color: var(--text-muted); font-size: 0.875rem;
     }
     .print-btn {
-      background: none; border: 1px solid var(--border);
-      color: var(--text2); padding: 7px 16px;
-      border-radius: 6px; font-size: 0.78rem;
+      background: var(--dark-elevated); 
+      border: 1px solid var(--dark-border);
+      color: var(--text-primary); padding: 12px 24px;
+      border-radius: var(--radius-sm); font-size: 0.875rem;
       font-weight: 600; cursor: pointer; font-family: inherit;
-      transition: border-color 0.15s;
+      transition: all 0.2s ease;
     }
-    .print-btn:hover { border-color: var(--text2); }
+    .print-btn:hover { 
+      border-color: var(--accent-primary); 
+      background: var(--accent-light);
+    }
 
     /* ── REPORT LAYOUT ── */
-    .report { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
-
-    /* ── REPORT HEADER ── */
-    .report-header {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 14px; padding: 18px 24px; margin-bottom: 12px;
-      box-shadow: var(--shadow-sm);
+    .report { 
+      max-width: 1200px; margin: 0 auto; 
+      padding: 40px 24px 120px; 
     }
+
+    /* ── HERO SECTION ── */
+    .hero-section {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--accent-gradient);
+    }
+    
     .tier-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 3px 10px; border-radius: 100px;
-      font-size: 0.68rem; font-weight: 700;
-      letter-spacing: 0.5px; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 100px;
+      font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 24px;
+    }
+    .tier-badge.pro { 
+      background: var(--accent-gradient); 
+      color: white;
+    }
+    .tier-badge.starter { 
+      background: var(--dark-elevated); 
+      color: var(--text-secondary); 
+      border: 1px solid var(--dark-border);
+    }
+    
+    .hero-address { 
+      font-size: 2.5rem; font-weight: 800; 
+      color: var(--text-primary);
+      margin-bottom: 12px; line-height: 1.1;
+      font-family: 'Cabinet Grotesk', sans-serif;
+    }
+    .hero-sub { 
+      color: var(--text-secondary); font-size: 1.125rem; 
+      margin-bottom: 32px;
+    }
+    .hero-meta {
+      display: flex; align-items: center; gap: 16px;
+      color: var(--text-muted); font-size: 0.875rem;
+    }
+
+    /* ── SCORE CARDS GRID ── */
+    .cards-grid {
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px; margin-bottom: 40px;
+    }
+    
+    .score-card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .score-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--dark-border-hover);
+    }
+    
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .card-icon {
+      width: 48px; height: 48px;
+      background: var(--accent-light);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; color: var(--accent-primary);
+    }
+    
+    .data-source {
+      padding: 4px 10px;
+      background: var(--dark-elevated);
+      border: 1px solid var(--dark-border);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    
+    .card-value {
+      font-size: 2rem; font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      font-family: 'Cabinet Grotesk', sans-serif;
+    }
+    
+    .card-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
       margin-bottom: 8px;
     }
-    .tier-badge.pro { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(37,99,235,0.2); }
-    .tier-badge.starter { background: var(--bg2); color: var(--text2); border: 1px solid var(--border); }
-    .prop-address { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text); margin-bottom: 2px; }
-    .prop-sub { color: var(--text2); font-size: 0.82rem; margin-bottom: 10px; }
-    .header-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-    .htag {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 6px; padding: 4px 12px;
-      font-size: 0.75rem; font-weight: 500; color: var(--text2);
+    
+    .card-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
     }
-    .htag.green { background: var(--green-light); border-color: rgba(22,163,74,0.2); color: var(--green); font-weight: 600; }
-    .htag.amber { background: var(--amber-light); border-color: rgba(217,119,6,0.2); color: var(--amber); font-weight: 600; }
-    .htag.red { background: var(--red-light); border-color: rgba(220,38,38,0.2); color: var(--red); font-weight: 600; }
+    
+    /* Empty State Styles */
+    .card-empty {
+      opacity: 0.6;
+      position: relative;
+    }
+    
+    .card-empty::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px; height: 24px;
+      background: var(--text-muted);
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'/%3E%3C/svg%3E") center/contain no-repeat;
+    }
+    
+    .empty-value {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+    
+    .pending-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--warning-bg);
+      color: var(--warning);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
 
-    /* ── SCORE CARD ── */
-    .score-row {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 12px; margin-bottom: 20px;
+    /* ── RISK FLAGS ── */
+    .risk-flags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 40px;
     }
-    .score-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: 10px; padding: 16px 18px;
-      box-shadow: var(--shadow-sm);
+    
+    .risk-flag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 100px;
+      font-size: 0.875rem;
+      font-weight: 600;
     }
-    .sc-label { font-size: 0.68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-    .sc-val { font-size: 1.15rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
-    .sc-sub { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
+    
+    .risk-flag.green {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .risk-flag.yellow {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    
+    .risk-flag.red {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
 
     /* ── SECTION CARDS ── */
     .section-card {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); margin-bottom: 12px;
-      overflow: hidden; box-shadow: var(--shadow-sm);
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-md);
+      margin-bottom: 24px;
+      overflow: hidden;
     }
-    .sec-head {
-      padding: 14px 24px; border-bottom: 1px solid var(--border);
+    
+    .section-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--dark-border);
       display: flex; align-items: center; justify-content: space-between;
     }
-    .sec-title {
-      font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.6px; color: var(--text);
-      display: flex; align-items: center; gap: 8px;
+    
+    .section-title {
+      font-size: 1.125rem; font-weight: 700;
+      color: var(--text-primary);
+      font-family: 'Cabinet Grotesk', sans-serif;
+      display: flex; align-items: center; gap: 12px;
     }
-    .sec-src { font-size: 0.7rem; color: var(--text3); }
-    .sec-src a { color: var(--accent); text-decoration: none; }
-    .sec-body { padding: 14px 20px; }
-
-    /* ── DATA ROWS ── */
-    .dr {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      padding: 9px 0; border-bottom: 1px solid var(--border);
-      gap: 12px; flex-wrap: wrap;
+    
+    .section-source {
+      font-size: 0.75rem; color: var(--text-muted);
     }
-    .dr:last-child { border-bottom: none; padding-bottom: 0; }
-    .dl { font-size: 0.775rem; color: var(--text3); font-weight: 500; min-width: 160px; }
-    .dv { font-size: 0.85rem; font-weight: 600; color: var(--text); text-align: right; }
-    .dv.green { color: var(--green); }
-    .dv.red { color: var(--red); }
-    .dv.amber { color: var(--amber); }
-
-    /* ── BADGE PILLS ── */
-    .badge {
-      display: inline-block; font-size: 0.62rem; font-weight: 700;
-      padding: 2px 7px; border-radius: 4px; margin-left: 6px;
-      vertical-align: middle;
-    }
-    .badge.absentee { background: var(--amber-light); color: var(--amber); border: 1px solid rgba(217,119,6,0.25); }
-    .badge.out-of-state { background: var(--red-light); color: var(--red); border: 1px solid rgba(220,38,38,0.2); }
-
-    /* ── MOTIVATION SCORE ── */
-    .motiv-wrap { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: start; }
-    .motiv-dial {
-      width: 100px; height: 100px; border-radius: 50%;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      border: 3px solid var(--border); flex-shrink: 0;
-    }
-    .motiv-num { font-size: 2rem; font-weight: 800; letter-spacing: -1px; line-height: 1; }
-    .motiv-max { font-size: 0.68rem; color: var(--text3); font-weight: 500; }
-    .motiv-tier { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
-    .motiv-interp { font-size: 0.825rem; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
-    .motiv-indicators { list-style: none; display: flex; flex-direction: column; gap: 7px; }
-    .mi {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 0.8rem; color: var(--text2);
-      padding: 8px 12px; border-radius: 7px;
-      border: 1px solid var(--border); background: var(--bg);
-    }
-    .mi.triggered { background: var(--amber-light); border-color: rgba(217,119,6,0.2); color: var(--text); }
-    .mi-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
-    .mi.triggered .mi-dot { background: var(--amber); }
-    .mi-label { flex: 1; font-weight: 500; }
-    .mi-pts { font-size: 0.72rem; font-weight: 700; color: var(--text3); white-space: nowrap; }
-    .mi.triggered .mi-pts { color: var(--amber); }
-
-    /* ── FLAGS ── */
-    .flags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .flag-item {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 12px 14px; border-radius: 8px;
-      font-size: 0.825rem; line-height: 1.4;
-      border: 1px solid;
-    }
-    .flag-item.green { background: var(--green-light); border-color: rgba(22,163,74,0.2); color: #166534; }
-    .flag-item.amber { background: var(--amber-light); border-color: rgba(217,119,6,0.2); color: #92400e; }
-    .flag-item.red { background: var(--red-light); border-color: rgba(220,38,38,0.2); color: #991b1b; }
-
-    /* ── SKIP TRACE (PRO) ── */
-    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .contact-card {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 14px 16px;
-    }
-    .contact-label { font-size: 0.68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .contact-val { font-size: 0.875rem; font-weight: 600; color: var(--text); }
-    .contact-sub { font-size: 0.72rem; color: var(--text3); margin-top: 2px; }
-
-    /* ── DEAL ANALYZER (PRO) ── */
-    .deal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-    .deal-metric {
-      text-align: center; padding: 16px 12px;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-    .deal-val { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
-    .deal-label { font-size: 0.7rem; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
-
-    /* ── LOI (PRO) ── */
-    .loi-box {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 18px 20px;
-      font-size: 0.825rem; color: var(--text2);
-      line-height: 1.8; white-space: pre-wrap;
-      font-family: 'Georgia', serif;
-    }
-    .loi-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .loi-btn {
-      padding: 8px 16px; border-radius: 6px;
-      font-size: 0.8rem; font-weight: 600;
-      cursor: pointer; border: 1px solid var(--border);
-      background: var(--white); color: var(--text);
-      font-family: inherit; transition: border-color 0.15s;
-    }
-    .loi-btn:hover { border-color: var(--text2); }
-
-    /* ── DATA TABLE (comps, history, scenarios) ── */
-    .data-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    .data-table th {
-      text-align: left; padding: 9px 10px;
-      background: var(--text); color: white;
-      font-size: 0.68rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .data-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text2); }
-    .data-table tr:nth-child(even) td { background: var(--bg2); }
-    .data-table tr:last-child td { border-bottom: none; }
-    .data-table td.val { font-weight: 700; color: var(--text); }
-    .data-table td.accent { font-weight: 700; color: var(--accent); }
-    .data-table td.green { font-weight: 600; color: var(--green); }
-    .data-table td.red { font-weight: 600; color: var(--red); }
-
-    /* ── PENDING / ATTOM UNLOCK BOX ── */
-    .pending-box {
-      background: var(--bg); border: 1px dashed var(--border);
-      border-radius: 10px; padding: 20px 24px; text-align: center;
-    }
-    .pending-title { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
-    .pending-sub { font-size: 0.8rem; color: var(--text3); font-style: italic; margin-bottom: 10px; }
-    .pending-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
-    .pending-list li { font-size: 0.78rem; color: var(--text2); }
-
-    /* ── COMP STATS TILES ── */
-    .comp-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
-    .comp-stat { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 12px; text-align: center; }
-    .comp-stat-val { font-size: 1.1rem; font-weight: 800; color: var(--text); }
-    .comp-stat-label { font-size: 0.68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
-
-    /* ── SCENARIO TABLE ── */
-    .scenario-note { font-size: 0.72rem; color: var(--text3); margin-bottom: 8px; line-height: 1.5; }
-
-    /* ── CHECKLIST ── */
-    .checklist { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-    .cl-item {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: 10px 14px; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 8px;
-      font-size: 0.82rem; color: var(--text2); line-height: 1.5;
-    }
-    .cl-check { color: var(--accent); font-weight: 700; flex-shrink: 0; font-size: 0.9rem; }
-
-    /* ── BUSINESS TABLE ── */
-    table.biz-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    .biz-table th {
-      text-align: left; font-size: 0.68rem; font-weight: 700;
-      color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px;
-      padding: 8px 10px; border-bottom: 1px solid var(--border);
-      background: var(--bg);
-    }
-    .biz-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text2); }
-    .biz-table tr:last-child td { border-bottom: none; }
-
-    /* ── UPSELL (for starter tier) ── */
-    .upsell-card {
-      background: var(--accent-light); border: 1px solid rgba(37,99,235,0.2);
-      border-radius: var(--radius); padding: 24px 28px;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 20px; flex-wrap: wrap; margin-bottom: 14px;
-    }
-    .upsell-left h3 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .upsell-left p { font-size: 0.825rem; color: var(--text2); line-height: 1.5; }
-    .upsell-btn {
-      background: var(--accent); color: white;
-      padding: 11px 22px; border-radius: 8px;
-      font-size: 0.875rem; font-weight: 700;
-      text-decoration: none; white-space: nowrap;
-      transition: background 0.15s;
-    }
-    .upsell-btn:hover { background: #1d4ed8; }
-
-    /* ── DISCLAIMER ── */
-    .disclaimer {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 16px 20px; margin-top: 16px;
-    }
-    .disc-title { font-size: 0.68rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
-    .disclaimer p { font-size: 0.75rem; color: var(--text3); line-height: 1.6; }
-
-    /* ── BRANDING HEADER ── */
-    .brand-header {
-      background: var(--white); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 20px 28px;
-      margin-bottom: 14px; box-shadow: var(--shadow-sm);
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px;
-    }
-    .brand-left { display: flex; align-items: center; gap: 14px; }
-    .brand-logo {
-      max-height: 40px; max-width: 120px;
-      border-radius: 6px; object-fit: contain;
-    }
-    .brand-logo-placeholder {
-      width: 40px; height: 40px; border-radius: 8px;
-      background: var(--accent); color: white;
-      font-size: 1rem; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .brand-company { font-size: 1rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
-    .brand-agent { font-size: 0.8rem; color: var(--text2); margin-top: 1px; }
-    .brand-right { text-align: right; }
-    .brand-contact { font-size: 0.8rem; color: var(--text2); line-height: 1.7; }
-    .brand-contact a { color: var(--accent); text-decoration: none; }
-    .brand-prepared {
-      font-size: 0.68rem; font-weight: 700; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;
+    
+    .section-body {
+      padding: 24px;
     }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 700px) {
-      .topbar { padding: 0 16px; }
-      .report { padding: 20px 12px 60px; }
-      .report-header { padding: 20px; }
-      .score-row { grid-template-columns: 1fr 1fr; }
-      .motiv-wrap { grid-template-columns: 1fr; }
-      .motiv-dial { width: 80px; height: 80px; }
-      .motiv-num { font-size: 1.6rem; }
-      .flags-grid { grid-template-columns: 1fr; }
-      .contact-grid { grid-template-columns: 1fr; }
-      .deal-grid { grid-template-columns: 1fr 1fr; }
+    /* ── COMPS GRID ── */
+    .comps-scroll {
+      overflow-x: auto;
+      margin: -4px;
+      padding: 4px;
     }
-    /* ── WHITE-LABEL BAR ── */
-    #wl-bar {
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 6px 32px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
+    
+    .comps-grid {
+      display: flex;
+      gap: 16px;
+      min-width: max-content;
+    }
+    
+    .comp-card {
+      background: var(--dark-elevated);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      min-width: 280px;
+      flex-shrink: 0;
+    }
+    
+    .comp-address {
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .comp-price {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-primary);
+      margin-bottom: 4px;
+      font-family: 'Cabinet Grotesk', sans-serif;
+    }
+    
+    .comp-psf {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-bottom: 12px;
+    }
+    
+    .comp-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
-      font-size: 0.74rem;
-      color: #64748b;
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
-    #wl-bar .wl-bar-left {
-      display: flex; align-items: center; gap: 10px;
+
+    /* ── DEMOGRAPHICS GRID ── */
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
     }
-    #wl-bar .wl-bar-logo {
-      max-height: 20px; max-width: 80px;
-      border-radius: 3px; object-fit: contain;
-      vertical-align: middle;
+    
+    .demo-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--dark-elevated);
+      border-radius: var(--radius-sm);
     }
-    #wl-bar .wl-bar-prepared {
-      font-size: 0.7rem; color: #94a3b8;
-      white-space: nowrap;
+    
+    .demo-icon {
+      width: 40px; height: 40px;
+      background: var(--accent-light);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: var(--accent-primary);
+      flex-shrink: 0;
     }
-    #wl-bar .wl-bar-agent {
-      font-weight: 600; color: #475569;
+    
+    .demo-content h4 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
     }
-    #wl-bar .wl-bar-right {
-      font-size: 0.7rem; color: #94a3b8;
+    
+    .demo-content p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
     }
-    @media (max-width: 600px) { #wl-bar { padding: 6px 16px; } }
 
-    /* ── PROPERTY MAP ── */
-    .map-section { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 14px; box-shadow: var(--shadow); }
-    #prop-map { height: 200px; }
-    .street-view-wrap { height: 200px; position: relative; background: #0f172a; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
-    .sv-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
-    .sv-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: background 0.15s; }
-    .sv-btn:hover { background: rgba(255,255,255,0.2); }
-    .map-tag { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); color: white; font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
-    @media (max-width: 600px) { .map-section { grid-template-columns: 1fr; } .street-view-wrap { height: 160px; } #prop-map { height: 180px; } }
-
-    /* ── INVESTMENT SUMMARY (PRO) ── */
-    .inv-summary {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-      border-radius: 14px; padding: 28px; margin-bottom: 20px;
-      color: white;
+    /* ── INVESTMENT SIGNALS ── */
+    .investment-signals {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    .inv-sum-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-    .inv-sum-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.5); }
-    .inv-verdict { display: flex; align-items: center; gap: 8px; }
-    .inv-verdict-badge { font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px; }
-    .inv-verdict-badge.investigate { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
-    .inv-verdict-badge.strong { background: rgba(34,197,94,0.2); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
-    .inv-verdict-badge.pass { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-    .inv-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-    .inv-metric { background: rgba(255,255,255,0.07); border-radius: 10px; padding: 14px; border: 1px solid rgba(255,255,255,0.08); }
-    .inv-metric-label { font-size: 0.66rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .inv-metric-val { font-size: 1.15rem; font-weight: 800; color: white; letter-spacing: -0.3px; }
-    .inv-metric-sub { font-size: 0.68rem; color: rgba(255,255,255,0.4); margin-top: 3px; }
-    .inv-signals { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
-    .inv-signal { font-size: 0.68rem; font-weight: 600; padding: 3px 9px; border-radius: 12px; }
-    .inv-signal.green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
-    .inv-signal.amber { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
-    .inv-signal.red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
-    @media (max-width: 700px) { .inv-metrics { grid-template-columns: repeat(2, 1fr); } }
+    
+    .signal-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--accent-light);
+      color: var(--accent-primary);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
 
-    /* ── PROPERTY PROFILE GRID ── */
-    .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .profile-tile { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
-    .profile-tile-val { font-size: 1.1rem; font-weight: 800; color: var(--text); letter-spacing: -0.3px; }
-    .profile-tile-label { font-size: 0.68rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 4px; }
+    /* ── MOBILE RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .report { padding: 24px 16px 80px; }
+      
+      .hero-section {
+        padding: 32px 24px;
+        margin-bottom: 24px;
+      }
+      
+      .hero-address {
+        font-size: 2rem;
+      }
+      
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      
+      .topbar {
+        padding: 0 16px;
+        height: 64px;
+      }
+      
+      .topbar-logo {
+        font-size: 1rem;
+      }
+      
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+      }
+      
+      .risk-flags {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .risk-flag {
+        justify-content: center;
+      }
+    }
 
-    /* ── VALUE CHART ── */
-    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .chart-box { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
-    .chart-title { font-size: 0.72rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
-    .chart-canvas-wrap { position: relative; height: 160px; }
-    @media (max-width: 600px) { .chart-row { grid-template-columns: 1fr; } }
-
-    /* ── NEIGHBORHOOD SCORE CARDS ── */
-    .nbhd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-    .nbhd-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
-    .nbhd-card-icon { font-size: 1.4rem; margin-bottom: 6px; }
-    .nbhd-card-val { font-size: 1.3rem; font-weight: 800; color: var(--text); }
-    .nbhd-card-label { font-size: 0.7rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
-    .nbhd-card-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-    .nbhd-card-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
-
-    /* ── NEARBY COMPS TABLE ── */
-    .comps-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    .comps-table th { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); padding: 8px 12px; text-align: left; background: var(--bg); border-bottom: 1px solid var(--border); }
-    .comps-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-light); color: var(--text); }
-    .comps-table tr:last-child td { border-bottom: none; }
-    .comps-table tr.subject td { background: #eff6ff; font-weight: 700; }
-    .comp-addr { font-weight: 600; color: var(--text); }
-    .comp-sub { font-size: 0.72rem; color: var(--text3); }
-    .comp-badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
-    .comp-badge-absentee { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
-    .comp-highlight { color: var(--accent); font-weight: 700; }
-
-    /* ── OWNER EQUITY BLOCK ── */
-    .equity-row { display: flex; align-items: stretch; gap: 12px; margin-top: 14px; }
-    .equity-card { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
-    .equity-val { font-size: 1.05rem; font-weight: 800; color: var(--text); }
-    .equity-label { font-size: 0.68rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 3px; }
-    .equity-note { font-size: 0.72rem; color: var(--text3); margin-top: 6px; line-height: 1.4; }
-    .data-note { font-size: 0.72rem; color: var(--text3); margin-top: 8px; font-style: italic; }
-
+    /* ── PRINT STYLES ── */
     @media print {
-      .topbar { display: none; }
-      .upsell-card { display: none; }
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      
+      .topbar {
+        position: static !important;
+        background: white !important;
+        border-color: #e5e5e5 !important;
+      }
+      
+      .hero-section,
+      .score-card,
+      .section-card {
+        background: white !important;
+        border-color: #e5e5e5 !important;
+        break-inside: avoid;
+      }
+      
+      .hero-address,
+      .card-value,
+      .section-title {
+        color: black !important;
+      }
+      
+      .text-primary { color: black !important; }
+      .text-secondary { color: #666 !important; }
+      .text-muted { color: #999 !important; }
+      
       .no-print { display: none !important; }
-      body { background: white; }
-      .section-card { box-shadow: none; break-inside: avoid; }
-      #wl-annotations input,
-      #wl-annotations textarea { display: none !important; }
-      #wl-annotations .annotation-print { display: block !important; }
-      #wl-annotations .section-card { border: 1px solid #e2e8f0 !important; background: #f8fafc !important; }
-      .street-view-wrap { display: none; }
-      #prop-map { height: 200px; }
-    }
-    .annotation-print { display: none; font-size: 0.9rem; color: #0f172a; line-height: 1.6; }
-
-    /* ── TWO-COLUMN DATA ROW GRID ── */
-    .dr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-    .dr-grid .dr { padding: 8px 0; border-bottom: 1px solid var(--border); }
-    .dr-grid .dr:nth-last-child(-n+2):not(:nth-child(odd):last-child) { border-bottom: none; }
-    @media (max-width: 600px) { .dr-grid { grid-template-columns: 1fr; } }
-
-    /* ── SCORE CARD WITH LEFT BORDER ── */
-    .score-card-border { border-left: 3px solid var(--border); }
-
-    /* ── UNAVAILABLE NOTE (replaces verbose placeholder boxes) ── */
-    .unavailable-note {
-      font-size: 0.78rem; color: var(--text3); padding: 8px 0;
-      font-style: italic;
+      
+      .print-btn { display: none !important; }
+      
+      .comps-scroll {
+        overflow: visible !important;
+      }
+      
+      .comps-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+        gap: 16px !important;
+      }
+      
+      .comp-card {
+        min-width: auto !important;
+      }
     }
 
-    /* ── SKIP TRACE UPGRADE STATE ── */
-    .skip-upgrade { }
-    .skip-upgrade-title { font-size: 0.72rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
-    .skip-upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    @media (max-width: 600px) { .skip-upgrade-grid { grid-template-columns: 1fr; } }
-    .skip-item {
-      padding: 10px 14px; border-radius: 8px;
-      font-size: 0.82rem; border: 1px solid var(--border);
-      background: var(--bg); display: flex; align-items: center; gap: 8px;
+    /* ── VALUE RANGE BAR ── */
+    .value-range {
+      margin-top: 12px;
+      padding: 16px;
+      background: var(--dark-elevated);
+      border-radius: var(--radius-sm);
     }
-    .skip-item span { color: var(--text2); font-weight: 500; }
-    .skip-item.locked { opacity: 0.55; }
-    .skip-item.locked span { color: var(--text3); font-weight: 400; font-style: italic; }
-    .skip-item.found { background: var(--green-light); border-color: rgba(22,163,74,0.2); }
-    .skip-item.found span { color: var(--green); font-weight: 600; }
+    
+    .range-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    
+    .range-bar {
+      position: relative;
+      height: 8px;
+      background: var(--dark-border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .range-fill {
+      height: 100%;
+      background: var(--accent-gradient);
+      border-radius: 4px;
+      width: 70%; /* This would be calculated based on confidence */
+    }
+    
+    .range-values {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
 
-    /* ── SCORE CARD ACCENT BORDER ── */
-    .sc-border-accent { border-left: 3px solid var(--accent) !important; }
-    .sc-border-green  { border-left: 3px solid var(--green) !important; }
-    .sc-border-amber  { border-left: 3px solid var(--amber) !important; }
-    .sc-border-red    { border-left: 3px solid var(--red) !important; }
-    .sc-border-muted  { border-left: 3px solid var(--text3) !important; }
+    /* ── LOCKED STATE ── */
+    .locked-card {
+      position: relative;
+      opacity: 0.6;
+    }
+    
+    .locked-card::after {
+      content: '🔒';
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      font-size: 24px;
+      opacity: 0.7;
+    }
+    
+    .upgrade-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(8, 8, 10, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+    }
+    
+    .upgrade-btn {
+      padding: 12px 24px;
+      background: var(--accent-gradient);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
   </style>
 </head>
 <body>
-
-<!-- LOADING -->
-<div id="loading">
-  <div class="load-spinner"></div>
-  <div class="load-title">Building your report</div>
-  <div class="load-sub">Querying verified public records</div>
-  <div class="load-steps">
-    <div class="load-step active" id="step-parcel"><span class="step-dot"></span>County parcel data</div>
-    <div class="load-step" id="step-flood"><span class="step-dot"></span>FEMA flood zone</div>
-    <div class="load-step" id="step-demo"><span class="step-dot"></span>Census demographics</div>
-    <div class="load-step" id="step-done"><span class="step-dot"></span>Finalizing report</div>
-  </div>
-  <div id="loading-msg" style="margin-top:16px;font-size:0.78rem;color:var(--text3);max-width:320px;text-align:center;line-height:1.5">
-    Querying parcel data, flood records, and financials…
-  </div>
-</div>
-
-<!-- ERROR -->
-<div id="error-state">
-  <div class="error-icon">⚠️</div>
-  <div class="error-title">Report not found</div>
-  <p class="error-sub" id="error-msg">We couldn't load this report. The link may have expired or the report hasn't been generated yet.</p>
-  <a href="index.html" class="error-link">← Back to PropIntel</a>
-</div>
-
-<!-- REPORT -->
-<div id="report-content">
-
-  <!-- Demo banner — shown only when ?demo=1 is in URL -->
-  <div id="demo-banner" style="display:none;background:#1e40af;color:white;text-align:center;padding:10px 16px;font-size:0.82rem;font-weight:600;line-height:1.4">
-    📋 Sample Report — This is a live demo on a real Dallas property.
-    <a href="index.html" style="color:#93c5fd;margin-left:12px;font-weight:700">Run your own report →</a>
-    <a href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank" style="background:white;color:#1e40af;padding:4px 14px;border-radius:6px;margin-left:12px;font-weight:700;text-decoration:none">Buy Full Intel — $29.99</a>
-  </div>
-
-  <div class="topbar">
-    <a href="index.html" class="topbar-logo" id="topbar-logo-link">
-      <svg width="100" height="26" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:26px;width:auto">
-        <rect width="40" height="40" rx="10" fill="#2563EB"/>
-        <rect x="11" y="20" width="5" height="10" rx="1" fill="white" opacity="0.85"/>
-        <rect x="17.5" y="15" width="5" height="15" rx="1" fill="white"/>
-        <rect x="24" y="22" width="5" height="8" rx="1" fill="white" opacity="0.7"/>
-        <circle cx="30" cy="10" r="3.5" fill="#93C5FD"/>
-        <text x="50" y="27" font-family="Inter,-apple-system,system-ui,sans-serif" font-size="19" font-weight="800" letter-spacing="-0.5" fill="#0F172A">Prop<tspan fill="#2563EB">Intel</tspan></text>
-      </svg>
-    </a>
-    <div class="topbar-right">
-      <span id="topbar-ts" style="font-size:0.75rem;color:var(--text3)"></span>
-      <button class="print-btn" onclick="window.print()">Print / PDF</button>
+  <!-- Loading State -->
+  <div id="loading">
+    <div class="load-spinner"></div>
+    <div class="load-title">PropIntel</div>
+    <div class="load-sub">Generating your property intelligence report…</div>
+    <div class="load-steps">
+      <div class="load-step" id="step-parcel">
+        <div class="step-dot"></div>
+        <span>Parsing property details</span>
+      </div>
+      <div class="load-step" id="step-flood">
+        <div class="step-dot"></div>
+        <span>Analyzing risk factors</span>
+      </div>
+      <div class="load-step" id="step-demo">
+        <div class="step-dot"></div>
+        <span>Researching demographics</span>
+      </div>
+      <div class="load-step" id="step-done">
+        <div class="step-dot"></div>
+        <span>Finalizing report</span>
+      </div>
     </div>
   </div>
 
-  <!-- White-label "Prepared by" bar — subtle, just below nav -->
-  <div id="wl-bar">
-    <div class="wl-bar-left">
-      <span id="wl-bar-logo-wrap"></span>
-      <span class="wl-bar-prepared">Prepared by</span>
-      <span class="wl-bar-agent" id="wl-bar-agent"></span>
-    </div>
-    <div class="wl-bar-right" id="wl-bar-right"></div>
+  <!-- Error State -->
+  <div id="error-state">
+    <div class="error-icon">⚠️</div>
+    <div class="error-title">Something went wrong</div>
+    <div class="error-sub" id="error-msg">We couldn't generate your report. Please try again.</div>
+    <a href="/" class="error-link">← Return to PropIntel</a>
   </div>
 
-  <div class="report">
+  <!-- Report Content -->
+  <div id="report-content">
+    <!-- Demo Banner -->
+    <div id="demo-banner" style="display:none;background:var(--accent-gradient);color:white;text-align:center;padding:16px;font-size:0.875rem;font-weight:600;">
+      📋 Sample Report — This is a live demo on a real property.
+      <a href="index.html" style="color:rgba(255,255,255,0.8);margin-left:16px;font-weight:700">Run your own report →</a>
+      <a href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank" style="background:white;color:var(--accent-primary);padding:8px 16px;border-radius:6px;margin-left:16px;font-weight:700;text-decoration:none">Upgrade to Pro — $29.99</a>
+    </div>
 
-    <!-- Brand Header (shown when white-label branding is set) -->
-    <div class="brand-header" id="brand-header" style="display:none">
-      <div class="brand-left">
-        <div id="brand-logo-wrap"></div>
-        <div>
-          <div class="brand-prepared">Prepared by</div>
-          <div class="brand-company" id="brand-company"></div>
-          <div class="brand-agent" id="brand-agent"></div>
+    <!-- Topbar -->
+    <div class="topbar">
+      <a href="index.html" class="topbar-logo">
+        <div class="logo-icon">P</div>
+        <span>PropIntel</span>
+      </a>
+      <div class="topbar-right">
+        <span id="topbar-ts"></span>
+        <button class="print-btn no-print" onclick="window.print()">Print / PDF</button>
+      </div>
+    </div>
+
+    <div class="report">
+      <!-- Hero Section -->
+      <div class="hero-section">
+        <div id="tier-badge" class="tier-badge"></div>
+        <h1 id="hero-address" class="hero-address"></h1>
+        <div id="hero-sub" class="hero-sub"></div>
+        <div class="hero-meta">
+          <span id="hero-meta-content"></span>
         </div>
       </div>
-      <div class="brand-right">
-        <div class="brand-contact" id="brand-contact"></div>
-      </div>
-    </div>
 
-    <!-- WL Annotation Panel (edit mode — hidden on print) -->
-    <div id="wl-annotations" style="display:none">
-      <div class="section-card" style="border:1.5px dashed #bfdbfe;background:#eff6ff;">
-        <div class="sec-head" style="border-bottom-color:#bfdbfe">
-          <div class="sec-title" style="color:#2563eb">✏️ Agent Annotations <span style="font-size:0.7rem;font-weight:400;color:#64748b;margin-left:6px">· Saved locally · Never sent to PropIntel · Printed with report</span></div>
-          <div class="sec-src no-print" style="color:#64748b">Edit before sharing</div>
+      <!-- Risk Flags Row -->
+      <div id="risk-flags" class="risk-flags"></div>
+
+      <!-- Score Cards Grid -->
+      <div id="cards-grid" class="cards-grid"></div>
+
+      <!-- Value Estimate Section -->
+      <div class="section-card" id="value-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            📊 Value Analysis
+          </h2>
+          <div class="section-source">Multiple Sources</div>
         </div>
-        <div class="sec-body">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px" class="annotation-grid">
-            <div>
-              <label style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Your ARV Estimate</label>
-              <input id="ann-arv" type="text" placeholder="e.g. $875,000 – $925,000"
-                style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:0.88rem;font-family:inherit;outline:none;color:#0f172a"
-                oninput="saveAnnotations()" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'" />
-              <div id="ann-arv-print" class="no-edit" style="display:none;font-size:0.95rem;font-weight:700;color:#2563eb;padding:4px 0"></div>
-            </div>
-            <div>
-              <label style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Recommended Offer Range</label>
-              <input id="ann-offer" type="text" placeholder="e.g. $750,000 – $800,000"
-                style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:0.88rem;font-family:inherit;outline:none;color:#0f172a"
-                oninput="saveAnnotations()" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'" />
-            </div>
-          </div>
-          <div>
-            <label style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px">Agent Notes / Comparable Summary</label>
-            <textarea id="ann-notes" rows="3" placeholder="Add your market commentary, comparable sales, investment thesis, or notes for the client..."
-              style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:0.88rem;font-family:inherit;outline:none;resize:vertical;color:#0f172a;line-height:1.5"
-              oninput="saveAnnotations()" onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
-          </div>
+        <div class="section-body" id="value-content"></div>
+      </div>
+
+      <!-- Owner Intelligence -->
+      <div class="section-card" id="owner-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            👤 Owner Intelligence
+          </h2>
+          <div class="section-source">DCAD • Regrid</div>
+        </div>
+        <div class="section-body" id="owner-content"></div>
+      </div>
+
+      <!-- Comparable Sales -->
+      <div class="section-card" id="comps-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            🏘️ Comparable Sales
+          </h2>
+          <div class="section-source">MLS • Public Records</div>
+        </div>
+        <div class="section-body">
+          <div id="comps-content"></div>
+        </div>
+      </div>
+
+      <!-- Demographics -->
+      <div class="section-card" id="demo-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            📍 Area Demographics
+          </h2>
+          <div class="section-source">U.S. Census</div>
+        </div>
+        <div class="section-body">
+          <div id="demo-content"></div>
+        </div>
+      </div>
+
+      <!-- Investment Signals -->
+      <div class="section-card" id="signals-section" style="display:none">
+        <div class="section-header">
+          <h2 class="section-title">
+            💎 Investment Signals
+          </h2>
+          <div class="section-source">PropIntel Analysis</div>
+        </div>
+        <div class="section-body">
+          <div id="signals-content" class="investment-signals"></div>
+        </div>
+      </div>
+
+      <!-- Property Map -->
+      <div class="section-card" id="map-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            🗺️ Property Map
+          </h2>
+          <div class="section-source">Satellite View</div>
+        </div>
+        <div class="section-body" style="padding:0;">
+          <div id="property-map" style="height:400px;border-radius:0 0 var(--radius-md) var(--radius-md);"></div>
         </div>
       </div>
     </div>
-
-    <!-- Report Header -->
-    <div class="report-header" id="rpt-header">
-      <div id="tier-badge" class="tier-badge"></div>
-      <div id="prop-address" class="prop-address"></div>
-      <div id="prop-sub" class="prop-sub"></div>
-      <div class="header-tags" id="header-tags"></div>
-    </div>
-
-    <!-- Score Cards -->
-    <div class="score-row" id="score-row"></div>
-
-    <!-- Property Map -->
-    <div class="map-section" id="map-section" style="display:none">
-      <div style="position:relative">
-        <div class="map-tag">Satellite</div>
-        <div id="prop-map"></div>
-      </div>
-      <div class="street-view-wrap" id="sv-wrap">
-        <div class="sv-label">Street View</div>
-        <a id="sv-btn" href="#" target="_blank" class="sv-btn">🌐 Open in Google Maps</a>
-        <div style="font-size:0.72rem;color:rgba(255,255,255,0.35);margin-top:4px">Opens in new tab</div>
-      </div>
-    </div>
-
-    <!-- Investment Summary (PRO) -->
-    <div class="inv-summary" id="inv-summary" style="display:none">
-      <div class="inv-sum-header">
-        <div class="inv-sum-title">Investment Summary</div>
-        <div class="inv-verdict" id="inv-verdict"></div>
-      </div>
-      <div class="inv-metrics" id="inv-metrics"></div>
-      <div class="inv-signals" id="inv-signals"></div>
-    </div>
-
-    <!-- Key Flags -->
-    <div class="section-card" id="flags-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">🚦 Key Flags</div>
-        <div class="sec-src">Compiled from verified sources</div>
-      </div>
-      <div class="sec-body">
-        <div class="flags-grid" id="flags-grid"></div>
-      </div>
-    </div>
-
-    <!-- Upsell (starter only) -->
-    <div class="upsell-card" id="upsell-card" style="display:none">
-      <div class="upsell-left">
-        <h3>Unlock the Full Intel Report</h3>
-        <p>Owner phone + email, seller motivation score (0–100), LLC pierce, lien search, deal analyzer, and LOI draft.</p>
-      </div>
-      <a id="upsell-btn" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" class="upsell-btn" target="_blank">Upgrade to Pro — $29.99 →</a>
-    </div>
-
-    <!-- Parcel & Ownership -->
-    <div class="section-card">
-      <div class="sec-head">
-        <div class="sec-title">🏠 Parcel & Ownership</div>
-        <div class="sec-src" id="parcel-src"></div>
-      </div>
-      <div class="sec-body">
-        <!-- Property profile tiles -->
-        <div class="profile-grid" id="profile-grid"></div>
-        <!-- Value breakdown charts -->
-        <div class="chart-row" id="value-chart-row" style="display:none">
-          <div class="chart-box">
-            <div class="chart-title">Value Breakdown</div>
-            <div class="chart-canvas-wrap"><canvas id="chart-value"></canvas></div>
-          </div>
-          <div class="chart-box">
-            <div class="chart-title">Market Range vs Assessed</div>
-            <div class="chart-canvas-wrap"><canvas id="chart-market"></canvas></div>
-          </div>
-        </div>
-        <!-- Ownership equity -->
-        <div class="equity-row" id="equity-row" style="display:none"></div>
-        <!-- Data rows -->
-        <div id="parcel-body"></div>
-      </div>
-    </div>
-
-    <!-- Financial Estimates -->
-    <div class="section-card" id="fin-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">💰 Financial Estimates</div>
-        <div class="sec-src">Based on county data · DFW market rates</div>
-      </div>
-      <div class="sec-body" id="fin-body"></div>
-    </div>
-
-    <!-- Owner Entity Intelligence -->
-    <div class="section-card" id="entity-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">🏢 Owner Entity Intelligence</div>
-        <div class="sec-src">Texas Secretary of State</div>
-      </div>
-      <div class="sec-body" id="entity-body"></div>
-    </div>
-
-    <!-- Research Tools -->
-    <div class="section-card" id="comps-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">🔗 Research &amp; Comparables</div>
-        <div class="sec-src">Pre-loaded with this address</div>
-      </div>
-      <div class="sec-body" id="comps-body"></div>
-    </div>
-
-    <!-- Flood Zone -->
-    <div class="section-card">
-      <div class="sec-head">
-        <div class="sec-title">🌊 FEMA Flood Zone</div>
-        <div class="sec-src"><a href="https://msc.fema.gov/portal/home" target="_blank">FEMA National Flood Hazard Layer</a></div>
-      </div>
-      <div class="sec-body" id="flood-body"></div>
-    </div>
-
-    <!-- Demographics -->
-    <div class="section-card" id="demo-section">
-      <div class="sec-head">
-        <div class="sec-title">📍 Neighborhood Profile</div>
-        <div class="sec-src"><a href="https://data.census.gov" target="_blank">U.S. Census Bureau — ACS 5-Year</a></div>
-      </div>
-      <div class="sec-body">
-        <div class="nbhd-grid" id="nbhd-grid" style="margin-bottom:14px"></div>
-        <div id="demo-body"></div>
-      </div>
-    </div>
-
-    <!-- Business Registrations -->
-    <div class="section-card" id="biz-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">🏪 Business Registrations</div>
-        <div class="sec-src"><a href="https://mycpa.cpa.state.tx.us/coa/Index.do" target="_blank">Texas Comptroller / TX SOS</a></div>
-      </div>
-      <div class="sec-body" id="biz-body"></div>
-    </div>
-
-    <!-- Owner Contact (PRO) -->
-    <div class="section-card" id="contact-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">📞 Owner Contact <span style="background:var(--accent-light);color:var(--accent);font-size:0.62rem;padding:2px 7px;border-radius:4px;font-weight:700;margin-left:6px;letter-spacing:0.5px">PRO</span></div>
-        <div class="sec-src">DataZapp Skip Trace</div>
-      </div>
-      <div class="sec-body" id="contact-body"></div>
-    </div>
-
-    <!-- Motivation Score (PRO) -->
-    <div class="section-card" id="motiv-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">🎯 Seller Motivation Score <span style="background:var(--accent-light);color:var(--accent);font-size:0.62rem;padding:2px 7px;border-radius:4px;font-weight:700;margin-left:6px;letter-spacing:0.5px">PRO</span></div>
-        <div class="sec-src">7 verified public record indicators</div>
-      </div>
-      <div class="sec-body" id="motiv-body"></div>
-    </div>
-
-    <!-- Deal Analyzer (PRO) -->
-    <div class="section-card" id="deal-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">📊 Deal Analyzer <span style="background:var(--accent-light);color:var(--accent);font-size:0.62rem;padding:2px 7px;border-radius:4px;font-weight:700;margin-left:6px;letter-spacing:0.5px">PRO</span></div>
-        <div class="sec-src">Calculated from report data</div>
-      </div>
-      <div class="sec-body" id="deal-body"></div>
-    </div>
-
-    <!-- LOI (PRO) -->
-    <div class="section-card" id="loi-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">📄 Letter of Intent Draft <span style="background:var(--accent-light);color:var(--accent);font-size:0.62rem;padding:2px 7px;border-radius:4px;font-weight:700;margin-left:6px;letter-spacing:0.5px">PRO</span></div>
-        <div class="sec-src">Pre-filled from report data · Edit before sending</div>
-      </div>
-      <div class="sec-body" id="loi-body"></div>
-    </div>
-
-    <!-- AVM (ATTOM) -->
-    <div class="section-card" id="avm-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">🤖 Automated Valuation Model (AVM)</div>
-        <div class="sec-src" id="avm-src">ATTOM Data Solutions</div>
-      </div>
-      <div class="sec-body" id="avm-body"></div>
-    </div>
-
-    <!-- Purchase Scenario Modeling (PRO) -->
-    <div class="section-card" id="scenario-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">📐 Purchase Scenario Modeling <span style="background:var(--accent-light);color:var(--accent);font-size:0.62rem;padding:2px 7px;border-radius:4px;font-weight:700;margin-left:6px;letter-spacing:0.5px">PRO</span></div>
-        <div class="sec-src">7% rate · 25yr amort · 25% down</div>
-      </div>
-      <div class="sec-body" id="scenario-body"></div>
-    </div>
-
-    <!-- Mortgage & Liens (ATTOM) -->
-    <div class="section-card" id="mortgage-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">🏦 Mortgage & Open Liens</div>
-        <div class="sec-src" id="mortgage-src">ATTOM Data Solutions</div>
-      </div>
-      <div class="sec-body" id="mortgage-body"></div>
-    </div>
-
-    <!-- Sold Comparable Sales (ATTOM) -->
-    <div class="section-card" id="sold-comps-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">📈 Sold Comparable Sales</div>
-        <div class="sec-src" id="comps-src">ATTOM Data Solutions</div>
-      </div>
-      <div class="sec-body" id="sold-comps-body"></div>
-    </div>
-
-    <!-- Ownership History (ATTOM) -->
-    <div class="section-card" id="history-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">📜 Ownership & Deed History</div>
-        <div class="sec-src" id="history-src">ATTOM Data Solutions</div>
-      </div>
-      <div class="sec-body" id="history-body"></div>
-    </div>
-
-    <!-- Permit History -->
-    <div class="section-card" id="permits-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">🔨 Permit History</div>
-        <div class="sec-src">Building Permits</div>
-      </div>
-      <div class="sec-body" id="permits-body"></div>
-    </div>
-
-    <!-- Due Diligence Checklist -->
-    <div class="section-card" id="checklist-section" style="display:none">
-      <div class="sec-head">
-        <div class="sec-title">✅ Due Diligence Checklist</div>
-        <div class="sec-src">Before you close</div>
-      </div>
-      <div class="sec-body" id="checklist-body"></div>
-    </div>
-
-    <!-- Disclaimer -->
-    <div class="disclaimer">
-      <div class="disc-title">Data Sources & Disclaimer</div>
-      <p id="disc-text">All data in this report is sourced from verified government and public records. PropIntel is not a licensed real estate broker, appraiser, or attorney. This report is for informational purposes only and does not constitute investment, legal, or financial advice. Data accuracy depends on county records which may lag market conditions by 12–24 months. Verify all data independently before making investment decisions.</p>
-    </div>
-
   </div>
-</div>
 
-<script>
-  const API = 'https://propintel-htij.onrender.com';
+  <script>
+    const API = 'https://propintel-backend-847263382343.us-central1.run.app';
 
-  function fmt(val, prefix='$') {
-    try { return prefix + Number(val).toLocaleString(); }
-    catch { return val || 'N/A'; }
-  }
-  function safe(val) { return val || 'N/A'; }
-
-  function row(label, value, cls='') {
-    const vc = cls ? ` dv ${cls}` : ' dv';
-    return `<div class="dr"><span class="dl">${label}</span><span class="${vc.trim()}">${value}</span></div>`;
-  }
-
-  function showError(msg) {
-    document.getElementById('loading').style.display = 'none';
-    const el = document.getElementById('error-state');
-    el.style.display = 'flex';
-    if (msg) document.getElementById('error-msg').textContent = msg;
-  }
-
-  function stepDone(id) {
-    const el = document.getElementById(id);
-    if (el) { el.classList.remove('active'); el.classList.add('done'); el.querySelector('.step-dot').innerHTML = '✓'; }
-  }
-  function stepActive(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('active');
-  }
-
-  function renderBranding() {
-    try {
-      /* Priority: sessionStorage (set by index.html on Analyze) → localStorage propintel_wl
-         → localStorage propintel_brand (legacy) */
-      var raw = sessionStorage.getItem('propintel_wl_active')
-             || localStorage.getItem('propintel_wl')
-             || localStorage.getItem('propintel_brand')
-             || 'null';
-      var b = JSON.parse(raw);
-      if (!b) return;
-
-      /* Normalise field names: propintel_wl uses {company,agent,...},
-         propintel_brand uses {company,name,...} */
-      var company = b.company || '';
-      var agentName = b.agent || b.name || '';
-      var phone = b.phone || '';
-      var email = b.email || '';
-      var logo  = b.logo  || '';
-
-      if (!company && !agentName) return;
-
-      /* ── Subtle "Prepared by" bar ── */
-      var wlBar = document.getElementById('wl-bar');
-      wlBar.style.display = 'flex';
-
-      /* Logo in bar */
-      var wlBarLogoWrap = document.getElementById('wl-bar-logo-wrap');
-      if (logo) {
-        wlBarLogoWrap.innerHTML = '<img src="' + logo + '" class="wl-bar-logo" alt="' + company + '" onerror="this.style.display=\'none\'" />';
-      }
-
-      /* Agent/company text in bar */
-      var agentBarText = agentName
-        ? agentName + (company ? ' \u00b7 ' + company : '')
-        : company;
-      document.getElementById('wl-bar-agent').textContent = agentBarText;
-
-      /* Contact in bar right */
-      var barRightParts = [];
-      if (phone) barRightParts.push(phone);
-      if (email) barRightParts.push(email);
-      document.getElementById('wl-bar-right').textContent = barRightParts.join(' \u00b7 ');
-
-      /* ── Page title ── */
-      if (company) {
-        /* Will be refined in renderReport() once address is known */
-        document.title = company + ' \u2014 Property Report';
-      }
-
-      /* ── Topbar: replace PropIntel branding with company name ── */
-      var topbarLogoLink = document.getElementById('topbar-logo-link');
-      if (topbarLogoLink) {
-        var logoHTML = '';
-        if (logo) {
-          logoHTML = '<img src="' + logo + '" style="max-height:26px;max-width:100px;object-fit:contain;border-radius:4px;vertical-align:middle" alt="' + company + '" onerror="this.style.display=\'none\'" />';
-        } else {
-          var initials = (company || agentName).substring(0, 2).toUpperCase();
-          logoHTML = '<div class="logo-icon">' + initials + '</div>';
-        }
-        topbarLogoLink.innerHTML = logoHTML
-          + '<span style="font-size:0.88rem;font-weight:800;color:var(--text);letter-spacing:-0.3px;margin-left:8px">'
-          + (company || agentName)
-          + '</span>';
-      }
-
-      /* ── Brand Header block (existing, in the report body) ── */
-      document.getElementById('brand-header').style.display = '';
-      document.getElementById('brand-company').textContent = company;
-      document.getElementById('brand-agent').textContent = agentName && company ? agentName : agentName;
-
-      var logoWrap = document.getElementById('brand-logo-wrap');
-      if (logo) {
-        logoWrap.innerHTML = '<img src="' + logo + '" class="brand-logo" alt="' + company + '" onerror="this.style.display=\'none\'" />';
-      } else {
-        var initials2 = (company || agentName).substring(0, 2).toUpperCase();
-        logoWrap.innerHTML = '<div class="brand-logo-placeholder">' + initials2 + '</div>';
-      }
-
-      var contactParts = [];
-      if (phone) contactParts.push(phone);
-      if (email) contactParts.push('<a href="mailto:' + email + '">' + email + '</a>');
-      document.getElementById('brand-contact').innerHTML = contactParts.join('<br />');
-
-      /* ── Annotation panel (agent-facing) ── */
-      document.getElementById('wl-annotations').style.display = '';
-      loadAnnotations();
-
-      /* ── Store branding ref globally so renderReport() can refine title ── */
-      window._wlBranding = { company: company, agentName: agentName };
-
-    } catch(e) {}
-  }
-
-  // Annotation key scoped to address so each property has its own notes
-  function _annKey() {
-    const addr = document.getElementById('prop-address');
-    return 'propintel_ann_' + (addr ? addr.textContent.trim().toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 60) : 'default');
-  }
-
-  function saveAnnotations() {
-    const data = {
-      arv: document.getElementById('ann-arv').value,
-      offer: document.getElementById('ann-offer').value,
-      notes: document.getElementById('ann-notes').value,
-    };
-    localStorage.setItem(_annKey(), JSON.stringify(data));
-    _updatePrintViews(data);
-  }
-
-  function loadAnnotations() {
-    try {
-      const raw = localStorage.getItem(_annKey());
-      if (!raw) return;
-      const data = JSON.parse(raw);
-      if (data.arv) document.getElementById('ann-arv').value = data.arv;
-      if (data.offer) document.getElementById('ann-offer').value = data.offer;
-      if (data.notes) document.getElementById('ann-notes').value = data.notes;
-      _updatePrintViews(data);
-    } catch(e) {}
-  }
-
-  function _updatePrintViews(data) {
-    // Inject print-visible divs for each field
-    _setPrintView('ann-arv', data.arv, 'Your ARV Estimate');
-    _setPrintView('ann-offer', data.offer, 'Recommended Offer Range');
-    _setPrintView('ann-notes', data.notes, 'Agent Notes');
-  }
-
-  function _setPrintView(inputId, value, label) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    let printEl = document.getElementById(inputId + '-print');
-    if (!printEl) {
-      printEl = document.createElement('div');
-      printEl.id = inputId + '-print';
-      printEl.className = 'annotation-print';
-      input.parentNode.insertBefore(printEl, input.nextSibling);
+    // Helper functions
+    function fmt(num) { return num ? '$' + Number(num).toLocaleString() : '—'; }
+    function stepActive(id) { 
+      document.getElementById(id).classList.add('active'); 
     }
-    printEl.innerHTML = value
-      ? `<div style="font-size:0.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px">${label}</div><div style="color:#0f172a">${value.replace(/\n/g,'<br>')}</div>`
-      : '';
-  }
-
-  function renderReport(data) {
-    // Expose full report data globally for debugging and external integrations
-    window._reportData = data;
-    const tier = data.tier || 'starter';
-    const isPro = tier === 'pro';
-    const parcel = data.parcel || {};
-    const flood = data.flood || {};
-    const demo = data.demographics || {};
-    const biz = data.businesses || [];
-    const skip = data.skip_trace || {};
-    const motiv = data.motivation || {};
-    const flags = data.flags || [];
-    const geo = data.geo || {};
-    const listing = data.listing || {};
-    const est = data.market_estimate || {};
-    const avm = data.avm || {};
-
-    // ── Property-type awareness ──────────────────────────────────────────────
-    const propClass = data.property_class || 'COMMERCIAL';
-    const isResidential = ['RESIDENTIAL', 'MULTIFAMILY'].includes(propClass);
-    const isLand = propClass === 'LAND';
-    function propLabel(residential, commercial, land) {
-      if (isResidential) return residential;
-      if (isLand) return (land || commercial);
-      return commercial;
+    function stepDone(id) { 
+      const el = document.getElementById(id);
+      el.classList.remove('active');
+      el.classList.add('done');
+    }
+    function showError(msg) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error-msg').innerHTML = msg;
+      document.getElementById('error-state').style.display = 'flex';
     }
 
-    var _addr = data.resolved_address || data.input || 'Report';
-    if (window._wlBranding && window._wlBranding.company) {
-      document.title = window._wlBranding.company + ' \u2014 ' + _addr + ' Property Report';
-    } else {
-      document.title = 'PropIntel \u2014 ' + _addr;
-    }
-
-    // Timestamp
-    const ts = (data.generated_at || '').replace('T',' ').substring(0,16) + ' UTC';
-    document.getElementById('topbar-ts').textContent = `Generated ${ts}`;
-
-    // Tier badge
-    const badge = document.getElementById('tier-badge');
-    badge.textContent = isPro ? 'Full Intel Report · Pro' : 'Public Record Report · Starter';
-    badge.className = `tier-badge ${isPro ? 'pro' : 'starter'}`;
-
-    // Address
-    document.getElementById('prop-address').textContent = data.resolved_address || data.input || '';
-    document.getElementById('prop-sub').textContent =
-      [geo.city, geo.state, geo.zip].filter(Boolean).join(', ') +
-      (geo.county ? ` · ${geo.county}` : '') +
-      ` · Report ID: ${data.report_id || '—'}`;
-
-    // Header tags
-    const tags = [];
-    if (flood.zone) tags.push({ text: `Flood Zone ${flood.zone}`, cls: flood.zone === 'X' ? 'green' : (flood.zone.startsWith('A') || flood.zone.startsWith('V') ? 'red' : 'amber') });
-    if (parcel.tax_delinquent) tags.push({ text: 'Tax Delinquent', cls: 'red' });
-    else if (parcel.apn) tags.push({ text: 'Taxes Current', cls: 'green' });
-    if (parcel.absentee_owner) tags.push({ text: 'Absentee Owner', cls: 'amber' });
-    if (parcel.out_of_state_owner) tags.push({ text: 'Out-of-State Owner', cls: 'amber' });
-    document.getElementById('header-tags').innerHTML = tags.map(t =>
-      `<span class="htag ${t.cls}">${t.text}</span>`
-    ).join('');
-
-    // Score cards — max 4: Assessed, Comp Sale Range, Building SF, Motivation Score
-    // Flood zone lives in the header tags row, not a score card
-    const sfLabel = propLabel('Living Area', 'Rentable SF', 'Lot SF');
-    const sfVal = parcel.building_sf
-      ? Number(parcel.building_sf).toLocaleString() + ' SF'
-      : (isLand && parcel.lot_acres ? parseFloat(parcel.lot_acres).toFixed(2) + ' ac' : (listing.building_sf ? listing.building_sf + ' SF' : 'N/A'));
-
-    // Comp Sale Range: prefer actual recorded comps; fall back to AVM (clearly labeled)
-    const compsData = data.sold_comps || {};
-    let compRangeVal = 'N/A';
-    let compRangeSub = 'No recent comps found';
-    if (compsData.available && compsData.comps && compsData.comps.length >= 2) {
-      const prices = compsData.comps
-        .map(c => c.sale_price || 0)
-        .filter(p => p > 10000)
-        .sort((a, b) => a - b);
-      if (prices.length >= 2) {
-        const lo = prices[0];
-        const hi = prices[prices.length - 1];
-        const fmtK = v => '$' + Math.round(v / 1000) + 'K';
-        compRangeVal = fmtK(lo) + ' – ' + fmtK(hi);
-        compRangeSub = `Based on ${prices.length} nearby sales`;
-      }
-    } else if (avm && avm.available && avm.value) {
-      compRangeVal = avm.range_fmt || ('~$' + Math.round(avm.value / 1000) + 'K');
-      compRangeSub = 'Est. — no recent comps (AVM model)';
-    } else if (est.available) {
-      compRangeVal = est.range_fmt || 'N/A';
-      compRangeSub = 'Est. — no recent comps (AVM model)';
-    }
-
-    // AVM card logic
-    let avmCard = null;
-    if (avm && avm.available && avm.method === 'internal_avm_v1') {
-      const confidenceColor = avm.confidence === 'high' ? 'green' : 
-                              avm.confidence === 'medium' ? 'amber' : 
-                              avm.confidence === 'low' ? 'red' : 'red';
-      const confidenceBorder = avm.confidence === 'high' ? 'sc-border-green' : 
-                               avm.confidence === 'medium' ? 'sc-border-amber' : 
-                               avm.confidence === 'low' ? 'sc-border-red' : 'sc-border-red';
+    // Enhanced card rendering with graceful empty states
+    function createScoreCard(icon, label, value, subtitle, source, isEmpty = false, isLocked = false) {
+      const emptyClass = isEmpty ? 'card-empty' : '';
+      const lockedClass = isLocked ? 'locked-card' : '';
+      const displayValue = isEmpty ? '<span class="empty-value">—</span>' : value;
+      const displaySubtitle = isEmpty ? '<span class="pending-pill">📊 Data pending</span>' : subtitle;
       
-      avmCard = {
-        label: 'PropIntel AVM Estimate', 
-        val: avm.value_fmt || fmt(avm.value), 
-        sub: `${avm.confidence} confidence • ${avm.comp_count} comps`,
-        tooltip: `${avm.basis} • Range: ${avm.range_fmt}`,
-        color: confidenceColor,
-        borderCls: confidenceBorder
-      };
+      return `
+        <div class="score-card ${emptyClass} ${lockedClass}">
+          <div class="card-header">
+            <div class="card-icon">${icon}</div>
+            <div class="data-source">${source}</div>
+          </div>
+          <div class="card-label">${label}</div>
+          <div class="card-value">${displayValue}</div>
+          <div class="card-subtitle">${displaySubtitle}</div>
+          ${isLocked ? '<div class="upgrade-overlay"><a href="#" class="upgrade-btn">🔓 Upgrade to Pro</a></div>' : ''}
+        </div>
+      `;
     }
 
-    const scores = [
-      { label: 'County Assessed (Tax)', val: parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A', sub: 'Official tax record', borderCls: 'sc-border-accent' },
-      { label: 'Comp Sale Range', val: compRangeVal, sub: compRangeSub, tooltip: est.methodology || '', borderCls: 'sc-border-green' },
-      avmCard,
-      { label: sfLabel, val: sfVal, sub: parcel.year_built ? `Built ${parcel.year_built}` : '', borderCls: 'sc-border-muted' },
-      isPro && motiv.score !== undefined
-        ? { label: 'Motivation Score', val: `${motiv.score}/100`, sub: motiv.tier || '',
-            color: motiv.score >= 70 ? 'red' : motiv.score >= 40 ? 'amber' : 'green',
-            borderCls: motiv.score >= 70 ? 'sc-border-red' : motiv.score >= 40 ? 'sc-border-amber' : 'sc-border-green' }
-        : null
-    ].filter(Boolean);
+    function renderReport(data) {
+      window._reportData = data;
+      const tier = data.tier || 'starter';
+      const isPro = tier === 'pro';
+      const parcel = data.parcel || {};
+      const flood = data.flood || {};
+      const demo = data.demographics || {};
+      const listing = data.listing || {};
+      const avm = data.avm || {};
+      const comps = data.sold_comps || {};
+      const geo = data.geo || {};
 
-    document.getElementById('score-row').innerHTML = scores.map(s =>
-      `<div class="score-card ${s.borderCls || ''}" ${s.tooltip ? `title="${s.tooltip.replace(/"/g,"'")}"` : ''}>
-        <div class="sc-label">${s.label}</div>
-        <div class="sc-val" ${s.color ? `style="color:var(--${s.color})"` : ''}>${s.val}</div>
-        <div class="sc-sub">${s.sub || ''}</div>
-      </div>`
-    ).join('');
+      // Document title
+      const addr = data.resolved_address || data.input || 'Property Report';
+      document.title = `PropIntel — ${addr}`;
 
-    // Flags
-    if (flags.length) {
-      document.getElementById('flags-section').style.display = '';
-      document.getElementById('flags-grid').innerHTML = flags.map(f =>
-        `<div class="flag-item ${f.type || 'amber'}">${f.text || ''}</div>`
-      ).join('');
-    }
+      // Timestamp
+      const ts = (data.generated_at || '').replace('T',' ').substring(0,16) + ' UTC';
+      document.getElementById('topbar-ts').textContent = `Generated ${ts}`;
 
-    // Upsell (starter only)
-    if (!isPro) {
-      document.getElementById('upsell-card').style.display = '';
-      const enc = encodeURIComponent(data.resolved_address || data.input || '');
-      document.getElementById('upsell-btn').href = `https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01?client_reference_id=${enc}`;
-    }
+      // Tier badge
+      const badge = document.getElementById('tier-badge');
+      badge.textContent = isPro ? 'Full Intel Report · Pro' : 'Public Record Report · Starter';
+      badge.className = `tier-badge ${isPro ? 'pro' : 'starter'}`;
 
-    // Parcel
-    // Show parcel error state clearly — never silently N/A
-    if (parcel.parcel_error) {
-      document.getElementById('parcel-src').textContent = 'Unavailable';
-      const actionBtns = parcel.parcel_error_action === 'retry'
-        ? `<button onclick="location.reload()" style="background:var(--accent);color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:600;margin-top:12px">↻ Retry</button>`
-        : '';
-      document.getElementById('parcel-body').innerHTML = `
-        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px 18px;color:#dc2626">
-          <div style="font-weight:700;margin-bottom:6px">⚠️ Parcel Data Unavailable</div>
-          <div style="font-size:0.85rem;color:#7f1d1d;line-height:1.5">${parcel.parcel_error_reason || 'Data temporarily unavailable.'}</div>
-          ${parcel.manual_url ? `<div style="margin-top:10px"><a href="${parcel.manual_url}" target="_blank" style="color:#dc2626;font-weight:600;font-size:0.82rem">Look up manually →</a></div>` : ''}
-          ${actionBtns}
-        </div>`;
-    } else {
-      document.getElementById('parcel-src').innerHTML = parcel.source_url
-        ? `<a href="${parcel.source_url}" target="_blank">${parcel.source || 'County Appraisal District'}</a>`
-        : (parcel.source || 'County Appraisal District');
+      // Hero section
+      document.getElementById('hero-address').textContent = addr;
+      document.getElementById('hero-sub').textContent = 
+        [geo.city, geo.state, geo.zip].filter(Boolean).join(', ') +
+        (geo.county ? ` · ${geo.county}` : '');
+      document.getElementById('hero-meta-content').textContent = 
+        `Report ID: ${data.report_id || '—'} • Generated: ${new Date().toLocaleDateString()}`;
 
-    // Permit + assessor links
-    const perm = data.permit_portal || {};
-    const permLink = perm.permit ? `<a href="${perm.permit}" target="_blank" style="color:var(--accent)">View Permit Records →</a>` : (perm.note || 'Search city portal');
-    const assessLink = perm.assessor ? `<a href="${perm.assessor}" target="_blank" style="color:var(--accent)">Open Assessor Portal →</a>` : 'N/A';
-
-    const absenteeBadge = parcel.absentee_owner ? '<span class="badge absentee">ABSENTEE</span>' : '';
-    const oosBadge = parcel.out_of_state_owner ? '<span class="badge out-of-state">OUT-OF-STATE</span>' : '';
-    const delinqCls = parcel.tax_delinquent ? 'red' : 'green';
-    const delinqTxt = parcel.tax_delinquent ? '⚠ Delinquent — verify with county' : 'Current — No Delinquency';
-
-    const sfRowLabel = propLabel('Living Area', 'Rentable SF', 'Lot SF');
-    const ownerRowLabel = propLabel('Owner', 'Owner / Operator', 'Owner');
-    const bedsRow = (isResidential && parcel.bedrooms)
-      ? row('Beds / Baths', (parcel.bedrooms || '—') + ' bd / ' + (parcel.bathrooms || '—') + ' ba')
-      : '';
-
-    document.getElementById('parcel-body').innerHTML =
-      '<div class="dr-grid">' +
-      row('APN / Account', safe(parcel.apn)) +
-      row(ownerRowLabel, safe(parcel.owner_name) + absenteeBadge + oosBadge) +
-      row('Owner Mailing', safe(parcel.owner_mailing)) +
-      row('Data Source', safe(parcel.source)) +
-      row('Year Built', safe(parcel.year_built)) +
-      row(sfRowLabel, parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : 'N/A') +
-      bedsRow +
-      row('Assessed Land Value', parcel.assessed_land ? fmt(parcel.assessed_land) : 'N/A') +
-      row('Assessed Improvement', parcel.assessed_improvement ? fmt(parcel.assessed_improvement) : 'N/A') +
-      row('County Assessed (Tax)', parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A') +
-      (compRangeVal !== 'N/A' ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">Comp Sale Range <span style="color:var(--text3);font-size:0.7em;cursor:help">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${compRangeVal}</span></div>` : (est.available ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">Market Range <span style="color:var(--text3);font-size:0.7em;cursor:help">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${est.range_fmt} <span style="font-size:0.75em;color:var(--text3)">(AVM est.)</span></span></div>` : '')) +
-      row('Tax Delinquency', delinqTxt, delinqCls) +
-      row('Permit Records', permLink) +
-      row('Assessor Portal', assessLink) +
-      '</div>';
-    } // end else (parcel data available)
-
-    // Flood
-    const fzone = flood.zone || '';
-    const fCls = fzone === 'X' ? 'green' : (fzone.startsWith('A') || fzone.startsWith('V') ? 'red' : 'amber');
-    const fInsCls = flood.flood_insurance_required ? 'red' : 'green';
-    document.getElementById('flood-body').innerHTML =
-      row('Flood Zone', `${fzone} — ${flood.description || ''}`, fCls) +
-      row('FIRM Panel', safe(flood.firm_panel)) +
-      row('Effective Date', safe(flood.effective_date)) +
-      row('Flood Insurance Required', flood.flood_insurance_required ? 'Yes — required by lender' : 'No (Zone X)', fInsCls);
-
-    // Demographics
-    const unemp = demo.unemployment_rate;
-    document.getElementById('demo-body').innerHTML =
-      row('Population', demo.population ? Number(demo.population).toLocaleString() : 'N/A') +
-      row('Median Household Income', demo.median_household_income_fmt || 'N/A') +
-      row('Owner-Occupied Housing', demo.owner_occupied_pct ? demo.owner_occupied_pct + '%' : 'N/A') +
-      row('Median Age', demo.median_age ? String(demo.median_age) : 'N/A') +
-      (unemp ? row('Unemployment Rate', unemp + '%') : '');
-
-    // Businesses
-    if (biz.length) {
-      document.getElementById('biz-section').style.display = '';
-      const tbody = biz.map(b => {
-        const col = b.status_flag === 'green' ? 'var(--green)' : b.status_flag === 'red' ? 'var(--red)' : 'var(--amber)';
-        return `<tr>
-          <td>${b.suite || '—'}</td>
-          <td style="font-weight:600;color:${col}">${b.name || 'N/A'}</td>
-          <td style="color:${col}">${b.status || '—'}</td>
-          <td>${b.file_date || '—'}</td>
-        </tr>`;
-      }).join('');
-      document.getElementById('biz-body').innerHTML = `
-        <table class="biz-table">
-          <thead><tr><th>Suite</th><th>Business Name</th><th>Status</th><th>Since</th></tr></thead>
-          <tbody>${tbody}</tbody>
-        </table>
-        <p style="font-size:0.72rem;color:var(--text3);margin-top:10px">Active registration does not confirm current occupancy. Field verify.</p>`;
-    }
-
-    // PRO sections
-    if (isPro) {
-      // Skip trace / Owner contact — always show section for PRO
-      document.getElementById('contact-section').style.display = '';
-      {
-        const phones = (skip.phones || []).filter(p => p && p !== 'N/A');
-        const emails = (skip.emails || []).filter(e => e && e !== 'N/A');
-        const dnc = skip.dnc || [];
-        const hasData = skip.status === 'hit' || phones.length > 0;
-
-        if (hasData) {
-          // Full data available
-          document.getElementById('contact-body').innerHTML = `
-            <div class="contact-grid">
-              <div class="contact-card">
-                <div class="contact-label">Phone Numbers</div>
-                ${phones.length ? phones.map((p, i) => `
-                  <div class="contact-val">${p} ${dnc[i] ? '<span style="color:var(--red);font-size:0.68rem;font-weight:700">DNC</span>' : ''}</div>
-                  <div class="contact-sub">Mobile</div>
-                `).join('') : '<div class="contact-val" style="color:var(--text3)">No result</div>'}
-              </div>
-              <div class="contact-card">
-                <div class="contact-label">Email Addresses</div>
-                ${emails.length ? emails.map(e => `
-                  <div class="contact-val" style="font-size:0.8rem">${e}</div>
-                `).join('') : '<div class="contact-val" style="color:var(--text3)">No result</div>'}
-              </div>
-            </div>
-            ${skip.note ? `<p style="font-size:0.72rem;color:var(--text3);margin-top:10px">${skip.note}</p>` : ''}`;
-        } else {
-          // Show locked/found upgrade state
-          const skipName = skip.name || skip.full_name || '';
-          const skipMail = skip.mailing_address || '';
-          const nameCls = skipName ? 'found' : 'locked';
-          const mailCls = skipMail ? 'found' : 'locked';
-
-          let statusNote = '';
-          if (skip.status === 'entity') {
-            statusNote = '<div class="unavailable-note" style="margin-top:10px">Entity owner — phone/email lookup requires DataZapp API. TX SOS registered agent may be reachable above.</div>';
-          } else if (skip.status === 'disabled') {
-            statusNote = '<div class="unavailable-note" style="margin-top:10px">Phone + email require DataZapp API key — add DATAZAPP_API_KEY to unlock.</div>';
-          } else if (skip.status === 'no_hit') {
-            statusNote = '<div class="unavailable-note" style="margin-top:10px">' + (skip.note || 'No contact data in skip trace database for this owner.') + '</div>';
-          }
-
-          document.getElementById('contact-body').innerHTML = `
-            <div class="skip-upgrade">
-              <div class="skip-upgrade-title">Owner Contact Intel</div>
-              <div class="skip-upgrade-grid">
-                <div class="skip-item locked">📞 Phone <span>Requires DataZapp API</span></div>
-                <div class="skip-item locked">✉️ Email <span>Requires DataZapp API</span></div>
-                <div class="skip-item ${nameCls}">👤 Name <span>${skipName || 'Not available'}</span></div>
-                <div class="skip-item ${mailCls}">📬 Mailing <span>${skipMail || 'Not available'}</span></div>
-              </div>
-              ${statusNote}
-            </div>`;
-        }
-      }
-
-      // Motivation Score
-      if (motiv.score !== undefined) {
-        document.getElementById('motiv-section').style.display = '';
-        const score = motiv.score;
-        const tierLbl = motiv.tier || (score >= 70 ? 'HIGH' : score >= 40 ? 'MODERATE' : 'LOW');
-        const scoreColor = score >= 70 ? 'var(--red)' : score >= 40 ? 'var(--amber)' : 'var(--green)';
-        const indicators = motiv.indicators || [];
-
-        const holdYears = (data.ownership_history || {}).hold_years;
-        const holdIndicator = holdYears
-          ? (() => {
-              const isVeryLong = holdYears >= 15;
-              const isLong = holdYears >= 7;
-              if (!isLong) return '';
-              const label = isVeryLong ? `Very Long Hold (${holdYears.toFixed(1)} yrs)` : `Long Hold (${holdYears.toFixed(1)} yrs)`;
-              const pts = isVeryLong ? 15 : 10;
-              return `
-                  <li class="mi triggered">
-                    <span class="mi-dot"></span>
-                    <span class="mi-label">${label}</span>
-                    <span class="mi-pts">+${pts} pts</span>
-                  </li>`;
-            })()
-          : '';
-
-        document.getElementById('motiv-body').innerHTML = `
-          <div class="motiv-wrap">
-            <div class="motiv-dial" style="border-color:${scoreColor}">
-              <div class="motiv-num" style="color:${scoreColor}">${score}</div>
-              <div class="motiv-max">/ 100</div>
-              <div class="motiv-tier" style="color:${scoreColor}">${tierLbl}</div>
-            </div>
-            <div>
-              <p class="motiv-interp">${motiv.interpretation || ''}</p>
-              <ul class="motiv-indicators">
-                ${indicators.map(ind => `
-                  <li class="mi ${ind.triggered ? 'triggered' : ''}">
-                    <span class="mi-dot"></span>
-                    <span class="mi-label">${ind.name}</span>
-                    <span class="mi-pts">${ind.triggered ? '+' + ind.points + ' pts' : '—'}</span>
-                  </li>
-                `).join('')}
-                ${holdIndicator}
-              </ul>
-            </div>
-          </div>`;
-      }
-
-      // Deal Analyzer (not shown for land — no rentable SF or NOI to model)
-      if (!isLand && (listing.asking_price || parcel.assessed_total)) {
-        document.getElementById('deal-section').style.display = '';
-        const ask = listing.asking_price || 0;
-        const assessed = parcel.assessed_total || 0;
-        const sf = Number(listing.building_sf || parcel.building_sf || 0);
-        const ppsf = (ask && sf) ? (ask / sf).toFixed(2) : null;
-        const cap = listing.cap_rate || null;
-        const ratio = (ask && assessed) ? ((ask / assessed) * 100).toFixed(0) + '%' : null;
-
-        document.getElementById('deal-body').innerHTML = `
-          <div class="deal-grid">
-            ${ask ? `<div class="deal-metric"><div class="deal-val">${fmt(ask)}</div><div class="deal-label">Asking Price</div></div>` : ''}
-            ${ppsf ? `<div class="deal-metric"><div class="deal-val">$${ppsf}</div><div class="deal-label">Price / SF</div></div>` : ''}
-            ${cap ? `<div class="deal-metric"><div class="deal-val">${cap}</div><div class="deal-label">Cap Rate</div></div>` : ''}
-            ${ratio ? `<div class="deal-metric"><div class="deal-val">${ratio}</div><div class="deal-label">Ask vs. Assessed</div></div>` : ''}
-            ${assessed ? `<div class="deal-metric"><div class="deal-val">${fmt(assessed)}</div><div class="deal-label">County Assessed (Tax)</div></div>` : ''}
-            ${compRangeVal !== 'N/A' ? `<div class="deal-metric"><div class="deal-val" style="color:var(--accent)">${compRangeVal}</div><div class="deal-label">Comp Sale Range</div></div>` : (est.available ? `<div class="deal-metric"><div class="deal-val" style="color:var(--accent)">${est.range_fmt}</div><div class="deal-label">Market Range (AVM est.)</div></div>` : '')}
-          </div>`;
-      }
-
-      // LOI
-      if (parcel.owner_name || data.resolved_address) {
-        document.getElementById('loi-section').style.display = '';
-        const loiText = buildLOI(data);
-        document.getElementById('loi-body').innerHTML = `
-          <div class="loi-box" id="loi-text">${loiText}</div>
-          <div class="loi-actions">
-            <button class="loi-btn" onclick="copyLOI()">📋 Copy LOI</button>
-            <button class="loi-btn" onclick="window.print()">🖨 Print / PDF</button>
-          </div>`;
-      }
-    }
-
-    // ── PROPERTY MAP ──
-    if (geo.lat && geo.lng) {
-      const mapEl = document.getElementById('map-section');
-      mapEl.style.display = '';
-      setTimeout(() => {
-        const map = L.map('prop-map', { zoomControl: true, attributionControl: false });
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          maxZoom: 19
-        }).addTo(map);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        map.setView([geo.lat, geo.lng], 17);
-        const pin = L.divIcon({
-          html: '<div style="width:18px;height:18px;background:#ef4444;border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>',
-          iconSize: [18, 18], iconAnchor: [9, 9], className: ''
-        });
-        L.marker([geo.lat, geo.lng], { icon: pin }).addTo(map);
-      }, 100);
-      // Street View button
-      const svBtn = document.getElementById('sv-btn');
-      svBtn.href = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${geo.lat},${geo.lng}`;
-      // Try to load satellite street view thumbnail
-      const svImg = `https://maps.googleapis.com/maps/api/streetview?size=480x280&location=${geo.lat},${geo.lng}&fov=90&pitch=0&key=`;
-      const svWrap = document.getElementById('sv-wrap');
-      // Show address thumbnail without key (OpenStreetMap Nominatim)
-      svWrap.style.backgroundImage = `url(https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=480&height=280&center=lonlat:${geo.lng},${geo.lat}&zoom=17&marker=lonlat:${geo.lng},${geo.lat};color:%23ef4444;size:medium&apiKey=)`;
-      svWrap.style.backgroundSize = 'cover';
-    }
-
-    // ── PROPERTY PROFILE TILES ──
-    const profileTiles = [];
-    if (parcel.building_sf) profileTiles.push({ val: Number(parcel.building_sf).toLocaleString(), label: 'Building SF' });
-    if (parcel.lot_acres) profileTiles.push({ val: parseFloat(parcel.lot_acres).toFixed(2) + ' ac', label: 'Lot Size' });
-    if (parcel.year_built) profileTiles.push({ val: parcel.year_built, label: 'Year Built' });
-    if (parcel.zoning) profileTiles.push({ val: parcel.zoning, label: 'Zoning' });
-    if (parcel.use_description) profileTiles.push({ val: parcel.use_description.split(' ').slice(0,2).join(' '), label: 'Use Type' });
-    if (parcel.county) profileTiles.push({ val: parcel.county.charAt(0).toUpperCase() + parcel.county.slice(1), label: 'County' });
-    if (profileTiles.length) {
-      document.getElementById('profile-grid').innerHTML = profileTiles.map(t =>
-        `<div class="profile-tile"><div class="profile-tile-val">${t.val}</div><div class="profile-tile-label">${t.label}</div></div>`
-      ).join('');
-    }
-
-    // ── VALUE CHARTS ──
-    if (parcel.assessed_land && parcel.assessed_improvement) {
-      document.getElementById('value-chart-row').style.display = '';
-      // Pie: land vs improvement
-      new Chart(document.getElementById('chart-value'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Land', 'Improvement'],
-          datasets: [{ data: [parcel.assessed_land, parcel.assessed_improvement],
-            backgroundColor: ['#3b82f6', '#0f172a'], borderWidth: 0 }]
-        },
-        options: {
-          plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: 'Inter' }, color: '#475569' } } },
-          cutout: '65%', maintainAspectRatio: false
-        }
-      });
-      // Bar: assessed vs market range
-      if (est.available) {
-        new Chart(document.getElementById('chart-market'), {
-          type: 'bar',
-          data: {
-            labels: ['County Assessed', 'Market Low', 'Market High'],
-            datasets: [{ data: [est.assessed, est.market_low, est.market_high],
-              backgroundColor: ['#94a3b8', '#3b82f6', '#1d4ed8'],
-              borderRadius: 6, borderWidth: 0 }]
-          },
-          options: {
-            plugins: { legend: { display: false } },
-            scales: { y: { ticks: { callback: v => '$' + (v/1000).toFixed(0) + 'k', font: { size: 10, family: 'Inter' }, color: '#94a3b8' }, grid: { color: '#f1f5f9' } }, x: { ticks: { font: { size: 10, family: 'Inter' }, color: '#94a3b8' }, grid: { display: false } } },
-            maintainAspectRatio: false
-          }
+      // Risk flags
+      const flags = [];
+      if (flood.zone) {
+        const isHigh = flood.zone.startsWith('A') || flood.zone.startsWith('V');
+        flags.push({
+          text: `🌊 Flood Zone ${flood.zone}`,
+          level: flood.zone === 'X' ? 'green' : (isHigh ? 'red' : 'yellow')
         });
       }
-    }
-
-    // ── OWNERSHIP EQUITY ESTIMATE ──
-    if (parcel.assessed_total) {
-      const equityRow = document.getElementById('equity-row');
-      equityRow.style.display = 'flex';
-      const yrsHeld = parcel.year_built ? (new Date().getFullYear() - Number(parcel.year_built)) : null;
-      const estEquity = est.available ? `${fmt(est.market_low)} – ${fmt(est.market_high)}` : 'N/A';
-      equityRow.innerHTML = `
-        <div class="equity-card">
-          <div class="equity-val">${estEquity}</div>
-          <div class="equity-label">Estimated Market Value</div>
-          <div class="equity-note">${est.methodology || 'Based on county assessed × DFW market multiplier'}</div>
-        </div>
-        ${yrsHeld ? `<div class="equity-card">
-          <div class="equity-val">${yrsHeld} yrs</div>
-          <div class="equity-label">Property Age</div>
-          <div class="equity-note">Built ${parcel.year_built}. ${yrsHeld > 30 ? 'Older structure — potential capex needs.' : yrsHeld > 15 ? 'Mid-age — inspect mechanicals.' : 'Relatively new construction.'}</div>
-        </div>` : ''}
-        ${parcel.absentee_owner ? `<div class="equity-card" style="border-color:#fde68a;background:#fffbeb">
-          <div class="equity-val" style="color:#d97706">Absentee</div>
-          <div class="equity-label">Owner Type</div>
-          <div class="equity-note">Owner mails from ${parcel.owner_city || 'different address'}. May be open to offers.</div>
-        </div>` : ''}`;
-    }
-
-    // ── WALK SCORE ──
-    const ws = data.walkscore || {};
-    if (ws.available) {
-      const scoreColor = s => s >= 70 ? 'var(--green)' : s >= 50 ? 'var(--amber)' : 'var(--red)';
-      const wsCols = [
-        ws.walk_score    != null ? { icon: '🚶', val: ws.walk_score,    label: 'Walk Score',    desc: ws.walk_description }    : null,
-        ws.transit_score != null ? { icon: '🚇', val: ws.transit_score, label: 'Transit Score', desc: ws.transit_description } : null,
-        ws.bike_score    != null ? { icon: '🚴', val: ws.bike_score,    label: 'Bike Score',    desc: ws.bike_description }    : null,
-      ].filter(Boolean);
-      if (wsCols.length) {
-        const wsHtml = wsCols.map(w => `
-          <div class="nbhd-card">
-            <div class="nbhd-card-icon">${w.icon}</div>
-            <div class="nbhd-card-val" style="color:${scoreColor(w.val)}">${w.val}</div>
-            <div class="nbhd-card-label">${w.label}</div>
-            <div style="font-size:0.68rem;color:var(--text3);margin-top:3px">${w.desc || ''}</div>
-            <div class="nbhd-card-bar"><div class="nbhd-card-fill" style="width:${w.val}%;background:${scoreColor(w.val)}"></div></div>
-          </div>`).join('');
-        document.getElementById('nbhd-grid').insertAdjacentHTML('afterbegin', wsHtml);
+      if (parcel.tax_delinquent) {
+        flags.push({ text: '💸 Tax Delinquent', level: 'red' });
+      } else if (parcel.apn) {
+        flags.push({ text: '✅ Taxes Current', level: 'green' });
       }
-    }
-
-    // ── NEIGHBORHOOD CARDS ──
-    const nbhdCards = [];
-    if (demo.median_household_income_fmt) nbhdCards.push({ icon: '💰', val: demo.median_household_income_fmt, label: 'Median Income', pct: Math.min(100, Math.round((demo.median_household_income || 0) / 120000 * 100)), color: '#3b82f6' });
-    if (demo.owner_occupied_pct) nbhdCards.push({ icon: '🏡', val: demo.owner_occupied_pct + '%', label: 'Owner-Occupied', pct: demo.owner_occupied_pct, color: '#22c55e' });
-    if (demo.median_age) nbhdCards.push({ icon: '👥', val: demo.median_age + ' yrs', label: 'Median Age', pct: Math.min(100, Math.round(demo.median_age / 65 * 100)), color: '#8b5cf6' });
-    if (demo.population) nbhdCards.push({ icon: '📊', val: Number(demo.population).toLocaleString(), label: 'Population', pct: null, color: '#f59e0b' });
-    if (nbhdCards.length) {
-      document.getElementById('nbhd-grid').innerHTML = nbhdCards.map(c => `
-        <div class="nbhd-card">
-          <div class="nbhd-card-icon">${c.icon}</div>
-          <div class="nbhd-card-val">${c.val}</div>
-          <div class="nbhd-card-label">${c.label}</div>
-          ${c.pct !== null ? `<div class="nbhd-card-bar"><div class="nbhd-card-fill" style="width:${c.pct}%;background:${c.color}"></div></div>` : ''}
-        </div>`).join('');
-    }
-
-    // ── FINANCIAL ESTIMATES ──
-    const fin = data.financials || {};
-    if (fin.available) {
-      document.getElementById('fin-section').style.display = '';
-      const finCards = [
-        { icon: '🏛️', val: '$' + Number(fin.est_annual_tax).toLocaleString(), sub: '$' + Number(fin.est_monthly_tax).toLocaleString() + '/mo', label: 'Est. Annual Tax' },
-        { icon: '📊', val: fin.tax_rate_pct + '%', sub: 'Dallas County avg', label: 'Effective Tax Rate' },
-      ];
-      if (fin.cash_flow) {
-        finCards.push({ icon: '🏢', val: fin.rent_per_sf_range + '/SF/yr', sub: fin.rent_use_label, label: 'Market Rent Range' });
-        finCards.push({ icon: '💵', val: fin.gsi_range, sub: 'Gross annual est.', label: 'Gross Income (GSI)' });
-        finCards.push({ icon: '📈', val: fin.noi_range, sub: '65% expense ratio', label: 'Net Oper. Income (NOI)' });
-        if (fin.implied_cap_rate) finCards.push({ icon: '🎯', val: fin.implied_cap_rate + '%', sub: 'At market mid-value', label: 'Implied Cap Rate' });
+      if (parcel.absentee_owner) {
+        flags.push({ text: '🏠 Absentee Owner', level: 'yellow' });
       }
-      document.getElementById('fin-body').innerHTML = `
-        <div class="profile-grid" style="margin-bottom:12px">
-          ${finCards.map(c => `<div class="profile-tile">
-            <div style="font-size:1.1rem;margin-bottom:4px">${c.icon}</div>
-            <div class="profile-tile-val" style="font-size:0.95rem">${c.val}</div>
-            <div style="font-size:0.68rem;color:var(--text3);margin-top:2px">${c.sub}</div>
-            <div class="profile-tile-label" style="margin-top:3px">${c.label}</div>
-          </div>`).join('')}
-        </div>
-        <div style="font-size:0.72rem;color:var(--text3);line-height:1.5">
-          ⚠️ All figures are estimates for planning purposes only. ${fin.cash_flow ? fin.cash_flow_note + ' ' : ''}${fin.tax_note}
-        </div>`;
-    }
+      if (parcel.out_of_state_owner) {
+        flags.push({ text: '🗺️ Out-of-State Owner', level: 'yellow' });
+      }
 
-    // ── OWNER ENTITY INTELLIGENCE ──
-    const ent = data.owner_entity || {};
-    if (!ent.is_individual && !ent.error && ent.entity_name) {
-      document.getElementById('entity-section').style.display = '';
-      const sosUrl = ent.manual_url || 'https://www.sos.state.tx.us/corp/businesssearch.shtml';
-      const statusColor = ent.status && ent.status.toLowerCase().includes('active') ? 'var(--green)' : 'var(--amber)';
-      document.getElementById('entity-body').innerHTML = `
-        <div class="profile-grid" style="margin-bottom:14px">
-          <div class="profile-tile">
-            <div class="profile-tile-val" style="font-size:0.9rem">${ent.entity_name || 'N/A'}</div>
-            <div class="profile-tile-label">Registered Entity</div>
-          </div>
-          <div class="profile-tile">
-            <div class="profile-tile-val" style="color:${statusColor}">${ent.status || 'Unknown'}</div>
-            <div class="profile-tile-label">TX SOS Status</div>
-          </div>
-          <div class="profile-tile">
-            <div class="profile-tile-val">${ent.formation_date || 'N/A'}</div>
-            <div class="profile-tile-label">Formation Date</div>
-          </div>
-          <div class="profile-tile">
-            <div class="profile-tile-val" style="font-size:0.85rem">${ent.registered_agent || 'N/A'}</div>
-            <div class="profile-tile-label">Registered Agent</div>
-          </div>
-        </div>
-        ${ent.status && ent.status.toLowerCase().includes('forfeit') ?
-          `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:0.82rem;color:#dc2626;margin-bottom:10px">
-            ⚠️ Entity status is forfeited or dissolved. Owner may be unreachable or property held in a defunct entity — high leverage signal.
-          </div>` : ''}
-        ${row('Entity Name', ent.entity_name || 'N/A')}
-        ${row('TX SOS Status', ent.status || 'Unknown', ent.status && ent.status.toLowerCase().includes('active') ? 'green' : 'amber')}
-        ${ent.formation_date ? row('Formation Date', ent.formation_date) : ''}
-        ${ent.registered_agent ? row('Registered Agent', ent.registered_agent) : ''}
-        ${row('TX SOS Record', `<a href="${sosUrl}" target="_blank" style="color:var(--accent)">View full filing →</a>`)}
-        <p style="font-size:0.72rem;color:var(--text3);margin-top:10px">Entity data from Texas Secretary of State public records. Verify current status directly with TX SOS.</p>`;
-    }
-
-    // ── RESEARCH TOOLS (comp links) ──
-    if (data.resolved_address || data.input) {
-      document.getElementById('comps-section').style.display = '';
-      const addr = encodeURIComponent(data.resolved_address || data.input || '');
-      const addrRaw = (data.resolved_address || data.input || '').replace(/,/g,'').replace(/\s+/g,'-');
-      const zip = geo.zip || '';
-      const perm = data.permit_portal || {};
-
-      const links = [
-        { icon: '🔵', name: 'Zillow', desc: 'Recent sales & Zestimate', url: `https://www.zillow.com/homes/${encodeURIComponent(data.resolved_address||data.input||'')}_rb/` },
-        { icon: '🔴', name: 'Redfin', desc: 'Comparable closed sales', url: `https://www.redfin.com/city/search?location=${addr}` },
-        { icon: '🟠', name: 'Realtor.com', desc: 'MLS comps & history', url: `https://www.realtor.com/realestateandhomes-search/${addr}` },
-        { icon: '🟢', name: 'LoopNet', desc: 'Commercial comps', url: `https://www.loopnet.com/search/commercial-real-estate/${addr}/for-sale/` },
-        perm.assessor ? { icon: '🏛️', name: 'County Assessor', desc: 'Tax records & deed history', url: perm.assessor } : null,
-        perm.permit ? { icon: '🔧', name: 'Permit Portal', desc: 'Building permits & inspections', url: perm.permit } : null,
-        { icon: '📋', name: 'PACER', desc: 'Bankruptcy / lien records', url: `https://pcl.uscourts.gov/pcl/pages/search/findParty.jsf` },
-      ].filter(Boolean);
-
-      document.getElementById('comps-body').innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
-          ${links.map(l => `
-            <a href="${l.url}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text);transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-              <span style="font-size:1.2rem">${l.icon}</span>
-              <div><div style="font-size:0.85rem;font-weight:700">${l.name}</div><div style="font-size:0.72rem;color:var(--text3)">${l.desc}</div></div>
-            </a>`).join('')}
-        </div>
-        <div style="font-size:0.72rem;color:var(--text3);margin-top:10px">
-          Links pre-loaded with this property's address. Full comparable sales database coming soon.
-        </div>`;
-    }
-
-    // ── INVESTMENT SUMMARY (PRO) ──
-    if (isPro) {
-      document.getElementById('inv-summary').style.display = '';
-      const score = (motiv && motiv.score !== undefined) ? motiv.score : null;
-      const fRisk = fzone && fzone !== 'X' && (fzone.startsWith('A') || fzone.startsWith('V'));
-      const isAbsentee = parcel.absentee_owner;
-      const isDelinq = parcel.tax_delinquent;
-
-      // Verdict
-      let verdictClass = 'investigate', verdictText = 'INVESTIGATE';
-      if (score !== null && score >= 65 && isAbsentee && !fRisk) { verdictClass = 'strong'; verdictText = 'STRONG LEAD'; }
-      else if (score !== null && score < 30 && !isDelinq && !isAbsentee) { verdictClass = 'pass'; verdictText = 'LOW PRIORITY'; }
-      document.getElementById('inv-verdict').innerHTML = `<span class="inv-verdict-badge ${verdictClass}">${verdictText}</span>`;
-
-      // Key metrics
-      const metrics = [
-        { label: 'County Assessed', val: est.assessed_fmt || (parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A'), sub: 'Official tax record' },
-        { label: 'Comp Sale Range', val: compRangeVal !== 'N/A' ? compRangeVal : (est.available ? est.range_fmt + ' (AVM est.)' : 'N/A'), sub: compRangeVal !== 'N/A' ? compRangeSub : (est.property_type || '') },
-        { label: 'Motivation Score', val: score !== null ? score + '/100' : 'N/A', sub: (motiv && motiv.tier) || '' },
-        { label: 'Flood Zone', val: fzone || 'N/A', sub: fzone === 'X' ? 'No risk' : fRisk ? 'High risk' : 'Moderate' },
-      ];
-      document.getElementById('inv-metrics').innerHTML = metrics.map(m =>
-        `<div class="inv-metric"><div class="inv-metric-label">${m.label}</div><div class="inv-metric-val">${m.val}</div><div class="inv-metric-sub">${m.sub}</div></div>`
+      document.getElementById('risk-flags').innerHTML = flags.map(f =>
+        `<div class="risk-flag ${f.level}">${f.text}</div>`
       ).join('');
 
-      // Signals
-      const signals = [];
-      if (isAbsentee) signals.push({ cls: 'amber', text: '📍 Absentee owner' });
-      if (parcel.out_of_state_owner) signals.push({ cls: 'amber', text: '✈️ Out-of-state owner' });
-      if (isDelinq) signals.push({ cls: 'red', text: '⚠️ Tax delinquent' });
-      if (!fRisk) signals.push({ cls: 'green', text: '✓ Zone X — no flood risk' });
-      if (fRisk) signals.push({ cls: 'red', text: '🌊 Flood risk: ' + fzone });
-      if (score !== null && score >= 65) signals.push({ cls: 'amber', text: '🔥 High motivation signal' });
-      if (parcel.assessed_total && est.available && est.market_low > parcel.assessed_total) signals.push({ cls: 'green', text: '📈 Market above assessed' });
-      if (biz.length) signals.push({ cls: 'green', text: '🏪 ' + biz.length + ' active business(es) registered' });
-      document.getElementById('inv-signals').innerHTML = signals.map(s =>
-        `<span class="inv-signal ${s.cls}">${s.text}</span>`
-      ).join('');
-    }
+      // Score cards
+      const cards = [];
 
-    // ── AVM SECTION ──
-    const avm = data.avm || {};
-    document.getElementById('avm-section').style.display = '';
-    if (avm.source) document.getElementById('avm-src').textContent = avm.source;
-    if (avm.available) {
-      document.getElementById('avm-body').innerHTML =
-        row('AVM Value', avm.value_fmt || 'N/A', 'accent') +
-        row('AVM Range', avm.range_fmt || 'N/A') +
-        (avm.equity_fmt ? row('Estimated Equity', avm.equity_fmt, 'green') : '') +
-        (avm.lien_fmt ? row('Estimated Lien Balance', avm.lien_fmt, 'red') : '') +
-        (avm.ltv_pct != null ? row('Loan-to-Value (LTV)', avm.ltv_pct + '%') : '') +
-        row('Source', avm.source || 'Realie');
-    } else {
-      document.getElementById('avm-body').innerHTML = '<div class="unavailable-note">AVM data unavailable — add REALIE_API_KEY or ATTOM_API_KEY to unlock</div>';
-    }
-
-    // ── PURCHASE SCENARIO MODELING (PRO) ──
-    if (isPro) {
-      document.getElementById('scenario-section').style.display = '';
-      const assessed = parcel.assessed_total || 0;
-      const mktLow = est.market_low || 0;
-      const mktHigh = est.market_high || 0;
-      const sf = Number(parcel.building_sf || 0);
-      const rateAnn = 0.07, amort = 25, downPct = 0.25;
-      function calcScenario(price) {
-        if (!price) return null;
-        const down = price * downPct, loan = price - down;
-        const r = rateAnn / 12, n = amort * 12;
-        const moPi = r > 0 ? loan * (r * Math.pow(1+r,n)) / (Math.pow(1+r,n)-1) : 0;
-        const noi = assessed * 0.07;
-        const dscr = moPi > 0 ? (noi/12/moPi).toFixed(2) : 'N/A';
-        const psf = sf > 0 ? '$' + (price/sf).toFixed(0) + '/SF' : 'N/A';
-        return { down, loan, moPi, dscr, psf };
-      }
-      const scenarios = [
-        { label: 'Assessed Value', price: assessed },
-        { label: 'Market Low',     price: mktLow },
-        { label: 'Market High',    price: mktHigh },
-      ].filter(s => s.price > 0);
-      const rows_sc = scenarios.map(s => {
-        const c = calcScenario(s.price);
-        if (!c) return '';
-        return `<tr>
-          <td class="val">${s.label}</td>
-          <td class="accent">${'$' + s.price.toLocaleString()}</td>
-          <td>${'$' + Math.round(c.down).toLocaleString()}</td>
-          <td>${'$' + Math.round(c.loan).toLocaleString()}</td>
-          <td class="val">${'$' + Math.round(c.moPi).toLocaleString()}/mo</td>
-          <td>${c.dscr}x</td>
-          <td>${c.psf}</td>
-        </tr>`;
-      }).join('');
-      document.getElementById('scenario-body').innerHTML = `
-        <p class="scenario-note">Estimates only — 7.0% interest rate, 25-year amortization, 25% down payment. DSCR uses 7% cap rate on county assessed value. Verify with your lender before underwriting.</p>
-        <div style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr><th>Scenario</th><th>Price</th><th>Down 25%</th><th>Loan Amt</th><th>Mo. P&amp;I</th><th>DSCR @7%</th><th>$/SF</th></tr></thead>
-          <tbody>${rows_sc}</tbody>
-        </table>
-        </div>`;
-    }
-
-    // ── MORTGAGE & LIENS (ATTOM) ──
-    const mort = data.mortgage || {};
-    document.getElementById('mortgage-section').style.display = '';
-    if (mort.available) {
-      const _mortOrigLoan = mort.original_loan_amount;
-      const _mortLoanDate = mort.loan_origination_date;
-      document.getElementById('mortgage-body').innerHTML = `
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
-          ${_mortOrigLoan ? `<div class="profile-tile">
-            <div class="profile-tile-val" style="color:var(--accent)">${'$' + Number(_mortOrigLoan).toLocaleString()}</div>
-            <div class="profile-tile-label">Original Loan (Deed of Trust)</div>
-          </div>` : ''}
-          ${_mortLoanDate ? `<div class="profile-tile">
-            <div class="profile-tile-val" style="font-size:0.9rem">${_mortLoanDate.substring(0,7)}</div>
-            <div class="profile-tile-label">Loan Originated</div>
-          </div>` : ''}
-          <div class="profile-tile">
-            <div class="profile-tile-val" style="font-size:0.85rem">${mort.lender_name || 'N/A'}</div>
-            <div class="profile-tile-label">Lender</div>
-          </div>
-          <div class="profile-tile">
-            <div class="profile-tile-val" style="color:var(--red)">${mort.open_lien_fmt || 'N/A'}</div>
-            <div class="profile-tile-label">Est. Balance (calculated)</div>
-          </div>
-          <div class="profile-tile">
-            <div class="profile-tile-val" style="color:var(--green)">${mort.equity_fmt || 'N/A'}</div>
-            <div class="profile-tile-label">Est. Equity (calculated)</div>
-          </div>
-          <div class="profile-tile">
-            <div class="profile-tile-val">${mort.ltv_current != null ? mort.ltv_current + '%' : 'N/A'}</div>
-            <div class="profile-tile-label">Current LTV</div>
-          </div>
-          <div class="profile-tile">
-            <div class="profile-tile-val">${mort.open_lien_count != null ? mort.open_lien_count : 'N/A'}</div>
-            <div class="profile-tile-label">Open Lien Count</div>
-          </div>
-        </div>
-        <div class="data-note">Estimated from original loan terms. Actual balance may differ if refinanced.</div>
-        <div style="font-size:0.72rem;color:var(--text3);margin-top:6px">Source: Realie · Order full title search before closing.</div>`;
-    } else {
-      document.getElementById('mortgage-body').innerHTML = '<div class="unavailable-note">Mortgage & lien data unavailable — add REALIE_API_KEY or ATTOM_API_KEY to unlock</div>';
-    }
-
-    // ── SOLD COMPS ──
-    const compsData = data.sold_comps || {};
-    document.getElementById('sold-comps-section').style.display = '';
-    if (compsData.source) document.getElementById('comps-src').textContent = compsData.source || 'Realie';
-    if (compsData.available && compsData.comps && compsData.comps.length > 0) {
-      const stats = compsData.stats || {};
-      const radiusNote = (compsData.radius_used || compsData.radius_miles)
-        ? `${compsData.radius_used || compsData.radius_miles} mi · ${compsData.months_back || 18} months · Source: ${compsData.source || 'Realie'}`
-        : `Source: ${compsData.source || 'Realie'}`;
-      const statHtml = `
-        <div class="comp-stats">
-          <div class="comp-stat"><div class="comp-stat-val">${stats.comp_count || compsData.comps.length}</div><div class="comp-stat-label">Comps Found</div></div>
-          <div class="comp-stat"><div class="comp-stat-val">${stats.median_price_fmt || 'N/A'}</div><div class="comp-stat-label">Median Price</div></div>
-          <div class="comp-stat"><div class="comp-stat-val">${stats.median_psf_fmt || 'N/A'}</div><div class="comp-stat-label">Median $/SF</div></div>
-          <div class="comp-stat"><div class="comp-stat-val">${stats.price_range_fmt || 'N/A'}</div><div class="comp-stat-label">Price Range</div></div>
-        </div>`;
-      const showBedBa = isResidential;
-      const compRows = compsData.comps.slice(0, 20).map(c => `<tr>
-        <td>${(c.address || '—').substring(0, 32)}</td>
-        <td>${(c.sale_date || '—').substring(0, 10)}</td>
-        <td class="accent">${c.sale_fmt || '—'}</td>
-        <td>${c.psf_fmt || '—'}</td>
-        <td>${c.sf_fmt || '—'}</td>
-        ${showBedBa ? `<td>${c.beds != null ? c.beds : '—'}/${c.baths != null ? c.baths : '—'}</td>` : ''}
-        <td>${c.year_built || '—'}</td>
-      </tr>`).join('');
-      document.getElementById('sold-comps-body').innerHTML = statHtml + `
-        <div style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr><th>Address</th><th>Sold Date</th><th>Price</th><th>$/SF</th><th>SF</th>${showBedBa ? '<th>Bed/Ba</th>' : ''}<th>Yr Built</th></tr></thead>
-          <tbody>${compRows}</tbody>
-        </table>
-        </div>
-        <div style="font-size:0.72rem;color:var(--text3);margin-top:8px">Found within ${radiusNote}</div>`;
-    } else if (compsData.available === false) {
-      document.getElementById('sold-comps-body').innerHTML = '<div class="unavailable-note">Comparable sales data unavailable for this property</div>';
-    } else {
-      document.getElementById('sold-comps-body').innerHTML = '<div class="unavailable-note">Sold comps require Realie or ATTOM API key — add REALIE_API_KEY to unlock</div>';
-    }
-
-    // ── OWNERSHIP HISTORY (ATTOM) ──
-    const histData = data.ownership_history || {};
-    document.getElementById('history-section').style.display = '';
-    if (histData.available && histData.history && histData.history.length > 0) {
-      const holdNote = histData.hold_years
-        ? `<div style="background:var(--amber-light);border:1px solid rgba(217,119,6,0.2);border-radius:8px;padding:10px 14px;font-size:0.82rem;color:#92400e;margin-bottom:12px">
-            📅 Current owner has held this property approximately <strong>${histData.hold_years} years</strong>${histData.hold_years >= 10 ? ' — long hold duration is a strong motivation indicator' : ''}.
-          </div>` : '';
-      const histRows = histData.history.map(h => `<tr>
-        <td>${(h.sale_date || '—').substring(0, 10)}</td>
-        <td class="val">${(h.buyer_name || '—').substring(0, 35)}</td>
-        <td>${(h.seller_name || '—').substring(0, 35)}</td>
-        <td class="accent">${h.sale_fmt || '—'}</td>
-        <td>${(h.document_type || '—').substring(0, 25)}</td>
-      </tr>`).join('');
-      document.getElementById('history-body').innerHTML = holdNote + `
-        <div style="overflow-x:auto">
-        <table class="data-table">
-          <thead><tr><th>Sale Date</th><th>Buyer</th><th>Seller</th><th>Sale Price</th><th>Document Type</th></tr></thead>
-          <tbody>${histRows}</tbody>
-        </table>
-        </div>
-        <div style="font-size:0.72rem;color:var(--text3);margin-top:8px">Source: Realie · Deed and transfer history</div>`;
-    } else if (histData.available === false) {
-      document.getElementById('history-body').innerHTML = '<div class="unavailable-note">Deed history unavailable for this property</div>';
-    } else {
-      document.getElementById('history-body').innerHTML = '<div class="unavailable-note">Ownership history requires REALIE_API_KEY or ATTOM_API_KEY</div>';
-    }
-
-    // ── PERMIT HISTORY ──
-    {
-      const permits = data.permits || {};
-      document.getElementById('permits-section').style.display = '';
-      if (permits.available && permits.list && permits.list.length > 0) {
-        const permRows = permits.list.map(p => `<tr>
-          <td>${p.date || '—'}</td>
-          <td>${p.type || '—'}</td>
-          <td>${p.description || '—'}</td>
-          <td class="${p.status && p.status.toLowerCase().includes('final') ? 'green' : ''}">${p.status || '—'}</td>
-          <td>${p.value ? '$' + Number(p.value).toLocaleString() : '—'}</td>
-        </tr>`).join('');
-        document.getElementById('permits-body').innerHTML = `
-          <div style="overflow-x:auto">
-          <table class="data-table">
-            <thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Status</th><th>Value</th></tr></thead>
-            <tbody>${permRows}</tbody>
-          </table>
-          </div>`;
+      // Value card with range bar
+      if (avm && avm.available && avm.value) {
+        cards.push(createScoreCard(
+          '💰', 'AVM Estimate', fmt(avm.value), 
+          `${avm.confidence || 'Medium'} confidence`, 'PropIntel AVM'
+        ));
+      } else if (parcel.assessed_total) {
+        cards.push(createScoreCard(
+          '🏛️', 'Assessed Value', fmt(parcel.assessed_total),
+          'County tax record', 'DCAD'
+        ));
       } else {
-        document.getElementById('permits-body').innerHTML = '<div class="unavailable-note">Permit data requires ATTOM API — add ATTOM_API_KEY to unlock (issue #9)</div>';
+        cards.push(createScoreCard(
+          '💰', 'Value Estimate', '', '', 'Pending', true
+        ));
       }
+
+      // Owner intel card
+      const ownerName = parcel.owner_name || '';
+      const ownerState = parcel.owner_state || '';
+      const equity = parcel.equity_estimate;
+      const hasOwnerData = ownerName || ownerState || equity;
+      
+      if (isPro && hasOwnerData) {
+        cards.push(createScoreCard(
+          '👤', 'Owner Intelligence', ownerName || '—',
+          `${ownerState || 'State unknown'} • ${equity ? fmt(equity) + ' equity' : 'Equity pending'}`,
+          'Skip Trace'
+        ));
+      } else if (!isPro) {
+        cards.push(createScoreCard(
+          '👤', 'Owner Intelligence', '', '', 'Pro Feature', false, true
+        ));
+      } else {
+        cards.push(createScoreCard(
+          '👤', 'Owner Intelligence', '', '', 'Skip Trace', true
+        ));
+      }
+
+      // Comparable sales
+      if (comps.available && comps.comps && comps.comps.length > 0) {
+        const prices = comps.comps.map(c => c.sale_price).filter(p => p > 0);
+        const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+        cards.push(createScoreCard(
+          '🏘️', 'Comp Median', fmt(avgPrice),
+          `Based on ${prices.length} recent sales`, 'MLS Data'
+        ));
+      } else {
+        cards.push(createScoreCard(
+          '🏘️', 'Comparable Sales', '', '', 'MLS Data', true
+        ));
+      }
+
+      // Building details
+      const sf = parcel.building_sf || listing.building_sf || 0;
+      const yearBuilt = parcel.year_built || listing.year_built || 0;
+      if (sf > 0) {
+        cards.push(createScoreCard(
+          '📐', 'Building Area', sf.toLocaleString() + ' SF',
+          yearBuilt ? `Built ${yearBuilt}` : 'Build year unknown', 'County Records'
+        ));
+      } else {
+        cards.push(createScoreCard(
+          '📐', 'Building Details', '', '', 'County Records', true
+        ));
+      }
+
+      document.getElementById('cards-grid').innerHTML = cards.join('');
+
+      // Comparable sales section
+      if (comps.available && comps.comps && comps.comps.length > 0) {
+        const compsHtml = `
+          <div class="comps-scroll">
+            <div class="comps-grid">
+              ${comps.comps.map(comp => `
+                <div class="comp-card">
+                  <div class="comp-address">${comp.address || 'Unknown Address'}</div>
+                  <div class="comp-price">${fmt(comp.sale_price)}</div>
+                  <div class="comp-psf">$${Math.round((comp.sale_price || 0) / (comp.building_sf || 1))}/SF</div>
+                  <div class="comp-meta">
+                    <div>Sold: ${comp.sale_date || '—'}</div>
+                    <div>Distance: ${comp.distance || '—'}</div>
+                    <div>SF: ${(comp.building_sf || 0).toLocaleString()}</div>
+                    <div>Beds: ${comp.bedrooms || '—'}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        document.getElementById('comps-content').innerHTML = compsHtml;
+      } else {
+        document.getElementById('comps-content').innerHTML = `
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">
+            <div style="font-size:2rem;margin-bottom:16px;">📊</div>
+            <div style="font-size:1.125rem;margin-bottom:8px;">No Recent Sales Found</div>
+            <div style="font-size:0.875rem;">We'll update this section when comparable sales become available.</div>
+          </div>
+        `;
+      }
+
+      // Demographics section
+      if (demo.population || demo.median_income || demo.unemployment_rate || demo.owner_occupied_pct) {
+        const demoHtml = `
+          <div class="demo-grid">
+            ${demo.population ? `
+              <div class="demo-item">
+                <div class="demo-icon">👥</div>
+                <div class="demo-content">
+                  <h4>${Number(demo.population).toLocaleString()}</h4>
+                  <p>Population</p>
+                </div>
+              </div>
+            ` : ''}
+            ${demo.median_income ? `
+              <div class="demo-item">
+                <div class="demo-icon">💵</div>
+                <div class="demo-content">
+                  <h4>${fmt(demo.median_income)}</h4>
+                  <p>Median Income</p>
+                </div>
+              </div>
+            ` : ''}
+            ${demo.unemployment_rate ? `
+              <div class="demo-item">
+                <div class="demo-icon">📊</div>
+                <div class="demo-content">
+                  <h4>${(demo.unemployment_rate * 100).toFixed(1)}%</h4>
+                  <p>Unemployment</p>
+                </div>
+              </div>
+            ` : ''}
+            ${demo.owner_occupied_pct ? `
+              <div class="demo-item">
+                <div class="demo-icon">🏡</div>
+                <div class="demo-content">
+                  <h4>${(demo.owner_occupied_pct * 100).toFixed(0)}%</h4>
+                  <p>Owner Occupied</p>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        document.getElementById('demo-content').innerHTML = demoHtml;
+      } else {
+        document.getElementById('demo-content').innerHTML = `
+          <div style="text-align:center;padding:40px;color:var(--text-muted);">
+            <div style="font-size:2rem;margin-bottom:16px;">📍</div>
+            <div style="font-size:1.125rem;margin-bottom:8px;">Demographics Pending</div>
+            <div style="font-size:0.875rem;">Census data will be available in the full report.</div>
+          </div>
+        `;
+      }
+
+      // Investment signals (buyer persona only)
+      const signals = [];
+      if (parcel.absentee_owner) signals.push('🏠 Absentee Owner');
+      if (parcel.out_of_state_owner) signals.push('🗺️ Out of State');
+      if (parcel.equity_estimate > 100000) signals.push('💰 High Equity');
+      if (parcel.tax_delinquent) signals.push('⚠️ Motivated Seller');
+      
+      if (signals.length > 0) {
+        document.getElementById('signals-section').style.display = '';
+        document.getElementById('signals-content').innerHTML = signals.map(signal =>
+          `<div class="signal-pill">${signal}</div>`
+        ).join('');
+      }
+
+      // Property map
+      if (geo.lat && geo.lng) {
+        setTimeout(() => {
+          const map = L.map('property-map').setView([geo.lat, geo.lng], 16);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map);
+          L.marker([geo.lat, geo.lng]).addTo(map)
+            .bindPopup(data.resolved_address || 'Property Location');
+        }, 100);
+      }
+
+      // Show report
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('report-content').style.display = 'block';
     }
 
-    // ── DUE DILIGENCE CHECKLIST — property-type aware ──
-    document.getElementById('checklist-section').style.display = '';
-    let checks;
-    if (isResidential) {
-      checks = [
-        'Order full title search — confirm no liens, easements, or encumbrances',
-        'Schedule home inspection — structure, roof, HVAC, plumbing, electrical',
-        'Order survey — confirm boundaries and easements',
-        'Verify flood insurance requirement and get cost estimate',
-        'Obtain HOA docs, bylaws, and 12 months of meeting minutes (if applicable)',
-        'Request 12 months of utility bills from seller',
-        'Search for open or unpermitted building permits at city portal',
-        'Order independent appraisal before closing',
-      ];
-    } else if (isLand) {
-      checks = [
-        'Order Phase I Environmental Study — check for contamination or prior use issues',
-        'Pull full title search — confirm no liens, easements, or encumbrances',
-        'Order ALTA/NSPS survey — confirm legal description, boundaries, and access',
-        'Verify zoning and allowable uses with the municipality',
-        'Confirm utility availability and tap fees (water, sewer, electric, gas)',
-        'Check for flood zone overlay and wetlands restrictions (FEMA + Army Corps)',
-        'Review soil report or geo-tech study if structure is planned',
-        'Confirm access — legal ingress/egress, road frontage, easements',
-      ];
-    } else {
-      // Commercial, Industrial, Multifamily
-      checks = [
-        'Order Phase I Environmental Study — required for commercial financing',
-        'Pull full title search — confirm no liens, easements, or encumbrances',
-        'Request current rent roll and lease abstracts from seller',
-        'Obtain T-12 income statement and last 2 years of P&amp;L',
-        'Verify actual NOI and cap rate against seller\'s stated numbers',
-        'Walk property — note deferred maintenance, roof, HVAC, MEP systems',
-        'Confirm zoning compliance with current use and any planned use',
-        'Pull all open permits — confirm no unpermitted work',
-        'Verify ADA compliance — assess cost of any required improvements',
-        'Review 12 months of utility bills',
-        'Confirm property tax amounts directly with county appraisal district',
-        'Order ALTA survey if boundary lines or easements are unclear',
-      ];
-    }
-    document.getElementById('checklist-body').innerHTML = `
-      <ul class="checklist">${checks.map(c =>
-        `<li class="cl-item"><span class="cl-check">☐</span><span>${c}</span></li>`
-      ).join('')}</ul>
-      <div style="font-size:0.72rem;color:var(--text3);margin-top:10px">Print this report and check off each item before closing. This list is a starting point — consult your attorney and broker.</div>`;
+    // Main load function
+    async function loadReport() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      const address = params.get('address') || localStorage.getItem('last_address');
+      const tier = params.get('tier') || 'starter';
+      const isDemo = params.get('demo') === '1';
 
-    // Branding
-    renderBranding();
+      if (isDemo) {
+        document.getElementById('demo-banner').style.display = 'block';
+      }
 
-    // Show report
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('report-content').style.display = '';
-  }
+      // Animate loading steps
+      setTimeout(() => { stepDone('step-parcel'); stepActive('step-flood'); }, 800);
+      setTimeout(() => { stepDone('step-flood'); stepActive('step-demo'); }, 1600);
+      setTimeout(() => { stepDone('step-demo'); stepActive('step-done'); }, 2400);
 
-  function buildLOI(data) {
-    const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const owner = (data.parcel || {}).owner_name || '[Owner Name]';
-    const addr = data.resolved_address || data.input || '[Property Address]';
-    const ask = (data.listing || {}).asking_price;
-    const offerAmt = ask ? '$' + Math.round(ask * 0.88).toLocaleString() : '[Offer Amount]';
-
-    return `${today}
-
-To: ${owner}
-Re: Letter of Intent — ${addr}
-
-Dear ${owner},
-
-I am writing to express my interest in acquiring the above-referenced property. This letter of intent outlines the proposed terms of purchase and is non-binding pending formal contract execution.
-
-PROPOSED PURCHASE PRICE: ${offerAmt}
-EARNEST MONEY DEPOSIT: $5,000 (refundable during inspection period)
-INSPECTION PERIOD: 14 days from contract execution
-CLOSING: 30 days from expiration of inspection period
-FINANCING: Cash / Hard Money — no financing contingency
-TITLE: Clear and marketable, conveyed by Warranty Deed
-
-This LOI is for discussion purposes only and does not constitute a binding agreement. Buyer reserves the right to conduct all customary due diligence.
-
-Please contact me at your earliest convenience to discuss.
-
-Sincerely,
-Mason Mathis
-mason@mathislandco.com | 972-834-7204`;
-  }
-
-  function copyLOI() {
-    const text = document.getElementById('loi-text').innerText;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = event.target;
-      btn.textContent = '✓ Copied';
-      setTimeout(() => btn.textContent = '📋 Copy LOI', 2000);
-    });
-  }
-
-  // ── FETCH WITH TIMEOUT ──
-  // Rule: Every timeout is 'just increase it.' Set by service SLA, document why.
-  // Render free tier cold start = up to 60s. We give 90s max, warn at 15s.
-  async function fetchWithTimeout(url, options = {}, timeoutMs = 90000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-    // Warm-up warning at 15s
-    const warnTimer = setTimeout(() => {
-      const el = document.getElementById('loading-msg');
-      if (el) el.textContent = 'Server is warming up — this can take up to 60 seconds on first load. Hang tight…';
-    }, 15000);
-
-    try {
-      const res = await fetch(url, { ...options, signal: controller.signal });
-      clearTimeout(warnTimer);
-      return res;
-    } catch (err) {
-      clearTimeout(warnTimer);
-      if (err.name === 'AbortError') throw new Error('Request timed out after 90s. Please refresh and try again.');
-      throw err;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  // ── MAIN LOAD ──
-  async function loadReport() {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('token');
-    const orderId = params.get('order_id') || params.get('report_id');
-    const tier = params.get('tier') || 'starter';
-    const address = params.get('address') || localStorage.getItem('last_address');
-    const isDemo = params.get('demo') === '1';
-
-    // Show demo banner if this is the sample report
-    if (isDemo) document.getElementById('demo-banner').style.display = 'block';
-
-    // Animate steps
-    setTimeout(() => { stepDone('step-parcel'); stepActive('step-flood'); }, 800);
-    setTimeout(() => { stepDone('step-flood'); stepActive('step-demo'); }, 1600);
-    setTimeout(() => { stepDone('step-demo'); stepActive('step-done'); }, 2400);
-
-    if (token) {
-      // Fetch stored report by public token (post-purchase email link)
       try {
-        const res = await fetchWithTimeout(`${API}/api/reports/${token}`);
-        if (res.status === 202) {
-          showError('Your report is still processing. Please check back in a moment or <a href="javascript:location.reload()" style="color:var(--accent)">refresh the page</a>.');
-          return;
+        let data;
+        if (token) {
+          // Fetch by token
+          const res = await fetch(`${API}/api/reports/${token}`);
+          if (!res.ok) throw new Error(`Report not found (${res.status})`);
+          data = await res.json();
+        } else if (address) {
+          // Generate new report
+          const res = await fetch(`${API}/api/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input: address, tier, format: 'json' })
+          });
+          if (!res.ok) throw new Error(`Analysis failed (${res.status})`);
+          data = await res.json();
+        } else {
+          throw new Error('No property address provided');
         }
-        if (!res.ok) throw new Error(`Report not found (${res.status})`);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        stepDone('step-done');
-        setTimeout(() => renderReport(data), 300);
-      } catch (err) {
-        showError(`Could not load your report: ${err.message}<br><br><a href="javascript:location.reload()" style="color:var(--accent);font-weight:600">↻ Try again</a>`);
-      }
-    } else if (orderId) {
-      showError('Report link expired. <a href="/" style="color:var(--accent)">Return to PropIntel</a> and re-run your analysis.');
-    } else if (address) {
-      // Run fresh pipeline (demo or direct link)
-      try {
-        const body = { input: address, tier, format: 'json' };
-        const res = await fetchWithTimeout(`${API}/api/analyze`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        if (!res.ok) throw new Error(`Pipeline failed (${res.status})`);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        stepDone('step-done');
-        setTimeout(() => renderReport(data), 300);
-      } catch (err) {
-        showError(`Could not generate report: ${err.message}<br><br><a href="javascript:location.reload()" style="color:var(--accent);font-weight:600">↻ Try again</a>`);
-      }
-    } else {
-      showError('No property address provided. <a href="/" style="color:var(--accent)">Return to PropIntel</a> and analyze an address first.');
-    }
-  }
 
-  loadReport();
-</script>
+        if (data.error) throw new Error(data.error);
+        
+        stepDone('step-done');
+        setTimeout(() => renderReport(data), 300);
+      } catch (err) {
+        showError(`Could not generate report: ${err.message}<br><br><a href="/" style="color:var(--accent-primary);font-weight:600">← Return to PropIntel</a>`);
+      }
+    }
+
+    loadReport();
+  </script>
 </body>
 </html>
