@@ -1198,7 +1198,7 @@ def generate_pdf_bytes(report: dict) -> bytes:
         ("FEMA NFHL (ArcGIS REST)",    "National Flood Hazard Layer — flood zone by lat/lng",               "Active"),
         ("U.S. Census Bureau ACS",     "5-Year American Community Survey — demographics by ZIP code",       "Active"),
         ("Texas Secretary of State",   "Entity lookup by business name — status, registered agent",         "Active (limited)"),
-        ("People Data Labs (PDL)",     "Skip trace — individual owner phone/email enrichment",              "Active (Pro)"),
+        ("DataZapp",                   "Skip trace — owner phone/email enrichment ($0.03/match)",          "Ready (Pro)"),
         ("Dallas CAD (DCAD)",          "Supplemental Dallas County tax detail when available",              "Active (DFW)"),
         ("ATTOM Data Solutions",       "AVM, sold comps, mortgage, liens, permits, history",                "Pending API Key"),
         ("Walk Score API",             "Walk, transit, and bike scores",                                    "Pending API Key"),
