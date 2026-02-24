@@ -2065,8 +2065,27 @@ async function handleAnalyze(e) {
   if (!input) return;
   const persona = getSelectedPersona();
   const btn = document.getElementById('analyze-btn');
+  
+  // Enhanced loading states
+  const loadingStates = [
+    'Analyzing…',
+    'Geocoding address…',
+    'Fetching parcel data…',
+    'Analyzing market…',
+    'Almost ready…'
+  ];
+  
+  let currentState = 0;
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Analyzing…';
+  btn.innerHTML = '<span class="spinner"></span>' + loadingStates[0];
+  
+  // Cycle through loading states
+  const stateInterval = setInterval(() => {
+    currentState = (currentState + 1) % loadingStates.length;
+    if (btn.disabled) {
+      btn.innerHTML = '<span class="spinner"></span>' + loadingStates[currentState];
+    }
+  }, 2000);
 
   /* Pass white-label config to report.html via sessionStorage */
   try {
@@ -2089,9 +2108,14 @@ async function handleAnalyze(e) {
     });
     if (res.status === 429) throw new Error('Rate limit reached — try again in an hour.');
     if (!res.ok) throw new Error(`Server error (${res.status})`);
-    showResult(await res.json(), input);
+    
+    clearInterval(stateInterval);
+    btn.innerHTML = '<span class="spinner"></span>Complete!';
+    setTimeout(() => showResult(await res.json(), input), 500);
   } catch (err) {
-    btn.disabled = false; btn.innerHTML = 'Analyze →';
+    clearInterval(stateInterval);
+    btn.disabled = false; 
+    btn.innerHTML = 'Analyze →';
     alert('Error: ' + err.message);
   }
 }

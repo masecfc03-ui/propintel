@@ -70,6 +70,7 @@ if _missing_critical:
 from pipeline import run as run_pipeline
 from report.generator import generate_html, generate_pdf
 from orders import create_order, update_order, get_order_by_stripe, get_order_by_token, list_orders, list_leads, create_lead, stats as order_stats
+from agents import create_agent, get_agent, increment_report_count, list_agents, get_agent_stats, migrate_agents_table
 from accounts import (
     create_account, get_account_by_email, get_account_by_customer_id,
     get_account_by_subscription_id, update_account,
@@ -110,6 +111,7 @@ log.info("PropIntel API starting up")
 log.info("Running database migrations...")
 try:
     migrate()
+    migrate_agents_table()
 except Exception as e:
     log.critical("Database migration failed: %s", e)
     if os.environ.get("RENDER"):
@@ -140,6 +142,18 @@ PRICE_TO_TIER = {
 # ─────────────────────────────────────────────────────────────────────────────
 # Health
 # ─────────────────────────────────────────────────────────────────────────────
+
+@app.route("/health", methods=["GET"])
+def health_lightweight():
+    """
+    Lightweight health check for keep-alive pings - instant response.
+    No database queries, no external API checks - just confirms the app is running.
+    """
+    return jsonify({
+        "status": "ok",
+        "ts": datetime.utcnow().isoformat(),
+        "version": "1.4.0"
+    })
 
 @app.route("/api/health", methods=["GET"])
 def health():
@@ -944,6 +958,113 @@ def _verify_stripe_signature(payload: bytes, sig_header: str, secret: str) -> bo
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Agent Branding System
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.route("/api/agents/register", methods=["POST"])
+def register_agent():
+    """
+    Create new agent profile for branded reports.
+    
+    POST {
+      "name": "Sarah Johnson",
+      "brokerage": "Compass",
+      "phone": "(214) 555-0100",
+      "email": "sarah@compass.com",
+      "photo_url": "https://...", // optional
+      "accent_color": "#f59e0b"    // hex color
+    }
+    
+    Returns: {"agent_id": "sarah-johnson-compass", "agent": {...}}
+    """
+    body = request.get_json(force=True, silent=True) or {}
+    
+    name = (body.get("name") or "").strip()
+    brokerage = (body.get("brokerage") or "").strip()
+    phone = (body.get("phone") or "").strip()
+    email = (body.get("email") or "").strip()
+    photo_url = (body.get("photo_url") or "").strip()
+    accent_color = (body.get("accent_color") or "#f59e0b").strip()
+    
+    if not name:
+        return jsonify({"error": "Agent name is required"}), 400
+    
+    try:
+        agent = create_agent(
+            name=name,
+            brokerage=brokerage,
+            phone=phone,
+            email=email,
+            photo_url=photo_url,
+            accent_color=accent_color
+        )
+        
+        # Generate the branded report URL
+        report_url = f"{os.getenv('REPORT_BASE_URL', 'https://propertyvalueintel.com')}/report?agent={agent['agent_id']}"
+        
+        log.info("Agent registered: %s (%s)", agent["agent_id"], name)
+        
+        return jsonify({
+            "agent_id": agent["agent_id"],
+            "agent": agent,
+            "report_url": report_url,
+            "success": True
+        })
+        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        log.error("Agent registration failed: %s", e, exc_info=True)
+        return jsonify({"error": "Registration failed"}), 500
+
+
+@app.route("/api/agents/<agent_id>", methods=["GET"])
+def get_agent_profile(agent_id):
+    """
+    Fetch agent profile by agent_id.
+    Public endpoint - used by report.html to inject agent branding.
+    No auth required as agent profiles are meant to be public.
+    """
+    if not agent_id:
+        return jsonify({"error": "Agent ID required"}), 400
+    
+    agent = get_agent(agent_id)
+    if not agent:
+        return jsonify({"error": "Agent not found"}), 404
+    
+    # Don't return sensitive info in public endpoint
+    public_agent = {
+        "agent_id": agent["agent_id"],
+        "name": agent["name"],
+        "brokerage": agent["brokerage"],
+        "phone": agent["phone"],
+        "photo_url": agent["photo_url"],
+        "accent_color": agent["accent_color"],
+        "report_count": agent["report_count"]
+        # Don't expose email, created_at
+    }
+    
+    return jsonify(public_agent)
+
+
+@app.route("/api/agents/<agent_id>/increment", methods=["POST"])
+def increment_agent_reports(agent_id):
+    """
+    Increment report count for an agent.
+    Called when a report is generated with agent branding.
+    No auth required - just tracking usage.
+    """
+    if not agent_id:
+        return jsonify({"error": "Agent ID required"}), 400
+    
+    success = increment_report_count(agent_id)
+    if not success:
+        return jsonify({"error": "Agent not found"}), 404
+    
+    return jsonify({"success": True})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Admin endpoints (require ADMIN_KEY header)
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -973,6 +1094,22 @@ def get_stats():
     if not _check_admin():
         return jsonify({"error": "Unauthorized"}), 401
     return jsonify(order_stats())
+
+
+@app.route("/api/admin/agents", methods=["GET"])
+def get_agents_admin():
+    """Admin endpoint - list all agents with stats"""
+    if not _check_admin():
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    agents = list_agents(limit=500)
+    stats = get_agent_stats()
+    
+    return jsonify({
+        "agents": agents,
+        "stats": stats,
+        "count": len(agents)
+    })
 
 
 @app.route("/api/reports/<token>", methods=["GET"])
