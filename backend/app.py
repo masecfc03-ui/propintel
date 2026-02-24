@@ -800,6 +800,475 @@ def _sample_report_data() -> dict:
     }
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Agent Report Templates
+# ─────────────────────────────────────────────────────────────────────────────
+
+TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
+
+_ALLOWED_TEMPLATES = {
+    "buyer_due_diligence",
+    "listing_intelligence",
+    "investment_analysis",
+}
+
+
+def _render_agent_template(template_name: str, data: dict) -> str:
+    """
+    Load a template file and replace {{field}} placeholders with values from data.
+    Uses simple string .replace() — no Jinja2 dependency.
+
+    Nested data is flattened with double-underscore: data["agent"]["name"] → {{agent_name}}
+    """
+    template_path = os.path.join(TEMPLATES_DIR, f"{template_name}.html")
+    if not os.path.exists(template_path):
+        raise FileNotFoundError(f"Template not found: {template_name}")
+
+    with open(template_path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    # Flatten nested dicts (one level deep) with underscore separator
+    flat = {}
+    for key, val in data.items():
+        if isinstance(val, dict):
+            for subkey, subval in val.items():
+                flat[f"{key}_{subkey}"] = str(subval) if subval is not None else ""
+        else:
+            flat[key] = str(val) if val is not None else ""
+
+    # Replace all {{field}} placeholders
+    for field, value in flat.items():
+        html = html.replace("{{" + field + "}}", value)
+
+    # Clean up any remaining unreplaced placeholders (avoid leaking template syntax)
+    import re as _re
+    html = _re.sub(r"\{\{[^}]+\}\}", "", html)
+    # Remove mustache-style conditional blocks ({{#field}}...{{/field}})
+    html = _re.sub(r"\{\{[#/\^][^}]+\}\}", "", html)
+
+    return html
+
+
+def _build_template_data(report_data: dict, agent: dict) -> dict:
+    """
+    Assemble the template variable dict from pipeline report data + agent info.
+    All values must be strings (template uses direct .replace()).
+    """
+    parcel       = report_data.get("parcel", {}) or {}
+    market_est   = report_data.get("market_estimate", {}) or {}
+    motivation   = report_data.get("motivation", {}) or {}
+    flood        = report_data.get("flood", {}) or {}
+    avm          = report_data.get("avm", {}) or {}
+    mortgage     = report_data.get("mortgage", {}) or {}
+    sold_comps   = report_data.get("sold_comps", {}) or {}
+    financials   = report_data.get("financials", {}) or {}
+    deal_analysis= report_data.get("deal_analysis", {}) or {}
+
+    # ── Agent fields ──────────────────────────────────────────────────────────
+    agent_name      = agent.get("name", "Your Agent")
+    agent_brokerage = agent.get("brokerage", "")
+    agent_phone     = agent.get("phone", "")
+    agent_email     = agent.get("email", "")
+    agent_logo_url  = agent.get("logo_url", "")
+    # Initials fallback for logo placeholder
+    parts = agent_name.split()
+    agent_initials = "".join(p[0].upper() for p in parts[:2]) if parts else "AG"
+
+    # ── Property fields ───────────────────────────────────────────────────────
+    address = (
+        report_data.get("resolved_address")
+        or report_data.get("input", "")
+    )
+    beds = str(parcel.get("bedrooms") or parcel.get("total_bedrooms") or "—")
+    baths = str(parcel.get("bathrooms") or parcel.get("total_bathrooms") or "—")
+    building_sf = "{:,}".format(int(parcel.get("building_sf") or 0)) if parcel.get("building_sf") else "—"
+    year_built = str(parcel.get("year_built") or "—")
+    lot_size = str(parcel.get("lot_size_acres") or parcel.get("lot_size") or "—")
+    property_type = str(report_data.get("property_class") or parcel.get("use_description") or "—").title()
+
+    # Street View URL
+    geo = report_data.get("geo", {}) or {}
+    lat, lng = geo.get("lat", ""), geo.get("lng", "")
+    if lat and lng:
+        street_view_url = (
+            f"https://maps.googleapis.com/maps/api/streetview"
+            f"?size=700x220&location={lat},{lng}&fov=90&key=GOOGLE_MAPS_KEY"
+        )
+    else:
+        # Placeholder grey image via placehold.co (no external dependency at render time)
+        street_view_url = "https://placehold.co/700x220/1a2e44/ffffff?text=Property+Photo"
+
+    # ── Valuation ──────────────────────────────────────────────────────────────
+    assessed_raw = parcel.get("assessed_total") or 0
+    assessed_value = market_est.get("assessed_fmt") or (f"${assessed_raw:,.0f}" if assessed_raw else "N/A")
+    avm_value = market_est.get("range_fmt") or market_est.get("market_mid") or "N/A"
+    if isinstance(avm_value, (int, float)):
+        avm_value = f"${avm_value:,.0f}"
+    avm_methodology = market_est.get("methodology") or market_est.get("confidence") or "AVM Estimate"
+    avm_source = market_est.get("source") or "PropIntel AVM"
+    market_low = f"${market_est.get('market_low', 0):,.0f}" if market_est.get("market_low") else "—"
+    market_high = f"${market_est.get('market_high', 0):,.0f}" if market_est.get("market_high") else "—"
+    comp_range_low = sold_comps.get("price_min") or market_est.get("market_low") or 0
+    comp_range_high = sold_comps.get("price_max") or market_est.get("market_high") or 0
+    comp_range = (
+        f"${comp_range_low:,.0f} – ${comp_range_high:,.0f}"
+        if comp_range_low and comp_range_high else "N/A"
+    )
+
+    # ── Ownership ──────────────────────────────────────────────────────────────
+    owner_name = parcel.get("owner_name") or "N/A"
+    owner_mailing = " ".join(filter(None, [
+        parcel.get("owner_mailing"),
+        parcel.get("owner_city"),
+        parcel.get("owner_state"),
+        parcel.get("owner_zip"),
+    ])) or "N/A"
+    hold_duration = "N/A"
+    ownership_history = report_data.get("ownership_history") or {}
+    if isinstance(ownership_history, dict) and ownership_history.get("hold_years"):
+        hy = ownership_history["hold_years"]
+        hold_duration = f"{hy:.1f} years" if isinstance(hy, float) else f"{hy} years"
+    last_sale_price = "N/A"
+    if isinstance(ownership_history, dict):
+        hist = ownership_history.get("history", [])
+        if hist and isinstance(hist[0], dict):
+            sp = hist[0].get("sale_price")
+            if sp:
+                last_sale_price = f"${sp:,.0f}"
+
+    # ── Motivation ──────────────────────────────────────────────────────────────
+    mot_score = str(motivation.get("score", "N/A"))
+    mot_tier  = motivation.get("tier", "N/A")
+    mot_interp = motivation.get("interpretation") or "Insufficient data to score motivation."
+    if mot_tier == "HIGH":
+        motivation_bg_color   = "#c0392b"
+        motivation_text_color = "#c0392b"
+    elif mot_tier == "MODERATE":
+        motivation_bg_color   = "#e67e22"
+        motivation_text_color = "#d35400"
+    else:
+        motivation_bg_color   = "#27ae60"
+        motivation_text_color = "#1e8449"
+
+    # Build motivation indicators HTML block
+    mot_indicators = motivation.get("indicators", [])
+    mot_rows = []
+    for ind in mot_indicators:
+        triggered = ind.get("triggered", False)
+        dot_color = "#c0392b" if triggered else "#bdc3c7"
+        dot = f"<span style='display:inline-block;width:10px;height:10px;border-radius:50%;background:{dot_color};margin-right:8px;vertical-align:middle;'></span>"
+        name = ind.get("name", "")
+        pts  = ind.get("points", 0)
+        pts_fmt = f"+{pts} pts" if triggered and pts else ""
+        evidence = ind.get("evidence", "")
+        row = (
+            f"<tr>"
+            f"<td style='padding:7px 0;border-bottom:1px solid #f0f4f8;'>"
+            f"<p style='color:{'#2c3e50' if triggered else '#9aafc4'};font-size:12px;font-family:Arial,Helvetica,sans-serif;'>"
+            f"{dot}<strong>{name}</strong>"
+            + (f" <span style='color:#c0392b;font-size:10px;'>{pts_fmt}</span>" if pts_fmt else "")
+            + (f"<br><span style='color:#9aafc4;font-size:11px;padding-left:18px;'>{evidence}</span>" if evidence else "")
+            + "</p></td></tr>"
+        )
+        mot_rows.append(row)
+    motivation_indicators_html = "\n".join(mot_rows) if mot_rows else "<tr><td><p style='color:#9aafc4;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>Motivation data not available for this tier.</p></td></tr>"
+
+    # ── Flood zone ──────────────────────────────────────────────────────────────
+    flood_zone = flood.get("zone") or "N/A"
+    flood_desc = flood.get("description") or "Flood zone data not available"
+    if flood_zone == "X":
+        flood_badge_color = "#27ae60"
+    elif flood_zone in ("AE", "A", "VE"):
+        flood_badge_color = "#c0392b"
+    elif flood_zone and flood_zone != "N/A":
+        flood_badge_color = "#e67e22"
+    else:
+        flood_badge_color = "#95a5a6"
+
+    # ── Flags HTML ──────────────────────────────────────────────────────────────
+    flags = report_data.get("flags", [])
+    flag_color_map = {
+        "red":    ("#fdf2f2", "#c0392b", "&#9888;"),
+        "yellow": ("#fffbf0", "#e67e22", "&#9888;"),
+        "green":  ("#f0fdf4", "#27ae60", "&#10003;"),
+    }
+    flag_rows = []
+    for flag in flags:
+        fc = flag.get("type", "green")
+        bg, color, icon = flag_color_map.get(fc, ("#f7f9fb", "#6b7c93", "&#8226;"))
+        flag_rows.append(
+            f"<tr><td style='padding:8px 0;'>"
+            f"<table width='100%' cellpadding='0' cellspacing='0' border='0'><tr>"
+            f"<td style='background:{bg};border-left:3px solid {color};border-radius:0 4px 4px 0;padding:9px 14px;'>"
+            f"<p style='color:{color};font-size:12px;font-family:Arial,Helvetica,sans-serif;'>{flag.get('text','')}</p>"
+            f"</td></tr></table></td></tr>"
+        )
+    flags_html = "\n".join(flag_rows) if flag_rows else (
+        "<tr><td><p style='color:#9aafc4;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>No significant flags detected.</p></td></tr>"
+    )
+
+    # ── Permits HTML ──────────────────────────────────────────────────────────
+    permits_data = report_data.get("permits", {}) or {}
+    permit_list  = permits_data.get("permits", []) if permits_data.get("available") else []
+    if permit_list:
+        permit_rows = []
+        for p in permit_list[:8]:  # cap at 8 for email length
+            issued = p.get("issued_date", "—")
+            permit_rows.append(
+                f"<tr>"
+                f"<td style='padding:8px 12px;border-bottom:1px solid #f0f4f8;'><p style='color:#1a2e44;font-size:12px;font-family:Arial,Helvetica,sans-serif;'><strong>{p.get('type','—')}</strong> — {p.get('permit_number','')}</p>"
+                f"<p style='color:#9aafc4;font-size:11px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;'>{p.get('description','')[:100]}</p></td>"
+                f"<td style='padding:8px 12px;border-bottom:1px solid #f0f4f8;' align='center'><p style='color:#6b7c93;font-size:11px;font-family:Arial,Helvetica,sans-serif;'>{p.get('status','—')}</p></td>"
+                f"<td style='padding:8px 12px;border-bottom:1px solid #f0f4f8;' align='right'><p style='color:#6b7c93;font-size:11px;font-family:Arial,Helvetica,sans-serif;'>{issued}</p></td>"
+                f"</tr>"
+            )
+        perm_total = permits_data.get("summary", {}).get("total", len(permit_list))
+        permits_html = (
+            f"<tr style='background:#f0f5fa;'>"
+            f"<td style='padding:8px 12px;'><p style='color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;'>Permit / Type</p></td>"
+            f"<td style='padding:8px 12px;' align='center'><p style='color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;'>Status</p></td>"
+            f"<td style='padding:8px 12px;' align='right'><p style='color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;'>Issued</p></td>"
+            f"</tr>"
+            + "\n".join(permit_rows)
+            + f"<tr><td colspan='3' style='padding:8px 12px;'><p style='color:#9aafc4;font-size:10px;font-family:Arial,Helvetica,sans-serif;'>{perm_total} total permits on record — Source: {permits_data.get('city','City')} Open Data</p></td></tr>"
+        )
+    elif permits_data.get("available") is False:
+        permits_html = "<tr><td><p style='color:#9aafc4;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>Permit data not available for this city. Check the city permit portal directly.</p></td></tr>"
+    else:
+        permits_html = "<tr><td><p style='color:#27ae60;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>No permits on record — verify at city portal if recent renovations are present.</p></td></tr>"
+
+    # ── Comps rows HTML ───────────────────────────────────────────────────────
+    comps_list = sold_comps.get("comps", []) if isinstance(sold_comps, dict) else []
+    comp_rows_list = []
+    for i, comp in enumerate(comps_list[:5]):
+        row_bg = "#f7f9fb" if i % 2 == 0 else "#ffffff"
+        sf   = comp.get("building_sf") or comp.get("sqft") or 0
+        price = comp.get("sale_price") or comp.get("price") or 0
+        ppf  = f"${price/sf:.0f}" if sf and price else "—"
+        comp_rows_list.append(
+            f"<tr style='background:{row_bg};'>"
+            f"<td style='padding:9px 12px;border-bottom:1px solid #e8edf2;'><p style='color:#1a2e44;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>{comp.get('address','—')}</p></td>"
+            f"<td style='padding:9px 12px;border-bottom:1px solid #e8edf2;' align='center'><p style='color:#6b7c93;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>{comp.get('bedrooms','—')}/{comp.get('bathrooms','—')}</p></td>"
+            f"<td style='padding:9px 12px;border-bottom:1px solid #e8edf2;' align='center'><p style='color:#6b7c93;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>{'{:,}'.format(int(sf)) if sf else '—'}</p></td>"
+            f"<td style='padding:9px 12px;border-bottom:1px solid #e8edf2;' align='right'><p style='color:#1a2e44;font-size:12px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;'>${price:,.0f}</p></td>"
+            f"<td style='padding:9px 12px;border-bottom:1px solid #e8edf2;' align='right'><p style='color:#6b7c93;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>{ppf}</p></td>"
+            f"<td style='padding:9px 12px;border-bottom:1px solid #e8edf2;' align='center'><p style='color:#6b7c93;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>{comp.get('sale_date','—')}</p></td>"
+            f"</tr>"
+        )
+    comps_rows_html = "\n".join(comp_rows_list) if comp_rows_list else (
+        "<tr><td colspan='6' style='padding:14px 12px;'><p style='color:#9aafc4;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>Comparable sales data requires Realie or ATTOM API key.</p></td></tr>"
+    )
+
+    # ── Suggested list prices ─────────────────────────────────────────────────
+    mkt_mid = market_est.get("market_mid") or (
+        ((market_est.get("market_low") or 0) + (market_est.get("market_high") or 0)) / 2
+    ) or 0
+    list_price_conservative = f"${mkt_mid * 0.95:,.0f}" if mkt_mid else "N/A"
+    list_price_market       = f"${mkt_mid:,.0f}" if mkt_mid else "N/A"
+    list_price_aggressive   = f"${mkt_mid * 1.05:,.0f}" if mkt_mid else "N/A"
+    comp_count = str(len(comps_list))
+    comp_radius = "1.0"
+
+    # ── Mortgage / equity ─────────────────────────────────────────────────────
+    mort_balance = mortgage.get("balance") or mortgage.get("loan_amount") or 0
+    mortgage_balance = f"${mort_balance:,.0f}" if mort_balance else "N/A"
+    mortgage_lender  = mortgage.get("lender") or mortgage.get("servicer") or "N/A"
+    mortgage_orig_date = mortgage.get("origination_date") or mortgage.get("recording_date") or "N/A"
+    mortgage_source  = mortgage.get("source") or "Public records"
+    mkt_val = market_est.get("market_mid") or 0
+    equity_raw = max(0, mkt_val - mort_balance) if (mkt_val and mort_balance) else None
+    equity_estimate = f"${equity_raw:,.0f}" if equity_raw is not None else "N/A"
+    current_ltv_pct = f"{(mort_balance/mkt_val*100):.0f}%" if (mkt_val and mort_balance) else "N/A"
+
+    # ── Deal scenarios (use deal_analysis if available, else estimate) ─────────
+    ask_price = deal_analysis.get("asking_price") or mkt_val or 0
+    def _scenario(price_mult: float) -> dict:
+        price = round(ask_price * price_mult / 1000) * 1000
+        down_pct = 0.25
+        down = round(price * down_pct)
+        loan = price - down
+        rate_mo = 0.07 / 12
+        n = 25 * 12
+        try:
+            pmt = loan * (rate_mo * (1 + rate_mo)**n) / ((1 + rate_mo)**n - 1)
+        except Exception:
+            pmt = 0
+        # Rough NOI: assessed-based estimate or deal_analysis NOI
+        noi = deal_analysis.get("stated_noi") or (assessed_raw * 0.06)  # ~6% cap on assessed
+        monthly_cf = (noi / 12) - pmt if pmt else None
+        cap = f"{(noi / price * 100):.2f}%" if price else "N/A"
+        dscr = f"{(noi / (pmt * 12)):.2f}x" if pmt else "N/A"
+        cf_color = "#27ae60" if (monthly_cf and monthly_cf >= 0) else "#c0392b"
+        cf_fmt = f"${monthly_cf:+,.0f}/mo" if monthly_cf is not None else "N/A"
+        return {
+            "price": f"${price:,.0f}",
+            "down": f"${down:,.0f}",
+            "cashflow": cf_fmt,
+            "cf_color": cf_color,
+            "cap": cap,
+            "dscr": dscr,
+        }
+
+    s_conservative = _scenario(0.93) if ask_price else {k: "N/A" for k in ("price","down","cashflow","cf_color","cap","dscr")}
+    s_market       = _scenario(1.00) if ask_price else {k: "N/A" for k in ("price","down","cashflow","cf_color","cap","dscr")}
+    s_aggressive   = _scenario(1.07) if ask_price else {k: "N/A" for k in ("price","down","cashflow","cf_color","cap","dscr")}
+
+    # ── Assemble final dict ───────────────────────────────────────────────────
+    return {
+        # Agent
+        "agent_name":          agent_name,
+        "agent_brokerage":     agent_brokerage,
+        "agent_phone":         agent_phone,
+        "agent_email":         agent_email,
+        "agent_logo_url":      agent_logo_url,
+        "agent_initials":      agent_initials,
+        # Report metadata
+        "report_date":         datetime.utcnow().strftime("%B %d, %Y"),
+        # Property
+        "property_address":    address,
+        "bedrooms":            beds,
+        "bathrooms":           baths,
+        "building_sf":         building_sf,
+        "year_built":          year_built,
+        "lot_size":            lot_size,
+        "property_type":       property_type,
+        "street_view_url":     street_view_url,
+        # Valuation
+        "assessed_value":      assessed_value,
+        "avm_value":           avm_value,
+        "avm_methodology":     avm_methodology,
+        "avm_source":          avm_source,
+        "market_low":          market_low,
+        "market_high":         market_high,
+        "comp_range":          comp_range,
+        "range_low_pct":       "10",
+        "range_span_pct":      "80",
+        # Ownership
+        "owner_name":          owner_name,
+        "owner_mailing_address": owner_mailing,
+        "hold_duration":       hold_duration,
+        "last_sale_price":     last_sale_price,
+        # Motivation
+        "motivation_score":        mot_score,
+        "motivation_tier":         mot_tier,
+        "motivation_interpretation": mot_interp,
+        "motivation_bg_color":     motivation_bg_color,
+        "motivation_text_color":   motivation_text_color,
+        "motivation_indicators_html": motivation_indicators_html,
+        # Flood
+        "flood_zone":          flood_zone,
+        "flood_description":   flood_desc,
+        "flood_badge_color":   flood_badge_color,
+        # Flags
+        "flags_html":          flags_html,
+        # Permits
+        "permits_html":        permits_html,
+        # Comps
+        "comps_rows_html":     comps_rows_html,
+        "comp_count":          comp_count,
+        "comp_radius":         comp_radius,
+        # List prices
+        "list_price_conservative": list_price_conservative,
+        "list_price_market":       list_price_market,
+        "list_price_aggressive":   list_price_aggressive,
+        # Mortgage/equity
+        "equity_estimate":     equity_estimate,
+        "mortgage_balance":    mortgage_balance,
+        "mortgage_lender":     mortgage_lender,
+        "mortgage_orig_date":  mortgage_orig_date,
+        "mortgage_source":     mortgage_source,
+        "current_ltv":         current_ltv_pct,
+        # Deal scenarios
+        "scenario_conservative_price":    s_conservative["price"],
+        "scenario_conservative_down":     s_conservative["down"],
+        "scenario_conservative_cashflow": s_conservative["cashflow"],
+        "scenario_conservative_cf_color": s_conservative["cf_color"],
+        "scenario_conservative_cap":      s_conservative["cap"],
+        "scenario_conservative_dscr":     s_conservative["dscr"],
+        "scenario_market_price":          s_market["price"],
+        "scenario_market_down":           s_market["down"],
+        "scenario_market_cashflow":       s_market["cashflow"],
+        "scenario_market_cf_color":       s_market["cf_color"],
+        "scenario_market_cap":            s_market["cap"],
+        "scenario_market_dscr":           s_market["dscr"],
+        "scenario_aggressive_price":      s_aggressive["price"],
+        "scenario_aggressive_down":       s_aggressive["down"],
+        "scenario_aggressive_cashflow":   s_aggressive["cashflow"],
+        "scenario_aggressive_cf_color":   s_aggressive["cf_color"],
+        "scenario_aggressive_cap":        s_aggressive["cap"],
+        "scenario_aggressive_dscr":       s_aggressive["dscr"],
+        # Loan assumptions for display
+        "loan_ltv_pct":    "75",
+        "loan_rate_pct":   "7.0",
+        "loan_am_years":   "25",
+        "loan_down_pct":   "25",
+    }
+
+
+@app.route("/api/templates/<template_name>", methods=["POST"])
+def render_template_endpoint(template_name):
+    """
+    Render an agent-branded report template.
+
+    POST {
+      "address": "...",
+      "tier": "pro",
+      "agent": {
+        "name": "...",
+        "brokerage": "...",
+        "phone": "...",
+        "email": "...",
+        "logo_url": "..."
+      }
+    }
+
+    Returns HTML string ready to email to client.
+    Auth: X-Admin-Key header or valid report token.
+    """
+    # Auth: require admin key OR a valid pipeline tier token
+    if not _check_admin():
+        # Also allow requests that supply a valid report token
+        token = request.headers.get("X-Report-Token") or request.args.get("token", "")
+        order = get_order_by_token(token) if (token and len(token) >= 32) else None
+        if not order:
+            return jsonify({"error": "Unauthorized — provide X-Admin-Key header or valid report token"}), 401
+
+    if template_name not in _ALLOWED_TEMPLATES:
+        allowed = ", ".join(sorted(_ALLOWED_TEMPLATES))
+        return jsonify({"error": f"Unknown template '{template_name}'. Available: {allowed}"}), 404
+
+    body    = request.get_json(force=True, silent=True) or {}
+    address = (body.get("address") or "").strip()
+    tier    = body.get("tier", "pro")
+    agent   = body.get("agent") or {}
+
+    if not address:
+        return jsonify({"error": "address required"}), 400
+
+    if not isinstance(agent, dict):
+        agent = {}
+
+    try:
+        # Run pipeline to get fresh data (use cache if available)
+        cached = report_cache.get(address, tier)
+        if cached:
+            report_data = cached
+        else:
+            report_data = run_pipeline(address, tier)
+            report_cache.set(address, tier, report_data)
+
+        template_data = _build_template_data(report_data, agent)
+        html = _render_agent_template(template_name, template_data)
+
+        return Response(html, mimetype="text/html")
+
+    except FileNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
+    except Exception as e:
+        log.error("Template render failed for %s / %s: %s", template_name, address, e, exc_info=True)
+        return jsonify({"error": f"Template render failed: {str(e)}"}), 500
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     debug = os.environ.get("DEBUG", "true").lower() == "true"

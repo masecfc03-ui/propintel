@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listing Intelligence Report — {{property_address}}</title>
+<style type="text/css">
+  body { margin: 0; padding: 0; background: #f4f4f4; font-family: Arial, Helvetica, sans-serif; }
+  table { border-collapse: collapse; }
+  img { border: 0; display: block; }
+  .wrapper { background: #f4f4f4; padding: 20px 0; }
+  h1, h2, h3, p { margin: 0; padding: 0; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr><td align="center">
+
+  <table width="700" cellpadding="0" cellspacing="0" border="0" style="max-width:700px;background:#ffffff;">
+
+    <!-- ── AGENT HEADER ─────────────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#0e2340;padding:28px 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td width="72" valign="middle" style="padding-right:20px;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="width:64px;height:64px;background:#1c3a5e;border-radius:6px;text-align:center;vertical-align:middle;">
+                    {{#agent_logo_url}}
+                    <img src="{{agent_logo_url}}" width="64" height="64" alt="{{agent_name}}" style="border-radius:6px;">
+                    {{/agent_logo_url}}
+                    {{^agent_logo_url}}
+                    <span style="color:#ffffff;font-size:24px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{agent_initials}}</span>
+                    {{/agent_logo_url}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td valign="middle">
+              <p style="color:#ffffff;font-size:18px;font-weight:bold;margin:0;font-family:Arial,Helvetica,sans-serif;">{{agent_name}}</p>
+              <p style="color:#6c92b8;font-size:13px;margin:3px 0 0;font-family:Arial,Helvetica,sans-serif;">{{agent_brokerage}}</p>
+              <p style="color:#6c92b8;font-size:12px;margin:4px 0 0;font-family:Arial,Helvetica,sans-serif;">{{agent_phone}} &nbsp;·&nbsp; {{agent_email}}</p>
+            </td>
+            <td valign="middle" align="right">
+              <p style="color:#4e9fd4;font-size:11px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Listing Intelligence</p>
+              <p style="color:#3d6080;font-size:11px;margin:3px 0 0;font-family:Arial,Helvetica,sans-serif;">{{report_date}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── TITLE BANNER ─────────────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#f0f5fa;border-bottom:3px solid #0e2340;padding:14px 32px;">
+        <p style="color:#0e2340;font-size:13px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Listing Intelligence Report</p>
+      </td>
+    </tr>
+
+    <!-- ── SUBJECT PROPERTY ──────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:0;">
+        <img src="{{street_view_url}}" width="700" height="200" alt="{{property_address}}" style="display:block;width:100%;height:200px;object-fit:cover;">
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#0e2340;padding:18px 32px 20px;">
+        <p style="color:#ffffff;font-size:20px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{property_address}}</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;">
+          <tr>
+            <td style="padding-right:20px;">
+              <p style="color:#6c92b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Beds / Baths</p>
+              <p style="color:#ffffff;font-size:16px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{bedrooms}} / {{bathrooms}}</p>
+            </td>
+            <td style="padding-right:20px;">
+              <p style="color:#6c92b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Sq. Ft.</p>
+              <p style="color:#ffffff;font-size:16px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{building_sf}}</p>
+            </td>
+            <td style="padding-right:20px;">
+              <p style="color:#6c92b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Year Built</p>
+              <p style="color:#ffffff;font-size:16px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{year_built}}</p>
+            </td>
+            <td>
+              <p style="color:#6c92b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Lot Size</p>
+              <p style="color:#ffffff;font-size:16px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{lot_size}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:1px;background:#e8edf2;"></td></tr>
+
+    <!-- ── VALUATION ANALYSIS ────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:26px 32px 22px;">
+        <p style="color:#0e2340;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#128200; Valuation Analysis</p>
+        <table width="100%" cellpadding="0" cellspacing="12" border="0" style="margin-top:16px;">
+          <tr>
+            <td width="33%" style="vertical-align:top;padding-right:12px;">
+              <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">County Assessed</p>
+              <p style="color:#0e2340;font-size:20px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{assessed_value}}</p>
+              <p style="color:#9aafc4;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">Tax assessed value</p>
+            </td>
+            <td width="33%" style="vertical-align:top;padding-right:12px;">
+              <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">AVM Estimate</p>
+              <p style="color:#1a6a3e;font-size:20px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{avm_value}}</p>
+              <p style="color:#9aafc4;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{avm_source}}</p>
+            </td>
+            <td width="33%" style="vertical-align:top;">
+              <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Comp Range</p>
+              <p style="color:#0e2340;font-size:20px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{comp_range}}</p>
+              <p style="color:#9aafc4;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">Recent comparable sales</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── MARKET POSITION / COMPS TABLE ─────────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#0e2340;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#127968; Market Position — Recent Comparable Sales</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          <!-- Table header -->
+          <tr style="background:#f0f5fa;">
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Address</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="center">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Beds/Baths</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="center">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Sq. Ft.</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="right">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Sale Price</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="right">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">$/SF</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="center">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Sale Date</p>
+            </td>
+          </tr>
+          {{comps_rows_html}}
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── SELLER MOTIVATION INDICATORS ──────────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#0e2340;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#128172; Seller Conversation Intelligence</p>
+        <p style="color:#6b7c93;font-size:12px;margin-top:10px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;font-style:italic;">The following indicators may inform your pricing and negotiation conversations with the seller. Handle with discretion.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          {{motivation_indicators_html}}
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          <tr>
+            <td style="background:#fff8e1;border-left:3px solid #f59e0b;border-radius:0 4px 4px 0;padding:12px 16px;">
+              <p style="color:#92400e;font-size:12px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;">
+                <strong>Motivation Score:</strong> {{motivation_score}}/100 ({{motivation_tier}}) &mdash; {{motivation_interpretation}}
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── SUGGESTED LIST PRICE ──────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#0e2340;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#127775; Suggested List Price Range</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+          <tr>
+            <td width="33%" style="padding-right:12px;vertical-align:top;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:#f0f5fa;border-radius:6px;padding:16px 20px;text-align:center;">
+                    <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Conservative</p>
+                    <p style="color:#0e2340;font-size:20px;font-weight:bold;margin-top:6px;font-family:Arial,Helvetica,sans-serif;">{{list_price_conservative}}</p>
+                    <p style="color:#9aafc4;font-size:10px;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">Quick sale</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td width="33%" style="padding-right:12px;vertical-align:top;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:#0e2340;border-radius:6px;padding:16px 20px;text-align:center;">
+                    <p style="color:#6c92b8;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Market Rate</p>
+                    <p style="color:#ffffff;font-size:20px;font-weight:bold;margin-top:6px;font-family:Arial,Helvetica,sans-serif;">{{list_price_market}}</p>
+                    <p style="color:#6c92b8;font-size:10px;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">Best value</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td width="33%" style="vertical-align:top;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:#f0f5fa;border-radius:6px;padding:16px 20px;text-align:center;">
+                    <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Aggressive</p>
+                    <p style="color:#0e2340;font-size:20px;font-weight:bold;margin-top:6px;font-family:Arial,Helvetica,sans-serif;">{{list_price_aggressive}}</p>
+                    <p style="color:#9aafc4;font-size:10px;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">Max upside</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <p style="color:#9aafc4;font-size:11px;margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-style:italic;">Based on {{comp_count}} comparable sales within {{comp_radius}} miles. Verify with current active listings.</p>
+      </td>
+    </tr>
+
+    <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#f7f9fb;border-top:2px solid #e8edf2;padding:22px 32px;">
+        <p style="color:#6b7c93;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif;">
+          This Listing Intelligence Report was prepared by <strong>{{agent_name}}</strong> of <strong>{{agent_brokerage}}</strong> using PropIntel data. Generated {{report_date}}. Data sourced from public records, county appraisal districts, and comparable sales databases. Price recommendations are data-driven estimates and do not constitute a Comparative Market Analysis (CMA) or broker price opinion.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          <tr>
+            <td>
+              <p style="color:#c0cdd9;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Powered by <strong>PropIntel</strong> &mdash; propertyvalueintel.com</p>
+            </td>
+            <td align="right">
+              <p style="color:#c0cdd9;font-size:10px;font-family:Arial,Helvetica,sans-serif;">{{agent_phone}} &nbsp;|&nbsp; {{agent_email}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+  </table><!-- /container -->
+  </td></tr>
+</table><!-- /wrapper -->
+</div>
+</body>
+</html>
