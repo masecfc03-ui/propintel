@@ -1,10 +1,11 @@
 """
-County Router — routes parcel data requests to the correct free county scraper.
-Falls back to Realie if no direct scraper available for that county.
+County Router — routes parcel data requests to the correct scraper.
 
-Coverage priority:
-  Tier 1 (direct scrapers): DCAD, HCAD, BCAD, TCAD, TARCAD, cad_collin, cad_denton
-  Tier 2 (computed from Realie): everywhere else
+Coverage cascade (in order):
+  Tier 1 — Direct county ArcGIS scrapers (TX majors): instant, free, authoritative
+  Tier 2 — RentCast API (140M properties nationwide): set RENTCAST_API_KEY
+  Tier 3 — Realie property search: national but patchy coverage
+  Tier 4 — Graceful fallback with manual link
 """
 
 # County name (lowercased, ' county' stripped) → scraper module name
@@ -187,38 +188,70 @@ def get_parcel_data(address, geo):
         dict with parcel fields, or {"error": ..., "source": "none", "available": False}
         on no-coverage, or {"error": ..., "source": scraper_name} on scraper error.
     """
+    # ── Tier 1: Direct county scraper ────────────────────────────────────────
     scraper_name = detect_scraper(geo)
-    if not scraper_name:
-        return {
-            "error": "No direct scraper for this county",
-            "source": "none",
-            "available": False,
-        }
+    if scraper_name:
+        try:
+            import importlib
+            module = importlib.import_module("scrapers.{}".format(scraper_name))
+            fn = getattr(module, "search_by_address", None) or getattr(module, "search_by_point", None)
+            if fn:
+                result = fn(address)
+                if isinstance(result, dict):
+                    result.setdefault("source", scraper_name)
+                # Return if we got real owner data
+                if isinstance(result, dict) and result.get("owner_name"):
+                    return result
+        except Exception as e:
+            pass  # Fall through to next tier
 
+    # ── Tier 2: RentCast (national, 140M properties) ─────────────────────────
     try:
-        import importlib
-        module = importlib.import_module("scrapers.{}".format(scraper_name))
-        fn = getattr(module, "search_by_address", None)
-        if fn is None:
-            fn = getattr(module, "search_by_point", None)
-        if fn is None:
+        from scrapers.rentcast import get_property, is_available
+        if is_available():
+            rc = get_property(address)
+            if rc.get("available") and rc.get("owner_name"):
+                return rc
+    except Exception:
+        pass
+
+    # ── Tier 3: Realie property search (patchy but free) ─────────────────────
+    try:
+        from scrapers.realie import get_property_detail
+        import re as _re
+        state_match = _re.search(r",\s*([A-Z]{2})\s+\d{5}", address.upper())
+        state = state_match.group(1) if state_match else "TX"
+        realie = get_property_detail(address)
+        if realie.get("available") and realie.get("owner_name"):
             return {
-                "error": "No search function found in {}".format(scraper_name),
-                "source": scraper_name,
-                "available": False,
+                "source": "realie",
+                "owner_name": realie.get("owner_name"),
+                "owner_mailing": None,
+                "assessed_total": realie.get("assessed_total"),
+                "building_sf": realie.get("building_sf"),
+                "year_built": realie.get("year_built"),
+                "bedrooms": realie.get("bedrooms"),
+                "bathrooms": realie.get("bathrooms"),
+                "use_description": realie.get("use_description"),
+                "absentee_owner": False,
+                "out_of_state_owner": False,
+                "tax_delinquent": False,
             }
-        result = fn(address)
-        if isinstance(result, dict):
-            result.setdefault("source", scraper_name)
-        return result
-    except ImportError as e:
-        return {
-            "error": "Scraper module not available: {}".format(str(e)),
-            "source": scraper_name,
-            "available": False,
-        }
-    except Exception as e:
-        return {
-            "error": str(e) or repr(e),
-            "source": scraper_name,
-        }
+    except Exception:
+        pass
+
+    # ── Tier 4: Graceful fallback ─────────────────────────────────────────────
+    encoded = address.replace(" ", "+") if address else ""
+    county = (geo.get("county") or "").replace(" ", "+")
+    state = (geo.get("state") or "")
+    return {
+        "error": "Parcel data not yet available for this county",
+        "source": "none",
+        "available": False,
+        "parcel_error": True,
+        "parcel_error_reason": "County parcel data coming soon. Comps, flood zone, and demographics are still available below.",
+        "parcel_error_action": "info",
+        "manual_url": "https://www.google.com/search?q={}+{}+{}+appraisal+district+property+search".format(
+            encoded, county, state
+        ),
+    }
