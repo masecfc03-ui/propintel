@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account — PropIntel</title>
+  <link rel="preconnect" href="https://api.fontshare.com">
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800,700&f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08080a;
+      --surface: #111115;
+      --border: rgba(255,255,255,0.08);
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --green: #16a34a;
+      --orange: #ea580c;
+      --red: #dc2626;
+      --text: #f4f4f5;
+      --muted: #71717a;
+      --radius: 14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Satoshi', system-ui, sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,8,10,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 900; font-size: 1.25rem; letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 0.875rem; padding: 6px 12px; border-radius: 8px; transition: color .2s; }
+    .nav-link:hover { color: var(--text); }
+    .nav-btn {
+      background: var(--blue); color: #fff;
+      text-decoration: none; font-size: 0.875rem; font-weight: 600;
+      padding: 8px 18px; border-radius: 8px; transition: opacity .2s;
+    }
+    .nav-btn:hover { opacity: 0.85; }
+
+    /* ── LAYOUT ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    /* ── BANNER ── */
+    .banner {
+      background: linear-gradient(135deg, rgba(37,99,235,.15), rgba(124,58,237,.15));
+      border: 1px solid rgba(37,99,235,.3);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 32px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #93c5fd;
+    }
+    .banner.show { display: flex; }
+    .banner-icon { font-size: 1.25rem; }
+
+    /* ── EMAIL GATE ── */
+    #email-gate {
+      text-align: center;
+      padding: 80px 24px;
+    }
+    #email-gate h2 {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 800; font-size: 1.75rem;
+      margin-bottom: 12px;
+    }
+    #email-gate p { color: var(--muted); margin-bottom: 28px; }
+    .email-form {
+      display: flex; gap: 10px; max-width: 420px; margin: 0 auto;
+    }
+    .email-form input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .email-form input:focus { border-color: var(--blue); }
+    .email-form button {
+      background: var(--blue); color: #fff;
+      border: none; border-radius: 10px;
+      padding: 12px 20px; font-size: 0.9rem;
+      font-weight: 600; font-family: inherit;
+      cursor: pointer; white-space: nowrap;
+      transition: opacity .2s;
+    }
+    .email-form button:hover { opacity: 0.85; }
+
+    /* ── ACCOUNT VIEW ── */
+    #account-view { display: none; }
+    #account-view.show { display: block; }
+
+    .page-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 900; font-size: 2rem; letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+    .page-subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 40px; }
+
+    /* ── PLAN CARD ── */
+    .plan-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: start;
+    }
+    .plan-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .plan-badge.active   { background: rgba(22,163,74,.15);  color: #4ade80; }
+    .plan-badge.trialing { background: rgba(37,99,235,.15);  color: #93c5fd; }
+    .plan-badge.past_due { background: rgba(234,88,12,.15);  color: #fb923c; }
+    .plan-badge.canceled { background: rgba(220,38,38,.15);  color: #f87171; }
+    .plan-badge.inactive { background: rgba(113,113,122,.15); color: var(--muted); }
+    .plan-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      display: inline-block;
+    }
+
+    .plan-name {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 800; font-size: 1.5rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .plan-email { color: var(--muted); font-size: 0.85rem; }
+
+    /* Usage meter */
+    .usage-section { margin-top: 20px; }
+    .usage-label {
+      font-size: 0.8rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .usage-row {
+      display: flex; align-items: center; gap: 14px;
+    }
+    .usage-bar-wrap {
+      flex: 1;
+      height: 8px; border-radius: 4px;
+      background: rgba(255,255,255,0.07);
+      overflow: hidden;
+    }
+    .usage-bar {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--violet));
+      transition: width .6s ease;
+    }
+    .usage-count {
+      font-size: 0.85rem; font-weight: 700;
+      white-space: nowrap; min-width: 80px; text-align: right;
+    }
+    .usage-unlimited {
+      font-size: 0.9rem; color: #4ade80; font-weight: 600;
+    }
+
+    /* Action buttons */
+    .plan-actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn {
+      padding: 10px 18px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; border: none; text-decoration: none;
+      text-align: center; white-space: nowrap; transition: opacity .2s;
+      display: inline-block;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-ghost   { background: rgba(255,255,255,0.06); color: var(--text); }
+    .btn:hover   { opacity: 0.85; }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+    .stat-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .stat-value { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 1.75rem; letter-spacing: -0.02em; }
+
+    /* ── RECENT REPORTS ── */
+    .section-title {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 800; font-size: 1.125rem;
+      margin-bottom: 16px;
+    }
+    .empty-state {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+    .empty-state-icon { font-size: 2rem; margin-bottom: 10px; }
+
+    /* ── UPGRADE CTA ── */
+    .upgrade-card {
+      background: linear-gradient(135deg, rgba(37,99,235,.1), rgba(124,58,237,.1));
+      border: 1px solid rgba(124,58,237,.25);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    }
+    .upgrade-text h3 {
+      font-family: 'Cabinet Grotesk', sans-serif;
+      font-weight: 800; font-size: 1.125rem;
+      margin-bottom: 6px;
+    }
+    .upgrade-text p { color: var(--muted); font-size: 0.875rem; }
+
+    /* ── ERROR ── */
+    #error-msg {
+      display: none;
+      background: rgba(220,38,38,.1);
+      border: 1px solid rgba(220,38,38,.3);
+      color: #f87171;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 0.875rem;
+      margin-bottom: 24px;
+    }
+    #error-msg.show { display: block; }
+
+    @media (max-width: 600px) {
+      .plan-card { grid-template-columns: 1fr; }
+      .plan-actions { flex-direction: row; flex-wrap: wrap; }
+      .upgrade-card { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">PropIntel ⚡</a>
+  <div class="nav-links">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/demo.html" class="nav-link">Demo</a>
+    <a href="/pricing.html" class="nav-link">Pricing</a>
+    <a href="/learn.html" class="nav-link">Learn</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- Activation banner -->
+  <div class="banner" id="activation-banner">
+    <span class="banner-icon">✅</span>
+    <span>Subscription activated! Welcome to PropIntel. Your account is ready.</span>
+  </div>
+
+  <!-- Error message -->
+  <div id="error-msg"></div>
+
+  <!-- Email gate (shown when no email found) -->
+  <div id="email-gate">
+    <h2>Access Your Account</h2>
+    <p>Enter the email you used when subscribing.</p>
+    <form class="email-form" onsubmit="loadAccount(event)">
+      <input type="email" id="email-input" placeholder="you@example.com" required autocomplete="email">
+      <button type="submit">Load Account</button>
+    </form>
+  </div>
+
+  <!-- Account view (shown after account loads) -->
+  <div id="account-view">
+    <h1 class="page-title">My Account</h1>
+    <p class="page-subtitle" id="account-email-display"></p>
+
+    <!-- Plan card -->
+    <div class="plan-card">
+      <div>
+        <div class="plan-badge inactive" id="status-badge">
+          <span class="plan-dot"></span>
+          <span id="status-text">Loading…</span>
+        </div>
+        <div class="plan-name" id="plan-name">—</div>
+
+        <div class="usage-section" id="usage-section">
+          <div class="usage-label">Reports This Month</div>
+          <div class="usage-row" id="usage-row">
+            <div class="usage-bar-wrap">
+              <div class="usage-bar" id="usage-bar" style="width:0%"></div>
+            </div>
+            <div class="usage-count" id="usage-count">— / —</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="plan-actions">
+        <button class="btn btn-primary" onclick="openBillingPortal()">Manage Billing</button>
+        <a href="/pricing.html" class="btn btn-ghost">Upgrade Plan</a>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Plan</div>
+        <div class="stat-value" id="stat-plan">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Used This Month</div>
+        <div class="stat-value" id="stat-used">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value" id="stat-remaining">—</div>
+      </div>
+    </div>
+
+    <!-- Recent reports -->
+    <div class="section-title">Recent Reports</div>
+    <div class="empty-state" id="reports-empty">
+      <div class="empty-state-icon">📋</div>
+      <div>No reports yet. Run your first analysis from the <a href="/" style="color:var(--blue)">home page</a>.</div>
+    </div>
+
+    <!-- Upgrade CTA (shown for agent plan) -->
+    <div class="upgrade-card" id="upgrade-cta" style="display:none">
+      <div class="upgrade-text">
+        <h3>Need more than 25 reports/month?</h3>
+        <p>Broker Plan includes unlimited reports, API access, and 10 seats — all for $299/month.</p>
+      </div>
+      <a href="/pricing.html" class="btn btn-primary">Upgrade to Broker →</a>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const API = '';  // same origin
+
+  // ── Check for Stripe redirect (session_id in URL) ─────────────────────────
+  function checkStripeReturn() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('session_id')) {
+      document.getElementById('activation-banner').classList.add('show');
+    }
+  }
+
+  // ── Get stored email ──────────────────────────────────────────────────────
+  function getStoredEmail() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('email') || localStorage.getItem('propintel_account_email') || '';
+  }
+
+  // ── Load account data ─────────────────────────────────────────────────────
+  async function fetchAccount(email) {
+    const res = await fetch(API + '/api/account?email=' + encodeURIComponent(email), {
+      headers: { 'X-Account-Email': email }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Account not found');
+    }
+    return res.json();
+  }
+
+  function renderAccount(account) {
+    const gate = document.getElementById('email-gate');
+    const view = document.getElementById('account-view');
+    gate.style.display = 'none';
+    view.classList.add('show');
+
+    // Email subtitle
+    document.getElementById('account-email-display').textContent = account.email;
+
+    // Status badge
+    const badge = document.getElementById('status-badge');
+    const statusText = document.getElementById('status-text');
+    const statusMap = {
+      active:   'Active',
+      trialing: 'Trial',
+      past_due: 'Past Due',
+      canceled: 'Canceled',
+      inactive: 'Inactive',
+    };
+    badge.className = 'plan-badge ' + (account.status || 'inactive');
+    statusText.textContent = statusMap[account.status] || account.status || 'Inactive';
+
+    // Plan name
+    document.getElementById('plan-name').textContent = account.plan_name || account.plan || 'Free';
+
+    // Usage
+    const used  = account.reports_used  || 0;
+    const limit = account.reports_limit;
+    const usageRow = document.getElementById('usage-row');
+
+    if (limit === null || limit === undefined || limit === 0) {
+      // Unlimited
+      usageRow.innerHTML = '<div class="usage-unlimited">∞ Unlimited reports</div>';
+      document.getElementById('stat-remaining').textContent = '∞';
+    } else {
+      const pct = Math.min(100, Math.round((used / limit) * 100));
+      document.getElementById('usage-bar').style.width = pct + '%';
+      document.getElementById('usage-count').textContent = used + ' / ' + limit;
+      document.getElementById('stat-remaining').textContent = Math.max(0, limit - used);
+    }
+
+    document.getElementById('stat-plan').textContent = account.plan_name || account.plan || '—';
+    document.getElementById('stat-used').textContent = used;
+
+    // Upgrade CTA (agent plan only)
+    if (account.plan === 'agent' && account.status === 'active') {
+      document.getElementById('upgrade-cta').style.display = 'flex';
+    }
+  }
+
+  // ── Email gate form submit ────────────────────────────────────────────────
+  async function loadAccount(e) {
+    e.preventDefault();
+    const email = document.getElementById('email-input').value.trim();
+    if (!email) return;
+
+    try {
+      const account = await fetchAccount(email);
+      localStorage.setItem('propintel_account_email', email);
+      renderAccount(account);
+    } catch (err) {
+      const errEl = document.getElementById('error-msg');
+      errEl.textContent = err.message || 'Could not load account. Check your email and try again.';
+      errEl.classList.add('show');
+    }
+  }
+
+  // ── Open Stripe billing portal ────────────────────────────────────────────
+  async function openBillingPortal() {
+    const email = getStoredEmail();
+    if (!email) { alert('Please load your account first.'); return; }
+    try {
+      const res = await fetch(API + '/api/billing-portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.portal_url) {
+        window.location.href = data.portal_url;
+      } else {
+        alert('Could not open billing portal: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Failed to open billing portal. Try again.');
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  (async function init() {
+    checkStripeReturn();
+    const email = getStoredEmail();
+    if (email) {
+      try {
+        const account = await fetchAccount(email);
+        localStorage.setItem('propintel_account_email', email);
+        renderAccount(account);
+      } catch (err) {
+        // Show gate if not found
+        document.getElementById('email-input').value = email;
+      }
+    }
+  })();
+</script>
+
+</body>
+</html>
