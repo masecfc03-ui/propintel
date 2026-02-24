@@ -555,6 +555,379 @@
       }
     }
 
+    /* ── PERSONA TEMPLATES ── */
+    /* 🏠 BUYER TEMPLATE - "Deal Room" Aesthetic */
+    body.buyer-mode {
+      --dark-base: #08080a;
+      --dark-surface: #0f0f11;
+      --dark-elevated: #161619;
+      
+      --accent-primary: #ef4444;  /* Red for risk */
+      --success: #10b981;         /* Green for opportunity */
+      --warning: #f59e0b;         /* Orange for caution */
+      --danger: #ef4444;
+      
+      --text-primary: #fafafa;
+      --text-secondary: #a1a1aa;
+      background: var(--dark-base);
+    }
+    
+    body.buyer-mode .hero-section {
+      background: linear-gradient(135deg, #08080a 0%, #0f0f11 100%);
+      border: 2px solid var(--danger);
+      text-align: center;
+    }
+    
+    body.buyer-mode .deal-score {
+      font-size: 4rem;
+      font-weight: 800;
+      background: conic-gradient(var(--success) 0deg, var(--warning) 120deg, var(--danger) 240deg, var(--success) 360deg);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+      display: block;
+      margin: 0.5rem 0;
+    }
+    
+    body.buyer-mode .max-offer {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+      border: 2px solid var(--success);
+      border-radius: var(--radius-lg);
+      padding: 1rem 2rem;
+      margin: 1rem auto;
+      display: inline-block;
+    }
+    
+    body.buyer-mode .motivation-signals {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 1.5rem 0;
+    }
+    
+    body.buyer-mode .signal-pill {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border-color: var(--danger);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    body.buyer-mode .section-card {
+      background: var(--dark-elevated);
+      border: 1px solid var(--dark-border);
+    }
+    
+    body.buyer-mode .section-title {
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 800;
+    }
+
+    /* 💰 SELLER TEMPLATE - "Home Value Report" Aesthetic */
+    body.seller-mode {
+      --dark-base: #111118;
+      --dark-surface: #1a1a22;
+      --dark-elevated: #222229;
+      
+      --accent-primary: #f59e0b;  /* Gold/amber */
+      --accent-secondary: #10b981; /* Green */
+      --success: #10b981;
+      --warning: #f59e0b;
+      
+      --text-primary: #fafafa;
+      --text-secondary: #d4d4d8;
+      background: var(--dark-base);
+    }
+    
+    body.seller-mode .hero-section {
+      background: linear-gradient(135deg, #f59e0b10 0%, #10b98110 100%);
+      border: 2px solid var(--accent-primary);
+      border-radius: var(--radius-lg);
+    }
+    
+    body.seller-mode .estimated-value {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      text-align: center;
+      margin: 1rem 0;
+      text-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+    
+    body.seller-mode .confidence-meter {
+      width: 100%;
+      height: 12px;
+      background: var(--dark-border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+    
+    body.seller-mode .confidence-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--success));
+      width: 85%;
+      border-radius: 6px;
+      transition: width 0.6s ease;
+    }
+    
+    body.seller-mode .comp-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    
+    body.seller-mode .comp-card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      position: relative;
+    }
+    
+    body.seller-mode .neighborhood-grade {
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--success);
+      color: white;
+      font-size: 2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+    
+    body.seller-mode .section-card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-lg);
+    }
+    
+    body.seller-mode .section-title {
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    /* 🤝 AGENT TEMPLATE - "Client Presentation" Aesthetic */
+    body.agent-mode {
+      --dark-base: #ffffff;
+      --dark-surface: #f8fafc;
+      --dark-elevated: #f1f5f9;
+      --dark-border: #e2e8f0;
+      
+      --accent-primary: #1e40af;  /* Navy blue */
+      --accent-secondary: #3b82f6; /* Blue */
+      --success: #059669;
+      --warning: #d97706;
+      
+      --text-primary: #1f2937;
+      --text-secondary: #4b5563;
+      --text-muted: #6b7280;
+      background: var(--dark-base);
+      color: var(--text-primary);
+    }
+    
+    body.agent-mode.print-mode {
+      --dark-base: #ffffff;
+      --dark-surface: #ffffff;
+      --dark-elevated: #ffffff;
+      --dark-border: #e5e7eb;
+    }
+    
+    body.agent-mode .topbar {
+      background: var(--dark-base);
+      border-bottom: 2px solid var(--accent-primary);
+      color: var(--text-primary);
+    }
+    
+    body.agent-mode .agent-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2rem;
+      background: var(--dark-surface);
+      border-bottom: 1px solid var(--dark-border);
+      margin-bottom: 2rem;
+    }
+    
+    body.agent-mode .agent-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    body.agent-mode .agent-headshot {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--dark-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: var(--text-muted);
+    }
+    
+    body.agent-mode .brokerage-logo {
+      width: 120px;
+      height: 60px;
+      background: var(--dark-border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-align: center;
+    }
+    
+    body.agent-mode .hero-section {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-lg);
+      font-family: 'Times New Roman', Times, serif;
+    }
+    
+    body.agent-mode .section-card {
+      background: var(--dark-base);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    body.agent-mode .section-title {
+      color: var(--accent-primary);
+      font-family: 'Times New Roman', Times, serif;
+      font-weight: 700;
+    }
+    
+    body.agent-mode .mls-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    
+    body.agent-mode .mls-table th,
+    body.agent-mode .mls-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--dark-border);
+    }
+    
+    body.agent-mode .mls-table th {
+      background: var(--dark-surface);
+      font-weight: 600;
+      color: var(--accent-primary);
+    }
+    
+    body.agent-mode .report-footer {
+      margin-top: 4rem;
+      padding: 2rem;
+      background: var(--dark-surface);
+      border-top: 2px solid var(--accent-primary);
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    /* ── PERSONA-SPECIFIC COMPONENTS ── */
+    .persona-specific-content {
+      margin: 2rem 0;
+      padding: 1rem 0;
+    }
+
+    /* Deal Score Ring Animation */
+    @keyframes dealScoreGlow {
+      0%, 100% { text-shadow: 0 0 20px currentColor; }
+      50% { text-shadow: 0 0 30px currentColor, 0 0 40px currentColor; }
+    }
+
+    body.buyer-mode .deal-score {
+      animation: dealScoreGlow 2s ease-in-out infinite;
+    }
+
+    /* Estimated Value Animation */
+    @keyframes valueCountUp {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    body.seller-mode .estimated-value {
+      animation: valueCountUp 0.8s ease-out;
+    }
+
+    /* Confidence meter animation */
+    @keyframes confidenceFill {
+      from { width: 0; }
+      to { width: var(--confidence-width, 85%); }
+    }
+
+    body.seller-mode .confidence-fill {
+      animation: confidenceFill 1.2s ease-out 0.5s both;
+    }
+
+    /* Agent mode print optimizations */
+    @media print {
+      body.agent-mode .agent-header,
+      body.agent-mode .report-footer {
+        break-inside: avoid;
+      }
+      
+      body.agent-mode .agent-header {
+        border-bottom: 2px solid #000;
+        margin-bottom: 2rem;
+      }
+      
+      body.agent-mode .report-footer {
+        margin-top: 2rem;
+        border-top: 2px solid #000;
+        page-break-inside: avoid;
+      }
+    }
+
+    /* Mobile responsive adjustments for personas */
+    @media (max-width: 768px) {
+      body.buyer-mode .deal-score {
+        font-size: 3rem;
+      }
+      
+      body.buyer-mode .max-offer {
+        font-size: 1.8rem;
+        padding: 0.75rem 1.5rem;
+      }
+      
+      body.seller-mode .estimated-value {
+        font-size: 2.5rem;
+      }
+      
+      body.agent-mode .agent-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+      
+      .motivation-signals {
+        justify-content: center;
+      }
+      
+      .signal-pill {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+      }
+    }
+
     /* ── PRINT STYLES ── */
     @media print {
       body {
@@ -883,6 +1256,23 @@
       const comps = data.sold_comps || {};
       const geo = data.geo || {};
 
+      // Extract persona from data or URL params
+      let persona = data.persona || 'seller';
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPersona = urlParams.get('persona');
+        if (urlPersona && ['buyer', 'seller', 'agent'].includes(urlPersona)) {
+          persona = urlPersona;
+        } else {
+          const sessionPersona = sessionStorage.getItem('propintel_persona');
+          if (sessionPersona && ['buyer', 'seller', 'agent'].includes(sessionPersona)) {
+            persona = sessionPersona;
+          }
+        }
+      } catch (e) {
+        console.warn('Persona detection failed:', e);
+      }
+
       // Document title
       const addr = data.resolved_address || data.input || 'Property Report';
       document.title = `PropIntel — ${addr}`;
@@ -1112,6 +1502,9 @@
         }, 100);
       }
 
+      // ── PERSONA-SPECIFIC CONTENT INJECTION ──
+      injectPersonaSpecificContent(persona, data, isPro);
+      
       // ── PERSONA-BASED TEMPLATE REORGANIZATION ──
       reorganizeSectionsByPersona(persona, isPro);
 
@@ -1121,7 +1514,139 @@
     }
 
     // ── PERSONA TEMPLATE FUNCTIONS ──
+    function injectPersonaSpecificContent(persona, data, isPro) {
+      const heroSection = document.querySelector('.hero-section');
+      if (!heroSection) return;
+
+      // Remove existing persona content
+      const existingPersonaContent = heroSection.querySelector('.persona-specific-content');
+      if (existingPersonaContent) {
+        existingPersonaContent.remove();
+      }
+
+      const avm = data.avm || {};
+      const parcel = data.parcel || {};
+      let personaContent = '';
+
+      switch (persona) {
+        case 'buyer':
+          // Calculate Deal Score (0-100 based on available metrics)
+          let dealScore = 50; // Base score
+          if (parcel.tax_delinquent) dealScore += 15;
+          if (parcel.absentee_owner) dealScore += 10;
+          if (parcel.out_of_state_owner) dealScore += 10;
+          if (parcel.equity_estimate && parcel.equity_estimate > 100000) dealScore += 15;
+          dealScore = Math.min(100, Math.max(0, dealScore));
+
+          const maxOffer = avm.value ? Math.round(avm.value * 0.75) : 0;
+
+          // Motivation signals
+          const motivationSignals = [];
+          if (parcel.absentee_owner) motivationSignals.push('ABSENTEE OWNER');
+          if (parcel.out_of_state_owner) motivationSignals.push('OUT OF STATE');
+          if (parcel.equity_estimate && parcel.equity_estimate > 50000) motivationSignals.push('HIGH EQUITY');
+          if (parcel.tax_delinquent) motivationSignals.push('DISTRESSED');
+
+          personaContent = `
+            <div class="persona-specific-content">
+              <div class="deal-score">${dealScore}</div>
+              <div style="text-align: center; margin: 1rem 0; font-weight: 600; color: var(--text-secondary);">Deal Score</div>
+              ${maxOffer ? `<div class="max-offer">Max Offer: $${maxOffer.toLocaleString()}</div>` : ''}
+              ${motivationSignals.length > 0 ? `
+                <div class="motivation-signals">
+                  ${motivationSignals.map(signal => `<span class="signal-pill">${signal}</span>`).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `;
+          break;
+
+        case 'seller':
+          const estimatedValue = avm.value || parcel.assessed_total || 0;
+          const confidenceScore = avm.confidence === 'High' ? 90 : avm.confidence === 'Medium' ? 75 : 60;
+
+          personaContent = `
+            <div class="persona-specific-content">
+              <div class="estimated-value">$${estimatedValue.toLocaleString()}</div>
+              <div style="text-align: center; margin: 0.5rem 0; color: var(--text-secondary);">Based on ${data.sold_comps?.comps?.length || 'recent'} comparable sales in your area</div>
+              <div class="confidence-meter">
+                <div class="confidence-fill" style="width: ${confidenceScore}%"></div>
+              </div>
+              <div style="text-align: center; margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-muted);">${confidenceScore}% Confidence</div>
+              ${demo.median_income ? `
+                <div class="neighborhood-grade">A</div>
+                <div style="text-align: center; margin: 0.5rem 0; color: var(--text-secondary);">Neighborhood Grade</div>
+              ` : ''}
+            </div>
+          `;
+          break;
+
+        case 'agent':
+          // Agent header will be added separately
+          const body = document.body;
+          let agentHeader = document.querySelector('.agent-header');
+          if (!agentHeader) {
+            agentHeader = document.createElement('div');
+            agentHeader.className = 'agent-header';
+            agentHeader.innerHTML = `
+              <div class="agent-info">
+                <div class="agent-headshot">👤</div>
+                <div>
+                  <div style="font-size: 1.25rem; font-weight: 700; color: var(--accent-primary);">Agent Name</div>
+                  <div style="color: var(--text-secondary);">Licensed Real Estate Professional</div>
+                  <div style="font-size: 0.875rem; color: var(--text-muted);">Phone: (555) 123-4567 • Email: agent@brokerage.com</div>
+                </div>
+              </div>
+              <div class="brokerage-logo">BROKERAGE<br>LOGO</div>
+            `;
+            body.insertBefore(agentHeader, document.querySelector('.topbar').nextSibling);
+          }
+
+          personaContent = `
+            <div class="persona-specific-content">
+              <div style="text-align: center; font-family: 'Times New Roman', serif;">
+                <h2 style="color: var(--accent-primary); margin: 1rem 0;">Professional Property Analysis</h2>
+                <p style="color: var(--text-secondary); font-size: 1.1rem;">Comprehensive market report prepared for client presentation</p>
+              </div>
+            </div>
+          `;
+
+          // Add footer for agent mode
+          if (!document.querySelector('.report-footer')) {
+            const footer = document.createElement('div');
+            footer.className = 'report-footer';
+            footer.innerHTML = `
+              <div><strong>Agent Name</strong> | <strong>Brokerage Name</strong> | Powered by PropIntel</div>
+              <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                This report is prepared exclusively for client presentation and contains confidential market analysis
+              </div>
+            `;
+            document.body.appendChild(footer);
+          }
+          break;
+      }
+
+      if (personaContent) {
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = personaContent;
+        heroSection.appendChild(contentDiv.firstElementChild);
+      }
+    }
+
+    function applyPersonaBodyClass(persona) {
+      // Remove existing persona classes
+      document.body.classList.remove('buyer-mode', 'seller-mode', 'agent-mode');
+      
+      // Apply the appropriate persona class
+      if (persona && ['buyer', 'seller', 'agent'].includes(persona)) {
+        document.body.classList.add(`${persona}-mode`);
+      }
+    }
+
     function reorganizeSectionsByPersona(persona, isPro) {
+      // Apply persona body class first
+      applyPersonaBodyClass(persona);
+      
       const container = document.querySelector('.report-body') || document.querySelector('main') || document.body;
       if (!container) return;
 
