@@ -14,6 +14,7 @@ from scrapers.county_router import get_parcel_data as county_parcel_lookup
 from scrapers.txsos import search_by_address as txsos_address, search_entity as txsos_entity
 from scrapers.listing import parse_listing, is_address, detect_source
 from scrapers.datazapp import parse_owner_name
+from scrapers.tracerfy import skip_trace as tracerfy_skip_trace
 from scrapers.walkscore import get_scores as walkscore_get
 from scrapers.permits import get_permits
 from scrapers.avm import calculate_avm
@@ -338,24 +339,44 @@ def run(input_str: str, tier: str = "starter") -> dict:
             hold_years=_hold_years,
         )
 
-        # DataZapp skip trace
+        # Skip trace via Tracerfy — live phone + email lookup
         first, last, is_entity = parse_owner_name(owner_name)
         owner_mail_addr = parcel_data.get("owner_mailing", "")
         owner_city = parcel_data.get("owner_city", "")
         owner_state = parcel_data.get("owner_state", "TX")
         owner_zip = parcel_data.get("owner_zip", "")
 
-        # Skip trace — DataZapp ($0.03/match). Placeholder until DATAZAPP_API_KEY is set.
-        # When key is available: wire backend/scrapers/datazapp.py full lookup here.
-        report["skip_trace"] = {
-            "status": "pending",
-            "source": "datazapp",
-            "owner_name": owner_name,
-            "is_entity": is_entity,
-            "phones": [],
-            "emails": [],
-            "note": "DataZapp skip trace ready — add DATAZAPP_API_KEY to enable.",
-        }
+        # Only run skip trace if we have valid owner data (don't waste credits on unknowns)
+        if owner_name and owner_name.strip() and not is_entity:
+            try:
+                skip_trace_result = tracerfy_skip_trace(
+                    owner_name=owner_name,
+                    mailing_address=owner_mail_addr,
+                    city=owner_city,
+                    state=owner_state,
+                    zip_code=owner_zip
+                )
+                report["owner_intel"] = report.get("owner_intel", {})
+                report["owner_intel"]["skip_trace"] = skip_trace_result
+            except Exception as e:
+                report["owner_intel"] = report.get("owner_intel", {})
+                report["owner_intel"]["skip_trace"] = {
+                    "status": "error",
+                    "phones": [],
+                    "emails": [],
+                    "source": "Tracerfy",
+                    "error": f"Skip trace failed: {str(e)}"
+                }
+        else:
+            # Skip for entities or missing names
+            report["owner_intel"] = report.get("owner_intel", {})
+            report["owner_intel"]["skip_trace"] = {
+                "status": "skipped",
+                "phones": [],
+                "emails": [],
+                "source": "Tracerfy",
+                "reason": "Entity owner or missing name - credits preserved"
+            }
 
         # Lien search placeholder
         report["liens"] = {
