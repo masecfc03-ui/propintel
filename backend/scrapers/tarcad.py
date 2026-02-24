@@ -1,229 +1,213 @@
 """
 Tarrant County Appraisal District (TARCAD) — Fort Worth, TX
-Free property lookup via TrueAutomation public portal (no auth, no API key).
-CID: 24
+Free property lookup via TAD ArcGIS REST API (public, no auth).
 
-Endpoints:
-  Search:  GET https://propaccess.trueautomation.com/clientdb/Property/SearchByAddress
-  Detail:  GET https://propaccess.trueautomation.com/clientdb/Property/PropertyDetail
+Source: https://tad.newedgeservices.com/arcgis/rest/services/OD_TAD/OD_ParcelView/MapServer/0
+Portal: https://www.tad.org/
+
+Covers: Fort Worth, Arlington, Mansfield, Euless, Bedford, Hurst, North Richland Hills,
+        Grapevine, Southlake, Colleyville, Keller, and all Tarrant County cities.
 """
-import json
 import urllib.request
 import urllib.parse
-import urllib.error
+import json
+import ssl
+import re
+import logging
 
-SOURCE = "tarcad"
-COUNTY = "Tarrant"
-STATE = "TX"
-CID = 24
-TIMEOUT = 12
+log = logging.getLogger(__name__)
 
-BASE = "https://propaccess.trueautomation.com/clientdb/Property"
+BASE = (
+    "https://tad.newedgeservices.com/arcgis/rest/services"
+    "/OD_TAD/OD_ParcelView/MapServer/0"
+)
+SEARCH_URL = "https://www.tad.org/property-search"
+
+FIELDS = ",".join([
+    "TAXPIN", "Account_Nu", "Owner_Name", "Owner_Addr",
+    "Owner_City", "Owner_Zip",
+    "Situs_Addr", "City", "ZipCode",
+    "Total_Valu", "Land_Value", "Improvemen", "Appraised_",
+    "Year_Built", "Living_Are", "Num_Bedroo", "Num_Bathro",
+    "State_Use_", "LegalDescr", "School", "Deed_Date",
+    "Ag_Code", "Land_SqFt", "Land_Acres",
+])
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Referer": "https://propaccess.trueautomation.com/",
+    "Referer": "https://tad.newedgeservices.com/",
 }
 
+_SSL_CTX = ssl.create_default_context()
+_SSL_CTX.check_hostname = False
+_SSL_CTX.verify_mode = ssl.CERT_NONE
 
-def _get_json(url):
-    """Fetch JSON from url; returns (data, error_str)."""
-    req = urllib.request.Request(url, headers=HEADERS)
+
+def _query(where_clause):
+    """Query TARCAD ArcGIS MapServer. Returns (features, error)."""
     try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
-            raw = resp.read().decode("utf-8", errors="replace")
-            return json.loads(raw), None
-    except urllib.error.HTTPError as e:
-        return None, "HTTP {}: {}".format(e.code, e.reason)
+        params = urllib.parse.urlencode({
+            "where": where_clause,
+            "outFields": FIELDS,
+            "returnGeometry": "false",
+            "f": "json",
+        })
+        url = "{}/query?{}".format(BASE, params)
+        req = urllib.request.Request(url, headers=HEADERS)
+        with urllib.request.urlopen(req, timeout=12, context=_SSL_CTX) as resp:
+            data = json.load(resp)
+        if data.get("error"):
+            return [], data["error"]
+        return data.get("features", []), None
     except urllib.error.URLError as e:
-        return None, "URLError: {}".format(str(e.reason))
+        return [], {"message": "TARCAD connection error: {}".format(e.reason)}
     except Exception as e:
-        return None, str(e) or repr(e)
+        return [], {"message": str(e) or repr(e)}
 
 
-def _search(term):
-    """Search by address; returns list of result dicts or (None, error)."""
-    params = urllib.parse.urlencode({"cid": CID, "term": term, "limit": 10})
-    url = "{}/SearchByAddress?{}".format(BASE, params)
-    data, err = _get_json(url)
-    if err:
-        return None, err
-    if not isinstance(data, list):
-        if isinstance(data, dict):
-            data = data.get("results") or data.get("data") or []
-        else:
-            data = []
-    return data, None
+def _parse(attrs, query):
+    """Map TARCAD ArcGIS attributes to PropIntel parcel dict."""
+    def _clean_int(v):
+        try:
+            return int(str(v).strip()) if v else None
+        except (ValueError, TypeError):
+            return None
 
+    def _clean_float(v):
+        try:
+            return float(str(v).strip()) if v else None
+        except (ValueError, TypeError):
+            return None
 
-def _detail(prop_id):
-    """Fetch full property detail; returns (data_dict, error)."""
-    params = urllib.parse.urlencode({"cid": CID, "prop_id": prop_id})
-    url = "{}/PropertyDetail?{}".format(BASE, params)
-    data, err = _get_json(url)
-    if err:
-        return None, err
-    if isinstance(data, list) and data:
-        data = data[0]
-    return data, None
+    owner = (attrs.get("Owner_Name") or "").strip()
+    owner_addr = (attrs.get("Owner_Addr") or "").strip()
+    owner_city = (attrs.get("Owner_City") or "").strip()
+    owner_zip = (attrs.get("Owner_Zip") or "").strip()
+    prop_city = (attrs.get("City") or "").strip()
+    prop_zip = (attrs.get("ZipCode") or "").strip()
+    situs = (attrs.get("Situs_Addr") or "").strip()
 
+    mailing = owner_addr or None
+    if mailing and owner_city:
+        mailing = "{}, {} TX {}".format(owner_addr, owner_city, owner_zip).strip(", ")
 
-def _safe_float(val):
-    """Convert value to float, return 0.0 on failure."""
-    try:
-        return float(val) if val is not None else 0.0
-    except (TypeError, ValueError):
-        return 0.0
+    total_val = _clean_float(attrs.get("Total_Valu"))
+    land_val = _clean_float(attrs.get("Land_Value"))
+    imprv_val = _clean_float(attrs.get("Improvemen"))
+    appraised = _clean_float(attrs.get("Appraised_"))
 
+    # Use appraised or total, whichever is available and > 0
+    market_value = appraised if (appraised and appraised > 0) else (total_val if (total_val and total_val > 0) else None)
 
-def _safe_int(val):
-    """Convert value to int, return 0 on failure."""
-    try:
-        return int(val) if val is not None else 0
-    except (TypeError, ValueError):
-        return 0
+    yr_built = _clean_int(attrs.get("Year_Built"))
+    living_sf = _clean_int(attrs.get("Living_Are"))
+    bedrooms = _clean_int(attrs.get("Num_Bedroo"))
+    bathrooms = _clean_int(attrs.get("Num_Bathro"))
+    land_sf = _clean_int(attrs.get("Land_SqFt"))
 
+    # Absentee / out-of-state detection
+    owner_state_raw = ""
+    if owner_city and owner_zip and "TX" not in owner_addr.upper():
+        # Heuristic: if mailing city differs from property city, absentee
+        absentee = owner_city.upper() != prop_city.upper() if prop_city else False
+    else:
+        absentee = False
 
-def _parse(detail, search_hit=None):
-    """
-    Convert TrueAutomation PropertyDetail response into PropIntel parcel dict.
-    """
-    d = detail or {}
-    sh = search_hit or {}
+    out_of_state = False  # TAD doesn't expose owner state directly
 
-    owner_name = (
-        d.get("ownerName") or d.get("owner_name") or
-        sh.get("ownerName") or sh.get("owner_name") or ""
-    ).strip()
-
-    mailing_addr = (d.get("ownerAddress") or d.get("mailingAddress") or "").strip()
-    mailing_city = (d.get("ownerCity") or d.get("mailingCity") or "").strip()
-    mailing_state = (d.get("ownerState") or d.get("mailingState") or "").strip().upper()
-    mailing_zip = (d.get("ownerZip") or d.get("mailingZip") or "").strip()
-
-    owner_mailing = ""
-    if mailing_addr:
-        owner_mailing = mailing_addr
-        if mailing_city:
-            owner_mailing += ", " + mailing_city
-        if mailing_state:
-            owner_mailing += " " + mailing_state
-        if mailing_zip:
-            owner_mailing += " " + mailing_zip
-
-    prop_addr = (
-        d.get("propertyAddress") or d.get("siteAddress") or
-        sh.get("propertyAddress") or sh.get("address") or ""
-    ).strip()
-    prop_city = (d.get("propertyCity") or d.get("siteCity") or "Fort Worth").strip()
-    prop_zip = (d.get("propertyZip") or d.get("siteZip") or "").strip()
-
-    apn = (
-        d.get("propertyId") or d.get("prop_id") or d.get("apn") or d.get("accountNum") or
-        sh.get("prop_id") or sh.get("propertyId") or ""
-    )
-    apn = str(apn).strip()
-
-    assessed_land = _safe_float(d.get("landValue") or d.get("assessedLand"))
-    assessed_improvement = _safe_float(
-        d.get("improvementValue") or d.get("buildingValue") or d.get("assessedImprovement")
-    )
-    assessed_total = _safe_float(
-        d.get("totalValue") or d.get("assessedTotal") or d.get("appraisedValue")
-    )
-    if assessed_total == 0.0 and (assessed_land or assessed_improvement):
-        assessed_total = assessed_land + assessed_improvement
-
-    tax_year = _safe_int(d.get("taxYear") or d.get("appraisalYear") or d.get("year"))
-    building_sqft = _safe_int(
-        d.get("buildingArea") or d.get("squareFeet") or d.get("livingArea") or d.get("bldgSqFt")
-    )
-    year_built = _safe_int(d.get("yearBuilt") or d.get("year_built"))
-    use_description = (
-        d.get("stateUseDescription") or d.get("useDescription") or
-        d.get("propertyUse") or d.get("useCode") or ""
-    ).strip()
-
-    bedrooms_raw = d.get("bedrooms") or d.get("bedroomCount")
-    bathrooms_raw = d.get("bathrooms") or d.get("bathroomCount") or d.get("fullBaths")
-    bedrooms = _safe_int(bedrooms_raw) if bedrooms_raw is not None else None
-    bathrooms = _safe_float(bathrooms_raw) if bathrooms_raw is not None else None
-
-    out_of_state = mailing_state not in ("TX", "")
-    absentee = bool(
-        mailing_state and (
-            out_of_state or
-            (mailing_city and prop_city and
-             mailing_city.upper() != prop_city.upper()[:len(mailing_city)])
-        )
-    )
-    tax_delinquent = bool(d.get("taxDelinquent") or d.get("delinquent"))
+    apn = (attrs.get("TAXPIN") or attrs.get("Account_Nu") or "").strip()
 
     return {
-        "owner_name": owner_name,
-        "owner_mailing": owner_mailing,
-        "property_address": prop_addr,
-        "city": prop_city,
-        "state": STATE,
-        "zip": prop_zip,
-        "county": COUNTY,
+        "source": "Tarrant County Appraisal District",
+        "source_url": SEARCH_URL,
         "apn": apn,
-        "assessed_land": assessed_land,
-        "assessed_improvement": assessed_improvement,
-        "assessed_total": assessed_total,
-        "tax_year": tax_year,
-        "building_sqft": building_sqft,
-        "year_built": year_built,
-        "use_description": use_description,
+        "owner_name": owner,
+        "owner_mailing": mailing,
+        "owner_city": owner_city,
+        "owner_state": "TX",
+        "owner_zip": owner_zip,
+        "property_address": situs,
+        "property_city": prop_city,
+        "property_zip": prop_zip or prop_zip,
+        "legal_description": (attrs.get("LegalDescr") or "").strip() or None,
+        "use_code": (attrs.get("State_Use_") or "").strip() or None,
+        "school_district": (attrs.get("School") or "").strip() or None,
+        "assessed_total": market_value,
+        "assessed_land": land_val if land_val and land_val > 0 else None,
+        "assessed_improvement": imprv_val if imprv_val and imprv_val > 0 else None,
+        "assessed_prev": None,
+        "assessed_yoy_pct": None,
+        "building_sf": living_sf,
+        "land_sf": land_sf,
+        "year_built": yr_built if yr_built and yr_built > 1700 else None,
         "bedrooms": bedrooms,
         "bathrooms": bathrooms,
+        "deed_date": (attrs.get("Deed_Date") or "").strip() or None,
         "absentee_owner": absentee,
         "out_of_state_owner": out_of_state,
-        "tax_delinquent": tax_delinquent,
-        "source": SOURCE,
+        "tax_delinquent": False,
+        "tad_url": "https://www.tad.org/property-search?account={}".format(apn) if apn else SEARCH_URL,
     }
-
-
-def _error(msg):
-    return {"error": msg, "source": SOURCE, "available": False}
 
 
 def search_by_address(address):
     """
-    Look up a parcel by situs address in Tarrant County (Fort Worth, TX).
-    Returns PropIntel parcel dict or error dict.
+    Search TARCAD ArcGIS by situs address.
+    Tries: '1234 MAIN%' then '1234%' fallback.
     """
-    if not address or not str(address).strip():
-        return _error("No address provided")
+    if not address:
+        return _fallback(address, "No address provided")
 
-    results, err = _search(str(address).strip())
-    if err:
-        return _error("TARCAD search failed: {}".format(err))
-    if not results:
-        return _error("No parcel found for address: {}".format(address))
+    parts = address.upper().strip().split()
+    street_num = parts[0] if parts and parts[0].isdigit() else ""
+    street_name = parts[1] if len(parts) > 1 and street_num else ""
 
-    hit = results[0]
-    prop_id = hit.get("prop_id") or hit.get("propertyId") or hit.get("id")
-    if not prop_id:
-        return _parse(hit)
+    # Build progressively broader WHERE clauses
+    candidates = []
+    if street_num and street_name:
+        candidates.append("Situs_Addr LIKE '{} {}%'".format(street_num, street_name))
+    if street_num:
+        candidates.append("Situs_Addr LIKE '{}%'".format(street_num))
 
-    detail, err = _detail(prop_id)
-    if err or not detail:
-        return _parse(hit)
+    for where in candidates:
+        features, err = _query(where)
+        if err:
+            log.warning("TARCAD query error: %s", err)
+            continue
+        if features:
+            # Pick best match if multiple (prefer exact street number match)
+            best = features[0]
+            for f in features:
+                situs = (f["attributes"].get("Situs_Addr") or "").upper()
+                if street_num and situs.startswith(street_num + " "):
+                    if street_name and street_name in situs:
+                        best = f
+                        break
+                    elif not street_name:
+                        best = f
+                        break
+            return _parse(best["attributes"], address)
 
-    return _parse(detail, search_hit=hit)
+    return _fallback(address, "No parcel found for this address in Tarrant CAD")
 
 
 def search_by_apn(apn):
-    """
-    Look up a parcel by APN / account number in Tarrant County.
-    """
-    if not apn or not str(apn).strip():
-        return _error("No APN provided")
+    """Search TARCAD by TAXPIN or Account Number."""
+    if not apn:
+        return _fallback(apn, "No APN provided")
+    clean = str(apn).strip()
+    features, err = _query("TAXPIN = '{}' OR Account_Nu = '{}'".format(clean, clean))
+    if err or not features:
+        return _fallback(apn, "APN not found in Tarrant CAD")
+    return _parse(features[0]["attributes"], apn)
 
-    prop_id = str(apn).strip()
-    detail, err = _detail(prop_id)
-    if err or not detail:
-        return _error("TARCAD APN lookup failed for {}: {}".format(apn, err or "no data"))
 
-    return _parse(detail)
+def _fallback(query, reason):
+    encoded = urllib.parse.quote(str(query or ""))
+    return {
+        "source": "Tarrant County Appraisal District",
+        "source_url": SEARCH_URL,
+        "warning": reason,
+        "manual_url": "https://www.tad.org/property-search?search={}".format(encoded),
+        "note": "Visit TAD.org to manually retrieve owner and value data.",
+    }
