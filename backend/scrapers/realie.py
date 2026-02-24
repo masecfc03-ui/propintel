@@ -505,22 +505,26 @@ def get_mortgage_lien(address: str, zipcode: str = "") -> dict:
     lender    = raw.get("lenderName")
     lien_cnt  = raw.get("totalLienCount")
     fin_hist  = raw.get("totalFinancingHistCount")
+    orig_loan = raw.get("loanAmount") or raw.get("originalLoanAmount") or raw.get("openLoanAmount")
+    loan_date = raw.get("loanOriginationDate") or raw.get("loanDate") or raw.get("loanRecordingDate")
 
     if lien_bal is None and equity is None:
         return {"available": False, "error": "No lien/equity data for this property"}
 
     return {
-        "available":          True,
-        "open_lien_balance":  lien_bal,
-        "open_lien_fmt":      f"${lien_bal:,.0f}" if lien_bal else None,
-        "open_lien_count":    lien_cnt,
-        "equity_estimate":    equity,
-        "equity_fmt":         f"${equity:,.0f}" if equity else None,
-        "ltv_current":        ltv,
-        "ltv_purchase":       ltv_purch,
-        "lender_name":        lender,
-        "financing_hist_count": fin_hist,
-        "source":             "Realie",
+        "available":              True,
+        "open_lien_balance":      lien_bal,
+        "open_lien_fmt":          f"${lien_bal:,.0f}" if lien_bal else None,
+        "open_lien_count":        lien_cnt,
+        "equity_estimate":        equity,
+        "equity_fmt":             f"${equity:,.0f}" if equity else None,
+        "ltv_current":            ltv,
+        "ltv_purchase":           ltv_purch,
+        "lender_name":            lender,
+        "financing_hist_count":   fin_hist,
+        "original_loan_amount":   orig_loan,
+        "loan_origination_date":  loan_date,
+        "source":                 "Realie",
     }
 
 

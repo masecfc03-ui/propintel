@@ -513,6 +513,7 @@
     .equity-val { font-size: 1.05rem; font-weight: 800; color: var(--text); }
     .equity-label { font-size: 0.68rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 3px; }
     .equity-note { font-size: 0.72rem; color: var(--text3); margin-top: 6px; line-height: 1.4; }
+    .data-note { font-size: 0.72rem; color: var(--text3); margin-top: 8px; font-style: italic; }
 
     @media print {
       .topbar { display: none; }
@@ -1161,18 +1162,40 @@
       `<span class="htag ${t.cls}">${t.text}</span>`
     ).join('');
 
-    // Score cards — max 4: Assessed, AVM Est., Building SF, Motivation Score
+    // Score cards — max 4: Assessed, Comp Sale Range, Building SF, Motivation Score
     // Flood zone lives in the header tags row, not a score card
-    const avmVal = avm.available ? avm.value_fmt : (est.available ? est.range_fmt : 'N/A');
-    const avmSub = avm.available ? (avm.source || 'AVM') : (est.available ? (est.property_type || 'Estimate') + ' · estimate' : 'API not configured');
     const sfLabel = propLabel('Living Area', 'Rentable SF', 'Lot SF');
     const sfVal = parcel.building_sf
       ? Number(parcel.building_sf).toLocaleString() + ' SF'
       : (isLand && parcel.lot_acres ? parseFloat(parcel.lot_acres).toFixed(2) + ' ac' : (listing.building_sf ? listing.building_sf + ' SF' : 'N/A'));
 
+    // Comp Sale Range: prefer actual recorded comps; fall back to AVM (clearly labeled)
+    const compsData = data.sold_comps || {};
+    let compRangeVal = 'N/A';
+    let compRangeSub = 'No recent comps found';
+    if (compsData.available && compsData.comps && compsData.comps.length >= 2) {
+      const prices = compsData.comps
+        .map(c => c.sale_price || 0)
+        .filter(p => p > 10000)
+        .sort((a, b) => a - b);
+      if (prices.length >= 2) {
+        const lo = prices[0];
+        const hi = prices[prices.length - 1];
+        const fmtK = v => '$' + Math.round(v / 1000) + 'K';
+        compRangeVal = fmtK(lo) + ' – ' + fmtK(hi);
+        compRangeSub = `Based on ${prices.length} nearby sales`;
+      }
+    } else if (avm && avm.available && avm.value) {
+      compRangeVal = avm.range_fmt || ('~$' + Math.round(avm.value / 1000) + 'K');
+      compRangeSub = 'Est. — no recent comps (AVM model)';
+    } else if (est.available) {
+      compRangeVal = est.range_fmt || 'N/A';
+      compRangeSub = 'Est. — no recent comps (AVM model)';
+    }
+
     const scores = [
       { label: 'County Assessed (Tax)', val: parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A', sub: 'Official tax record', borderCls: 'sc-border-accent' },
-      { label: 'AVM Est.', val: avmVal, sub: avmSub, tooltip: est.methodology || '', borderCls: 'sc-border-green' },
+      { label: 'Comp Sale Range', val: compRangeVal, sub: compRangeSub, tooltip: est.methodology || '', borderCls: 'sc-border-green' },
       { label: sfLabel, val: sfVal, sub: parcel.year_built ? `Built ${parcel.year_built}` : '', borderCls: 'sc-border-muted' },
       isPro && motiv.score !== undefined
         ? { label: 'Motivation Score', val: `${motiv.score}/100`, sub: motiv.tier || '',
@@ -1251,7 +1274,7 @@
       row('Assessed Land Value', parcel.assessed_land ? fmt(parcel.assessed_land) : 'N/A') +
       row('Assessed Improvement', parcel.assessed_improvement ? fmt(parcel.assessed_improvement) : 'N/A') +
       row('County Assessed (Tax)', parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A') +
-      (est.available ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">AVM Est. <span style="color:var(--text3);font-size:0.7em;cursor:help">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${est.range_fmt}</span></div>` : '') +
+      (compRangeVal !== 'N/A' ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">Comp Sale Range <span style="color:var(--text3);font-size:0.7em;cursor:help">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${compRangeVal}</span></div>` : (est.available ? `<div class="dr" title="${(est.methodology||'').replace(/"/g,"'")}"><span class="dl">Market Range <span style="color:var(--text3);font-size:0.7em;cursor:help">ⓘ</span></span><span class="dv" style="color:var(--accent);font-weight:700">${est.range_fmt} <span style="font-size:0.75em;color:var(--text3)">(AVM est.)</span></span></div>` : '')) +
       row('Tax Delinquency', delinqTxt, delinqCls) +
       row('Permit Records', permLink) +
       row('Assessor Portal', assessLink) +
@@ -1421,7 +1444,7 @@
             ${cap ? `<div class="deal-metric"><div class="deal-val">${cap}</div><div class="deal-label">Cap Rate</div></div>` : ''}
             ${ratio ? `<div class="deal-metric"><div class="deal-val">${ratio}</div><div class="deal-label">Ask vs. Assessed</div></div>` : ''}
             ${assessed ? `<div class="deal-metric"><div class="deal-val">${fmt(assessed)}</div><div class="deal-label">County Assessed (Tax)</div></div>` : ''}
-            ${est.available ? `<div class="deal-metric"><div class="deal-val" style="color:var(--accent)">${est.range_fmt}</div><div class="deal-label">Est. Market Range</div></div>` : ''}
+            ${compRangeVal !== 'N/A' ? `<div class="deal-metric"><div class="deal-val" style="color:var(--accent)">${compRangeVal}</div><div class="deal-label">Comp Sale Range</div></div>` : (est.available ? `<div class="deal-metric"><div class="deal-val" style="color:var(--accent)">${est.range_fmt}</div><div class="deal-label">Market Range (AVM est.)</div></div>` : '')}
           </div>`;
       }
 
@@ -1690,7 +1713,7 @@
       // Key metrics
       const metrics = [
         { label: 'County Assessed', val: est.assessed_fmt || (parcel.assessed_total ? fmt(parcel.assessed_total) : 'N/A'), sub: 'Official tax record' },
-        { label: 'Est. Market Range', val: est.available ? est.range_fmt : 'N/A', sub: est.property_type || '' },
+        { label: 'Comp Sale Range', val: compRangeVal !== 'N/A' ? compRangeVal : (est.available ? est.range_fmt + ' (AVM est.)' : 'N/A'), sub: compRangeVal !== 'N/A' ? compRangeSub : (est.property_type || '') },
         { label: 'Motivation Score', val: score !== null ? score + '/100' : 'N/A', sub: (motiv && motiv.tier) || '' },
         { label: 'Flood Zone', val: fzone || 'N/A', sub: fzone === 'X' ? 'No risk' : fRisk ? 'High risk' : 'Moderate' },
       ];
@@ -1779,30 +1802,41 @@
     const mort = data.mortgage || {};
     document.getElementById('mortgage-section').style.display = '';
     if (mort.available) {
+      const _mortOrigLoan = mort.original_loan_amount;
+      const _mortLoanDate = mort.loan_origination_date;
       document.getElementById('mortgage-body').innerHTML = `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
+          ${_mortOrigLoan ? `<div class="profile-tile">
+            <div class="profile-tile-val" style="color:var(--accent)">${'$' + Number(_mortOrigLoan).toLocaleString()}</div>
+            <div class="profile-tile-label">Original Loan (Deed of Trust)</div>
+          </div>` : ''}
+          ${_mortLoanDate ? `<div class="profile-tile">
+            <div class="profile-tile-val" style="font-size:0.9rem">${_mortLoanDate.substring(0,7)}</div>
+            <div class="profile-tile-label">Loan Originated</div>
+          </div>` : ''}
+          <div class="profile-tile">
+            <div class="profile-tile-val" style="font-size:0.85rem">${mort.lender_name || 'N/A'}</div>
+            <div class="profile-tile-label">Lender</div>
+          </div>
           <div class="profile-tile">
             <div class="profile-tile-val" style="color:var(--red)">${mort.open_lien_fmt || 'N/A'}</div>
-            <div class="profile-tile-label">Open Lien Balance</div>
+            <div class="profile-tile-label">Est. Balance (calculated)</div>
           </div>
           <div class="profile-tile">
             <div class="profile-tile-val" style="color:var(--green)">${mort.equity_fmt || 'N/A'}</div>
-            <div class="profile-tile-label">Estimated Equity</div>
+            <div class="profile-tile-label">Est. Equity (calculated)</div>
           </div>
           <div class="profile-tile">
             <div class="profile-tile-val">${mort.ltv_current != null ? mort.ltv_current + '%' : 'N/A'}</div>
             <div class="profile-tile-label">Current LTV</div>
           </div>
           <div class="profile-tile">
-            <div class="profile-tile-val" style="font-size:0.85rem">${mort.lender_name || 'N/A'}</div>
-            <div class="profile-tile-label">Lender</div>
-          </div>
-          <div class="profile-tile">
             <div class="profile-tile-val">${mort.open_lien_count != null ? mort.open_lien_count : 'N/A'}</div>
             <div class="profile-tile-label">Open Lien Count</div>
           </div>
         </div>
-        <div style="font-size:0.72rem;color:var(--text3)">Source: Realie · Lien balance is an estimate — order full title search before closing.</div>`;
+        <div class="data-note">Estimated from original loan terms. Actual balance may differ if refinanced.</div>
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:6px">Source: Realie · Order full title search before closing.</div>`;
     } else {
       document.getElementById('mortgage-body').innerHTML = '<div class="unavailable-note">Mortgage & lien data unavailable — add REALIE_API_KEY or ATTOM_API_KEY to unlock</div>';
     }
