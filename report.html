@@ -1288,6 +1288,23 @@
         const scoreColor = score >= 70 ? 'var(--red)' : score >= 40 ? 'var(--amber)' : 'var(--green)';
         const indicators = motiv.indicators || [];
 
+        const holdYears = (data.ownership_history || {}).hold_years;
+        const holdIndicator = holdYears
+          ? (() => {
+              const isVeryLong = holdYears >= 15;
+              const isLong = holdYears >= 7;
+              if (!isLong) return '';
+              const label = isVeryLong ? `Very Long Hold (${holdYears.toFixed(1)} yrs)` : `Long Hold (${holdYears.toFixed(1)} yrs)`;
+              const pts = isVeryLong ? 15 : 10;
+              return `
+                  <li class="mi triggered">
+                    <span class="mi-dot"></span>
+                    <span class="mi-label">${label}</span>
+                    <span class="mi-pts">+${pts} pts</span>
+                  </li>`;
+            })()
+          : '';
+
         document.getElementById('motiv-body').innerHTML = `
           <div class="motiv-wrap">
             <div class="motiv-dial" style="border-color:${scoreColor}">
@@ -1305,6 +1322,7 @@
                     <span class="mi-pts">${ind.triggered ? '+' + ind.points + ' pts' : '—'}</span>
                   </li>
                 `).join('')}
+                ${holdIndicator}
               </ul>
             </div>
           </div>`;
