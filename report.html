@@ -88,8 +88,28 @@
     .load-title { 
       font-size: 1.5rem; font-weight: 700; color: var(--text-primary);
       font-family: 'Cabinet Grotesk', sans-serif;
+      margin-bottom: 8px;
     }
     .load-sub { font-size: 1rem; color: var(--text-secondary); }
+    .load-address {
+      font-size: 1.1rem; color: var(--accent-primary); 
+      font-weight: 600; margin: 8px 0;
+      max-width: 500px; word-break: break-word;
+    }
+    
+    .progress-bar {
+      width: 100%; max-width: 400px; height: 8px;
+      background: var(--dark-border); border-radius: 4px;
+      overflow: hidden; margin: 24px 0;
+    }
+    .progress-fill {
+      height: 100%; background: var(--accent-gradient);
+      width: 0%; transition: width 0.8s ease-out;
+    }
+    .progress-text {
+      font-size: 0.875rem; color: var(--text-secondary);
+      margin-top: 8px;
+    }
     
     .load-steps {
       display: flex; flex-direction: column; gap: 12px;
@@ -121,6 +141,20 @@
     }
     .load-step.done .step-dot { background: var(--success); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ── CACHE BANNER ── */
+    .cache-banner {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: var(--accent-gradient); color: white; 
+      padding: 12px; text-align: center; font-size: 0.875rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .cache-banner button {
+      background: rgba(255,255,255,0.2); border: none; color: white;
+      padding: 4px 12px; border-radius: 4px; margin-left: 12px;
+      cursor: pointer; font-size: 0.8rem; font-weight: 600;
+    }
+    .cache-banner button:hover { background: rgba(255,255,255,0.3); }
 
     /* ── ERROR ── */
     #error-state {
@@ -1057,27 +1091,44 @@
   </style>
 </head>
 <body>
+  <!-- Cache banner (hidden by default) -->
+  <div id="cache-banner" class="cache-banner" style="display: none;">
+    <span id="cache-message">Cached report from earlier today</span>
+    <button onclick="refreshReport()">Refresh</button>
+  </div>
+
   <!-- Loading State -->
   <div id="loading">
     <div class="load-spinner"></div>
-    <div class="load-title">PropIntel</div>
-    <div class="load-sub">Generating your property intelligence report…</div>
+    <h1 class="load-title">Analyzing Property</h1>
+    <div class="load-address" id="load-address"></div>
+    <p class="load-sub">Gathering property data, ownership intel, and market insights</p>
+    
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-text" id="progress-text">Starting analysis...</div>
+    
     <div class="load-steps">
+      <div class="load-step active" id="step-geocode">
+        <div class="step-dot"></div>
+        <span>Geocoding address</span>
+      </div>
       <div class="load-step" id="step-parcel">
         <div class="step-dot"></div>
-        <span>Parsing property details</span>
+        <span>Fetching parcel data</span>
       </div>
-      <div class="load-step" id="step-flood">
+      <div class="load-step" id="step-comps">
+        <div class="step-dot"></div>
+        <span>Finding comparable sales</span>
+      </div>
+      <div class="load-step" id="step-risk">
         <div class="step-dot"></div>
         <span>Analyzing risk factors</span>
       </div>
-      <div class="load-step" id="step-demo">
-        <div class="step-dot"></div>
-        <span>Researching demographics</span>
-      </div>
       <div class="load-step" id="step-done">
         <div class="step-dot"></div>
-        <span>Finalizing report</span>
+        <span>Building report</span>
       </div>
     </div>
   </div>
@@ -1774,6 +1825,113 @@
       }
     }
 
+    // Cache management
+    function getCacheKey(address, tier) {
+      return `propintel_${btoa(address).slice(0, 20)}_${tier}`;
+    }
+
+    function getCachedReport(address, tier) {
+      try {
+        const cacheKey = getCacheKey(address, tier);
+        const cached = localStorage.getItem(cacheKey);
+        if (!cached) return null;
+        
+        const data = JSON.parse(cached);
+        const cacheTime = new Date(data.cached_at);
+        const now = new Date();
+        const hoursSinceCached = (now - cacheTime) / (1000 * 60 * 60);
+        
+        // Cache expires after 24 hours
+        if (hoursSinceCached < 24) {
+          return data;
+        } else {
+          localStorage.removeItem(cacheKey);
+          return null;
+        }
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function setCachedReport(address, tier, reportData) {
+      try {
+        const cacheKey = getCacheKey(address, tier);
+        const cacheData = {
+          ...reportData,
+          cached_at: new Date().toISOString()
+        };
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+      } catch (e) {
+        console.warn('Failed to cache report:', e);
+      }
+    }
+
+    function showCacheBanner(cacheTime) {
+      const banner = document.getElementById('cache-banner');
+      const message = document.getElementById('cache-message');
+      const timeStr = new Date(cacheTime).toLocaleString();
+      message.textContent = `Cached report from ${timeStr}`;
+      banner.style.display = 'block';
+      // Adjust body padding to account for banner
+      document.body.style.paddingTop = '50px';
+    }
+
+    function refreshReport() {
+      // Clear cache and reload
+      const params = new URLSearchParams(window.location.search);
+      const address = params.get('address') || localStorage.getItem('last_address');
+      const tier = params.get('tier') || 'starter';
+      if (address) {
+        const cacheKey = getCacheKey(address, tier);
+        localStorage.removeItem(cacheKey);
+      }
+      location.reload();
+    }
+
+    function updateProgress(percent, text) {
+      document.getElementById('progress-fill').style.width = percent + '%';
+      document.getElementById('progress-text').textContent = text;
+    }
+
+    // Enhanced loading animation
+    function animateLoading(address) {
+      // Show address being analyzed
+      if (address) {
+        document.getElementById('load-address').textContent = address;
+      }
+      
+      updateProgress(0, 'Starting analysis...');
+      
+      setTimeout(() => {
+        stepDone('step-geocode');
+        stepActive('step-parcel');
+        updateProgress(20, 'Address geocoded successfully');
+      }, 1200);
+      
+      setTimeout(() => {
+        stepDone('step-parcel');
+        stepActive('step-comps');
+        updateProgress(40, 'Parcel data retrieved');
+      }, 2400);
+      
+      setTimeout(() => {
+        stepDone('step-comps');
+        stepActive('step-risk');
+        updateProgress(60, 'Comparable sales analyzed');
+      }, 3600);
+      
+      setTimeout(() => {
+        stepDone('step-risk');
+        stepActive('step-done');
+        updateProgress(80, 'Risk assessment complete');
+      }, 4800);
+      
+      setTimeout(() => {
+        stepDone('step-done');
+        updateProgress(100, 'Report generation complete');
+      }, 6000);
+    }
+
     // Main load function
     async function loadReport() {
       const params = new URLSearchParams(window.location.search);
@@ -1786,19 +1944,31 @@
         document.getElementById('demo-banner').style.display = 'block';
       }
 
-      // Animate loading steps
-      setTimeout(() => { stepDone('step-parcel'); stepActive('step-flood'); }, 800);
-      setTimeout(() => { stepDone('step-flood'); stepActive('step-demo'); }, 1600);
-      setTimeout(() => { stepDone('step-demo'); stepActive('step-done'); }, 2400);
-
       try {
         let data;
+        let fromCache = false;
+        
         if (token) {
           // Fetch by token
           const res = await fetch(`${API}/api/reports/${token}`);
           if (!res.ok) throw new Error(`Report not found (${res.status})`);
           data = await res.json();
         } else if (address) {
+          // Check cache first
+          const cached = getCachedReport(address, tier);
+          if (cached) {
+            data = cached;
+            fromCache = true;
+            showCacheBanner(cached.cached_at);
+            // Show fast loading for cached reports
+            animateLoading(address);
+            setTimeout(() => renderReport(data), 1500);
+            return;
+          }
+          
+          // Start loading animation for live reports
+          animateLoading(address);
+          
           // Generate new report
           let persona = 'seller'; // default
           try {
@@ -1824,14 +1994,21 @@
           });
           if (!res.ok) throw new Error(`Analysis failed (${res.status})`);
           data = await res.json();
+          
+          // Cache the fresh report
+          setCachedReport(address, tier, data);
         } else {
           throw new Error('No property address provided');
         }
 
         if (data.error) throw new Error(data.error);
         
-        stepDone('step-done');
-        setTimeout(() => renderReport(data), 300);
+        // For live reports, wait for loading animation to finish
+        if (!fromCache) {
+          await new Promise(resolve => setTimeout(resolve, 6500));
+        }
+        
+        renderReport(data);
       } catch (err) {
         showError(`Could not generate report: ${err.message}<br><br><a href="/" style="color:var(--accent-primary);font-weight:600">← Return to PropIntel</a>`);
       }
