@@ -70,6 +70,11 @@ if _missing_critical:
 from pipeline import run as run_pipeline
 from report.generator import generate_html, generate_pdf
 from orders import create_order, update_order, get_order_by_stripe, get_order_by_token, list_orders, list_leads, create_lead, stats as order_stats
+from accounts import (
+    create_account, get_account_by_email, get_account_by_customer_id,
+    get_account_by_subscription_id, update_account,
+    check_usage_limit, increment_usage, get_plan_from_price,
+)
 from mailer import send_report
 import cache as report_cache
 import idempotency
@@ -387,6 +392,27 @@ def analyze():
     fmt = body.get("format", "json").lower()
     email = (body.get("email") or "").strip().lower()
 
+    # ── SUBSCRIPTION USAGE CHECK ─────────────────────────────────────────────
+    # If X-Account-Email header is present, enforce monthly report limits.
+    account_email = (
+        request.headers.get("X-Account-Email", "")
+        or body.get("account_email", "")
+    ).strip().lower()
+    _account = None
+    if account_email:
+        _account = get_account_by_email(account_email)
+        if _account:
+            allowed, used, limit = check_usage_limit(_account["id"])
+            if not allowed:
+                limit_display = limit if limit is not None else "unlimited"
+                return jsonify({
+                    "error": "Monthly report limit reached",
+                    "used": used,
+                    "limit": limit_display,
+                    "plan": _account.get("plan"),
+                    "upgrade_url": "/pricing.html",
+                }), 429
+
     if not input_str:
         return jsonify({"error": "Missing 'input' field"}), 400
     if tier not in ("starter", "pro"):
@@ -422,6 +448,13 @@ def analyze():
     # Store in cache (never blocks — errors are swallowed in cache.set)
     report_cache.set(input_str, tier, report_data)
 
+    # Increment subscription usage counter
+    if _account:
+        try:
+            increment_usage(_account["id"])
+        except Exception as _ue:
+            log.warning("Usage increment failed for %s: %s", account_email, _ue)
+
     report_data["generated_at"] = datetime.utcnow().isoformat()
     report_data["report_id"] = str(uuid.uuid4())[:8]
 
@@ -441,6 +474,160 @@ def analyze():
                          download_name=f"propintel-report-{report_data['report_id']}.pdf")
 
     return jsonify({"error": "Invalid format"}), 400
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Subscription Endpoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+PLAN_PRICES = {
+    "agent":      os.environ.get("STRIPE_AGENT_PRICE_ID",      "price_1T4BZj35KKjpV0x2Nkwa7KOC"),
+    "broker":     os.environ.get("STRIPE_BROKER_PRICE_ID",     "price_1T4Bas35KKjpV0x296hS2Nm0"),
+    "enterprise": os.environ.get("STRIPE_ENTERPRISE_PRICE_ID", "price_1T4Bat35KKjpV0x22E2oPyLU"),
+}
+
+PLAN_NAMES = {
+    "agent":      "Agent",
+    "broker":     "Broker",
+    "enterprise": "Enterprise",
+}
+
+PLAN_LIMITS_DISPLAY = {
+    "agent":      "25 reports / month",
+    "broker":     "Unlimited reports",
+    "enterprise": "Unlimited reports",
+}
+
+
+@app.route("/api/subscribe", methods=["POST"])
+def subscribe():
+    """
+    Create a Stripe Checkout session for a subscription plan.
+    Body: {"plan": "agent"|"broker"|"enterprise", "email": "user@example.com"}
+    Returns: {"checkout_url": "https://checkout.stripe.com/..."}
+    """
+    body = request.get_json(force=True, silent=True) or {}
+    plan = (body.get("plan") or "").lower().strip()
+    email = (body.get("email") or "").strip()
+
+    if plan not in PLAN_PRICES:
+        return jsonify({"error": "Invalid plan. Must be agent, broker, or enterprise."}), 400
+
+    price_id = PLAN_PRICES[plan]
+    report_base = os.environ.get("REPORT_BASE_URL", "https://propertyvalueintel.com")
+    success_url = "{}/account.html?session_id={{CHECKOUT_SESSION_ID}}".format(report_base)
+    cancel_url  = "{}/pricing.html".format(report_base)
+
+    import urllib.request as _ureq, urllib.parse as _uparse
+
+    payload = {
+        "mode": "subscription",
+        "line_items[0][price]": price_id,
+        "line_items[0][quantity]": "1",
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+        "metadata[plan]": plan,
+    }
+    if email:
+        payload["customer_email"] = email
+
+    data = _uparse.urlencode(payload).encode()
+    req = _ureq.Request(
+        "https://api.stripe.com/v1/checkout/sessions",
+        data=data,
+        headers={"Authorization": "Bearer {}".format(STRIPE_LIVE_SECRET_KEY)},
+        method="POST",
+    )
+    try:
+        with _ureq.urlopen(req, timeout=10) as resp:
+            session = json.load(resp)
+        checkout_url = session.get("url", "")
+        if not checkout_url:
+            return jsonify({"error": "Stripe did not return a checkout URL"}), 500
+        return jsonify({"checkout_url": checkout_url, "session_id": session.get("id")})
+    except Exception as e:
+        log.error("Stripe checkout session failed: %s", e)
+        return jsonify({"error": "Failed to create checkout session: {}".format(str(e))}), 500
+
+
+@app.route("/api/account", methods=["GET"])
+def get_account():
+    """
+    Return account info for a subscriber.
+    Header: X-Account-Email: user@example.com
+    """
+    email = (
+        request.headers.get("X-Account-Email", "")
+        or request.args.get("email", "")
+    ).strip().lower()
+
+    if not email:
+        return jsonify({"error": "X-Account-Email header required"}), 400
+
+    account = get_account_by_email(email)
+    if not account:
+        return jsonify({"error": "No account found for this email"}), 404
+
+    plan = account.get("plan", "free")
+    from accounts import PLAN_LIMITS
+    limit = PLAN_LIMITS.get(plan, 0)
+    used = account.get("reports_this_month", 0)
+
+    # Reset counter if billing month rolled over
+    from datetime import datetime as _dt
+    this_month = _dt.utcnow().strftime("%Y-%m")
+    if account.get("billing_month") != this_month:
+        used = 0
+
+    return jsonify({
+        "id":           account["id"],
+        "email":        account["email"],
+        "plan":         plan,
+        "plan_name":    PLAN_NAMES.get(plan, plan.title()),
+        "status":       account.get("status", "inactive"),
+        "reports_used": used,
+        "reports_limit": limit,
+        "billing_month": account.get("billing_month"),
+        "created_at":   account.get("created_at"),
+    })
+
+
+@app.route("/api/billing-portal", methods=["POST"])
+def billing_portal():
+    """
+    Create a Stripe Customer Portal session.
+    Body: {"email": "user@example.com"}
+    Returns: {"portal_url": "https://billing.stripe.com/..."}
+    """
+    body = request.get_json(force=True, silent=True) or {}
+    email = (body.get("email") or "").strip().lower()
+
+    if not email:
+        return jsonify({"error": "email required"}), 400
+
+    account = get_account_by_email(email)
+    if not account or not account.get("stripe_customer_id"):
+        return jsonify({"error": "No billing account found for this email"}), 404
+
+    import urllib.request as _ureq, urllib.parse as _uparse
+    report_base = os.environ.get("REPORT_BASE_URL", "https://propertyvalueintel.com")
+    data = _uparse.urlencode({
+        "customer": account["stripe_customer_id"],
+        "return_url": "{}/account.html".format(report_base),
+    }).encode()
+    req = _ureq.Request(
+        "https://api.stripe.com/v1/billing_portal/sessions",
+        data=data,
+        headers={"Authorization": "Bearer {}".format(STRIPE_LIVE_SECRET_KEY)},
+        method="POST",
+    )
+    try:
+        with _ureq.urlopen(req, timeout=10) as resp:
+            session = json.load(resp)
+        return jsonify({"portal_url": session.get("url", "")})
+    except Exception as e:
+        log.error("Billing portal session failed: %s", e)
+        return jsonify({"error": "Failed to create portal session"}), 500
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -489,18 +676,78 @@ def stripe_webhook():
             log.error("Webhook handler failed: %s — NOT marking processed (will retry)", e, exc_info=True)
             idempotency.mark_processed(conn, event_id, event_type, f"error: {e}")
             return jsonify({"error": str(e)}), 500
+    elif event_type in ("customer.subscription.created", "customer.subscription.updated"):
+        try:
+            _handle_subscription_upsert(event["data"]["object"])
+            idempotency.mark_processed(conn, event_id, event_type, "ok")
+        except Exception as e:
+            log.error("Subscription upsert failed: %s", e, exc_info=True)
+            idempotency.mark_processed(conn, event_id, event_type, "error: {}".format(e))
+    elif event_type == "customer.subscription.deleted":
+        try:
+            _handle_subscription_deleted(event["data"]["object"])
+            idempotency.mark_processed(conn, event_id, event_type, "ok")
+        except Exception as e:
+            log.error("Subscription delete failed: %s", e, exc_info=True)
+            idempotency.mark_processed(conn, event_id, event_type, "error: {}".format(e))
+    elif event_type == "invoice.payment_succeeded":
+        try:
+            _handle_invoice_paid(event["data"]["object"])
+            idempotency.mark_processed(conn, event_id, event_type, "ok")
+        except Exception as e:
+            log.error("Invoice paid handler failed: %s", e, exc_info=True)
+            idempotency.mark_processed(conn, event_id, event_type, "error: {}".format(e))
+    elif event_type == "invoice.payment_failed":
+        try:
+            _handle_invoice_failed(event["data"]["object"])
+            idempotency.mark_processed(conn, event_id, event_type, "ok")
+        except Exception as e:
+            log.error("Invoice failed handler failed: %s", e, exc_info=True)
+            idempotency.mark_processed(conn, event_id, event_type, "error: {}".format(e))
     elif event_type == "payment_intent.succeeded":
+        idempotency.mark_processed(conn, event_id, event_type, "ignored")
+    else:
         idempotency.mark_processed(conn, event_id, event_type, "ignored")
 
     return jsonify({"received": True})
 
 
-def _handle_checkout_completed(session: dict):
+def _handle_checkout_completed(session):
     """Process a completed Stripe checkout session."""
-    stripe_id     = session.get("id", "")
+    stripe_id      = session.get("id", "")
     customer_email = session.get("customer_details", {}).get("email", "")
     customer_name  = session.get("customer_details", {}).get("name", "")
     amount_total   = session.get("amount_total", 0)
+    mode           = session.get("mode", "payment")
+    customer_id    = session.get("customer", "")
+
+    # ── SUBSCRIPTION CHECKOUT ────────────────────────────────────────────────
+    if mode == "subscription" and customer_email:
+        subscription_id = session.get("subscription", "")
+        # Determine plan from metadata or subscription
+        metadata = session.get("metadata") or {}
+        plan = metadata.get("plan", "agent")
+        existing = get_account_by_email(customer_email)
+        if existing:
+            update_account(
+                existing["id"],
+                stripe_customer_id=customer_id or existing.get("stripe_customer_id"),
+                stripe_subscription_id=subscription_id,
+                plan=plan,
+                status="active",
+            )
+        else:
+            acct = create_account(
+                email=customer_email,
+                stripe_customer_id=customer_id,
+                plan=plan,
+                status="active",
+            )
+            if acct and subscription_id:
+                update_account(acct["id"], stripe_subscription_id=subscription_id)
+        log.info("Subscription account activated: %s plan=%s", customer_email, plan)
+        return  # Don't run pipeline for subscription purchases
+
 
     # Determine tier from line items or metadata
     tier = "starter"
@@ -575,6 +822,79 @@ def _handle_checkout_completed(session: dict):
 
     except Exception as e:
         update_order(order_id, status=f"error: {str(e)[:100]}")
+
+
+def _get_plan_from_subscription(subscription):
+    """Extract plan name from a Stripe subscription object."""
+    items = subscription.get("items", {}).get("data", [])
+    if items:
+        price_id = items[0].get("price", {}).get("id", "")
+        return get_plan_from_price(price_id)
+    return "free"
+
+
+def _handle_subscription_upsert(subscription):
+    """Handle customer.subscription.created and customer.subscription.updated."""
+    customer_id = subscription.get("customer", "")
+    subscription_id = subscription.get("id", "")
+    stripe_status = subscription.get("status", "active")
+    plan = _get_plan_from_subscription(subscription)
+
+    # Map Stripe status to our status
+    status_map = {
+        "active":   "active",
+        "trialing": "trialing",
+        "past_due": "past_due",
+        "canceled": "canceled",
+        "unpaid":   "past_due",
+        "incomplete": "inactive",
+        "incomplete_expired": "canceled",
+    }
+    status = status_map.get(stripe_status, "active")
+
+    # Get customer email from existing account or leave it for checkout handler
+    existing = get_account_by_customer_id(customer_id)
+    if existing:
+        update_account(
+            existing["id"],
+            stripe_subscription_id=subscription_id,
+            plan=plan,
+            status=status,
+        )
+        log.info("Updated account %s → plan=%s status=%s", existing["email"], plan, status)
+    else:
+        # Account doesn't exist yet — it will be created when checkout.session.completed fires
+        # or we need to fetch customer email from Stripe (no SDK, skip for now)
+        log.info("No account found for customer %s — will be created on checkout event", customer_id)
+
+
+def _handle_subscription_deleted(subscription):
+    """Handle customer.subscription.deleted."""
+    subscription_id = subscription.get("id", "")
+    existing = get_account_by_subscription_id(subscription_id)
+    if existing:
+        update_account(existing["id"], status="canceled", plan="free")
+        log.info("Canceled subscription for account %s", existing["email"])
+
+
+def _handle_invoice_paid(invoice):
+    """Handle invoice.payment_succeeded — activate account, reset monthly usage if new period."""
+    customer_id = invoice.get("customer", "")
+    existing = get_account_by_customer_id(customer_id)
+    if existing:
+        # Activate if past_due or inactive
+        if existing.get("status") in ("past_due", "inactive"):
+            update_account(existing["id"], status="active")
+        log.info("Invoice paid for account %s", existing["email"])
+
+
+def _handle_invoice_failed(invoice):
+    """Handle invoice.payment_failed — mark account as past_due."""
+    customer_id = invoice.get("customer", "")
+    existing = get_account_by_customer_id(customer_id)
+    if existing:
+        update_account(existing["id"], status="past_due")
+        log.info("Invoice failed for account %s — marked past_due", existing["email"])
 
 
 def _verify_stripe_signature(payload: bytes, sig_header: str, secret: str) -> bool:
