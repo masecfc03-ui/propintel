@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyer Due Diligence Report — {{property_address}}</title>
+<style type="text/css">
+  body { margin: 0; padding: 0; background: #f4f4f4; font-family: Arial, Helvetica, sans-serif; }
+  table { border-collapse: collapse; }
+  img { border: 0; display: block; }
+  .wrapper { background: #f4f4f4; padding: 20px 0; }
+  .container { max-width: 700px; margin: 0 auto; background: #ffffff; }
+  h1, h2, h3, p { margin: 0; padding: 0; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr><td align="center">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       CONTAINER
+  ════════════════════════════════════════════════════════════════════════ -->
+  <table width="700" cellpadding="0" cellspacing="0" border="0" class="container" style="max-width:700px;">
+
+    <!-- ── AGENT HEADER ─────────────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#1a2e44; padding:28px 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td width="72" valign="middle" style="padding-right:20px;">
+              <!-- Agent logo -->
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="width:64px;height:64px;background:#2d4a6b;border-radius:6px;text-align:center;vertical-align:middle;">
+                    {{#agent_logo_url}}
+                    <img src="{{agent_logo_url}}" width="64" height="64" alt="{{agent_name}}" style="border-radius:6px;">
+                    {{/agent_logo_url}}
+                    {{^agent_logo_url}}
+                    <span style="color:#ffffff;font-size:24px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{agent_initials}}</span>
+                    {{/agent_logo_url}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td valign="middle">
+              <p style="color:#ffffff;font-size:18px;font-weight:bold;margin:0;font-family:Arial,Helvetica,sans-serif;">{{agent_name}}</p>
+              <p style="color:#8eafc7;font-size:13px;margin:3px 0 0;font-family:Arial,Helvetica,sans-serif;">{{agent_brokerage}}</p>
+              <p style="color:#8eafc7;font-size:12px;margin:4px 0 0;font-family:Arial,Helvetica,sans-serif;">{{agent_phone}} &nbsp;·&nbsp; {{agent_email}}</p>
+            </td>
+            <td valign="middle" align="right">
+              <p style="color:#4e9fd4;font-size:11px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Buyer Due Diligence</p>
+              <p style="color:#5a7a99;font-size:11px;margin:3px 0 0;font-family:Arial,Helvetica,sans-serif;">{{report_date}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── REPORT TITLE BANNER ───────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#f0f5fa;border-bottom:3px solid #1a2e44;padding:14px 32px;">
+        <p style="color:#1a2e44;font-size:13px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Buyer Due Diligence Report</p>
+      </td>
+    </tr>
+
+    <!-- ── PROPERTY HERO ─────────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:0;">
+        <!-- Street View image -->
+        <img src="{{street_view_url}}" width="700" height="220" alt="{{property_address}}" style="display:block;width:100%;height:220px;object-fit:cover;">
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#1a2e44;padding:20px 32px 22px;">
+        <p style="color:#ffffff;font-size:20px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{property_address}}</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;">
+          <tr>
+            <td style="padding-right:24px;">
+              <p style="color:#8eafc7;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Bedrooms</p>
+              <p style="color:#ffffff;font-size:18px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{bedrooms}}</p>
+            </td>
+            <td style="padding-right:24px;">
+              <p style="color:#8eafc7;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Bathrooms</p>
+              <p style="color:#ffffff;font-size:18px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{bathrooms}}</p>
+            </td>
+            <td style="padding-right:24px;">
+              <p style="color:#8eafc7;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Sq. Ft.</p>
+              <p style="color:#ffffff;font-size:18px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{building_sf}}</p>
+            </td>
+            <td>
+              <p style="color:#8eafc7;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Year Built</p>
+              <p style="color:#ffffff;font-size:18px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{year_built}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:1px;background:#e8edf2;"></td></tr>
+
+    <!-- ── VALUATION ─────────────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:28px 32px 24px;">
+        <p style="color:#1a2e44;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#128200; Valuation Analysis</p>
+        <table width="100%" cellpadding="0" cellspacing="12" border="0" style="margin-top:16px;">
+          <tr>
+            <td width="50%" style="vertical-align:top;">
+              <p style="color:#6b7c93;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">County Assessed Value</p>
+              <p style="color:#1a2e44;font-size:24px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{assessed_value}}</p>
+              <p style="color:#9aafc4;font-size:11px;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">Tax assessment (may lag market)</p>
+            </td>
+            <td width="50%" style="vertical-align:top;">
+              <p style="color:#6b7c93;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Estimated Market Value</p>
+              <p style="color:#1a7a4a;font-size:24px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{avm_value}}</p>
+              <p style="color:#9aafc4;font-size:11px;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{avm_methodology}}</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Value range bar -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;">
+          <tr>
+            <td>
+              <p style="color:#6b7c93;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;margin-bottom:6px;">Estimated Range</p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:#e8edf2;border-radius:4px;height:8px;padding:0;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="{{range_low_pct}}%" style="padding:0;height:8px;"></td>
+                        <td style="background:#1a7a4a;border-radius:4px;height:8px;padding:0;" width="{{range_span_pct}}%"></td>
+                        <td style="padding:0;height:8px;"></td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:5px;">
+                <tr>
+                  <td align="left"><p style="color:#6b7c93;font-size:11px;font-family:Arial,Helvetica,sans-serif;">{{market_low}}</p></td>
+                  <td align="center"><p style="color:#1a2e44;font-size:12px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{avm_value}}</p></td>
+                  <td align="right"><p style="color:#6b7c93;font-size:11px;font-family:Arial,Helvetica,sans-serif;">{{market_high}}</p></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── OWNERSHIP ─────────────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#1a2e44;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#127968; Ownership</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+          <tr>
+            <td width="33%" style="padding-right:16px;vertical-align:top;">
+              <p style="color:#6b7c93;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Current Owner</p>
+              <p style="color:#1a2e44;font-size:14px;font-weight:bold;margin-top:5px;font-family:Arial,Helvetica,sans-serif;">{{owner_name}}</p>
+            </td>
+            <td width="33%" style="padding-right:16px;vertical-align:top;">
+              <p style="color:#6b7c93;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Hold Duration</p>
+              <p style="color:#1a2e44;font-size:14px;font-weight:bold;margin-top:5px;font-family:Arial,Helvetica,sans-serif;">{{hold_duration}}</p>
+            </td>
+            <td width="33%" style="vertical-align:top;">
+              <p style="color:#6b7c93;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Last Sale Price</p>
+              <p style="color:#1a2e44;font-size:14px;font-weight:bold;margin-top:5px;font-family:Arial,Helvetica,sans-serif;">{{last_sale_price}}</p>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3" style="padding-top:12px;">
+              <p style="color:#6b7c93;font-size:11px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Owner Mailing Address</p>
+              <p style="color:#1a2e44;font-size:13px;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{owner_mailing_address}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── MOTIVATION SCORE ───────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#1a2e44;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#127919; Seller Motivation Score</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+          <tr>
+            <td width="100" valign="middle" style="padding-right:24px;">
+              <!-- Score circle -->
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="width:88px;height:88px;background:{{motivation_bg_color}};border-radius:50%;text-align:center;vertical-align:middle;">
+                    <p style="color:#ffffff;font-size:28px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{motivation_score}}</p>
+                    <p style="color:rgba(255,255,255,0.8);font-size:10px;font-family:Arial,Helvetica,sans-serif;">/ 100</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td valign="middle">
+              <p style="color:{{motivation_text_color}};font-size:16px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{motivation_tier}} Motivation</p>
+              <p style="color:#6b7c93;font-size:13px;margin-top:6px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;">{{motivation_interpretation}}</p>
+            </td>
+          </tr>
+        </table>
+        <!-- Motivation indicators -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+          {{motivation_indicators_html}}
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── RED FLAGS ─────────────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#1a2e44;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#9888; Due Diligence Flags</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          {{flags_html}}
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── FLOOD ZONE ─────────────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:22px 32px;">
+        <p style="color:#1a2e44;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#127754; Flood Zone</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+          <tr>
+            <td>
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:{{flood_badge_color}};border-radius:4px;padding:8px 18px;">
+                    <p style="color:#ffffff;font-size:15px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">Zone {{flood_zone}}</p>
+                  </td>
+                  <td style="padding-left:16px;">
+                    <p style="color:#1a2e44;font-size:13px;font-family:Arial,Helvetica,sans-serif;">{{flood_description}}</p>
+                    <p style="color:#9aafc4;font-size:11px;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">Source: FEMA National Flood Hazard Layer</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── PERMITS SNAPSHOT ──────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:22px 32px 24px;">
+        <p style="color:#1a2e44;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#128295; Building Permit History</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          {{permits_html}}
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#f7f9fb;border-top:2px solid #e8edf2;padding:22px 32px;">
+        <p style="color:#6b7c93;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif;">
+          This report was prepared by <strong>{{agent_name}}</strong> of <strong>{{agent_brokerage}}</strong> using PropIntel data. Generated {{report_date}}. This report contains data from public records and third-party sources. All valuations are estimates and not a certified appraisal. Verify all material facts with appropriate professionals prior to any transaction.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          <tr>
+            <td>
+              <p style="color:#c0cdd9;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Powered by <strong>PropIntel</strong> &mdash; propertyvalueintel.com</p>
+            </td>
+            <td align="right">
+              <p style="color:#c0cdd9;font-size:10px;font-family:Arial,Helvetica,sans-serif;">{{agent_phone}} &nbsp;|&nbsp; {{agent_email}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+  </table><!-- /container -->
+  </td></tr>
+</table><!-- /wrapper -->
+</div>
+</body>
+</html>

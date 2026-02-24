@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investment Analysis Report — {{property_address}}</title>
+<style type="text/css">
+  body { margin: 0; padding: 0; background: #f4f4f4; font-family: Arial, Helvetica, sans-serif; }
+  table { border-collapse: collapse; }
+  img { border: 0; display: block; }
+  .wrapper { background: #f4f4f4; padding: 20px 0; }
+  h1, h2, h3, p { margin: 0; padding: 0; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr><td align="center">
+
+  <table width="700" cellpadding="0" cellspacing="0" border="0" style="max-width:700px;background:#ffffff;">
+
+    <!-- ── AGENT HEADER ─────────────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#162032;padding:28px 32px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td width="72" valign="middle" style="padding-right:20px;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="width:64px;height:64px;background:#243447;border-radius:6px;text-align:center;vertical-align:middle;">
+                    {{#agent_logo_url}}
+                    <img src="{{agent_logo_url}}" width="64" height="64" alt="{{agent_name}}" style="border-radius:6px;">
+                    {{/agent_logo_url}}
+                    {{^agent_logo_url}}
+                    <span style="color:#ffffff;font-size:24px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{agent_initials}}</span>
+                    {{/agent_logo_url}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td valign="middle">
+              <p style="color:#ffffff;font-size:18px;font-weight:bold;margin:0;font-family:Arial,Helvetica,sans-serif;">{{agent_name}}</p>
+              <p style="color:#5b7ea0;font-size:13px;margin:3px 0 0;font-family:Arial,Helvetica,sans-serif;">{{agent_brokerage}}</p>
+              <p style="color:#5b7ea0;font-size:12px;margin:4px 0 0;font-family:Arial,Helvetica,sans-serif;">{{agent_phone}} &nbsp;·&nbsp; {{agent_email}}</p>
+            </td>
+            <td valign="middle" align="right">
+              <p style="color:#3d9e6e;font-size:11px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Investment Analysis</p>
+              <p style="color:#3d5c7a;font-size:11px;margin:3px 0 0;font-family:Arial,Helvetica,sans-serif;">{{report_date}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── TITLE BANNER ─────────────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#f0f5fa;border-bottom:3px solid #162032;padding:14px 32px;">
+        <p style="color:#162032;font-size:13px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Investment Analysis Report</p>
+      </td>
+    </tr>
+
+    <!-- ── PROPERTY SUMMARY ──────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:0;">
+        <img src="{{street_view_url}}" width="700" height="200" alt="{{property_address}}" style="display:block;width:100%;height:200px;object-fit:cover;">
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#162032;padding:18px 32px 20px;">
+        <p style="color:#ffffff;font-size:20px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{property_address}}</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:10px;">
+          <tr>
+            <td style="padding-right:20px;">
+              <p style="color:#5b7ea0;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Property Type</p>
+              <p style="color:#ffffff;font-size:14px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{property_type}}</p>
+            </td>
+            <td style="padding-right:20px;">
+              <p style="color:#5b7ea0;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Building SF</p>
+              <p style="color:#ffffff;font-size:14px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{building_sf}}</p>
+            </td>
+            <td style="padding-right:20px;">
+              <p style="color:#5b7ea0;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Year Built</p>
+              <p style="color:#ffffff;font-size:14px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{year_built}}</p>
+            </td>
+            <td>
+              <p style="color:#5b7ea0;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Assessed Value</p>
+              <p style="color:#3dc98a;font-size:14px;font-weight:bold;margin-top:3px;font-family:Arial,Helvetica,sans-serif;">{{assessed_value}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:1px;background:#e8edf2;"></td></tr>
+
+    <!-- ── DEAL ANALYZER — 3 SCENARIOS ──────────────────────────────────── -->
+    <tr>
+      <td style="padding:26px 32px 24px;">
+        <p style="color:#162032;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#128200; Deal Analyzer — 3 Scenarios</p>
+        <p style="color:#9aafc4;font-size:11px;margin-top:8px;font-family:Arial,Helvetica,sans-serif;font-style:italic;">Assumptions: {{loan_ltv_pct}}% LTV &middot; {{loan_rate_pct}}% interest &middot; {{loan_am_years}}-yr amortization &middot; {{loan_down_pct}}% down</p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+          <tr>
+            <!-- Conservative -->
+            <td width="33%" style="padding-right:8px;vertical-align:top;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:#f7f9fb;border:1px solid #e8edf2;border-radius:6px;padding:16px;">
+                    <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Conservative</p>
+                    <p style="color:#162032;font-size:20px;font-weight:bold;margin-top:8px;font-family:Arial,Helvetica,sans-serif;">{{scenario_conservative_price}}</p>
+                    <p style="color:#6b7c93;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">Purchase Price</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;border-top:1px solid #e8edf2;padding-top:12px;">
+                      <tr><td style="padding-top:10px;"><p style="color:#6b7c93;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Down Payment</p><p style="color:#162032;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_conservative_down}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#6b7c93;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Monthly Cash Flow</p><p style="color:{{scenario_conservative_cf_color}};font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_conservative_cashflow}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#6b7c93;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Cap Rate</p><p style="color:#162032;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_conservative_cap}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#6b7c93;font-size:10px;font-family:Arial,Helvetica,sans-serif;">DSCR</p><p style="color:#162032;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_conservative_dscr}}</p></td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <!-- Market -->
+            <td width="33%" style="padding-right:8px;vertical-align:top;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:#162032;border:1px solid #162032;border-radius:6px;padding:16px;">
+                    <p style="color:#5b7ea0;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Market Rate</p>
+                    <p style="color:#ffffff;font-size:20px;font-weight:bold;margin-top:8px;font-family:Arial,Helvetica,sans-serif;">{{scenario_market_price}}</p>
+                    <p style="color:#5b7ea0;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">Purchase Price</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;border-top:1px solid #243447;padding-top:12px;">
+                      <tr><td style="padding-top:10px;"><p style="color:#5b7ea0;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Down Payment</p><p style="color:#ffffff;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_market_down}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#5b7ea0;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Monthly Cash Flow</p><p style="color:{{scenario_market_cf_color}};font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_market_cashflow}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#5b7ea0;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Cap Rate</p><p style="color:#ffffff;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_market_cap}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#5b7ea0;font-size:10px;font-family:Arial,Helvetica,sans-serif;">DSCR</p><p style="color:#ffffff;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_market_dscr}}</p></td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <!-- Aggressive -->
+            <td width="33%" style="vertical-align:top;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="background:#f7f9fb;border:1px solid #e8edf2;border-radius:6px;padding:16px;">
+                    <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Aggressive</p>
+                    <p style="color:#162032;font-size:20px;font-weight:bold;margin-top:8px;font-family:Arial,Helvetica,sans-serif;">{{scenario_aggressive_price}}</p>
+                    <p style="color:#6b7c93;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">Purchase Price</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;border-top:1px solid #e8edf2;padding-top:12px;">
+                      <tr><td style="padding-top:10px;"><p style="color:#6b7c93;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Down Payment</p><p style="color:#162032;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_aggressive_down}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#6b7c93;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Monthly Cash Flow</p><p style="color:{{scenario_aggressive_cf_color}};font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_aggressive_cashflow}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#6b7c93;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Cap Rate</p><p style="color:#162032;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_aggressive_cap}}</p></td></tr>
+                      <tr><td style="padding-top:8px;"><p style="color:#6b7c93;font-size:10px;font-family:Arial,Helvetica,sans-serif;">DSCR</p><p style="color:#162032;font-size:13px;font-weight:bold;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{scenario_aggressive_dscr}}</p></td></tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        <p style="color:#9aafc4;font-size:10px;margin-top:10px;font-family:Arial,Helvetica,sans-serif;font-style:italic;">Cash flow = NOI minus annual debt service ÷ 12. DSCR = NOI ÷ annual debt service. Verify with actual rent roll and operating expenses.</p>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── EQUITY / MORTGAGE SNAPSHOT ───────────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#162032;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#127968; Equity &amp; Mortgage Snapshot</p>
+        <table width="100%" cellpadding="0" cellspacing="12" border="0" style="margin-top:16px;">
+          <tr>
+            <td width="25%" style="vertical-align:top;padding-right:10px;">
+              <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Est. Equity</p>
+              <p style="color:#3d9e6e;font-size:20px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{equity_estimate}}</p>
+              <p style="color:#9aafc4;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">Market − mortgage balance</p>
+            </td>
+            <td width="25%" style="vertical-align:top;padding-right:10px;">
+              <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Mortgage Balance</p>
+              <p style="color:#162032;font-size:20px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{mortgage_balance}}</p>
+              <p style="color:#9aafc4;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">{{mortgage_source}}</p>
+            </td>
+            <td width="25%" style="vertical-align:top;padding-right:10px;">
+              <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Lender</p>
+              <p style="color:#162032;font-size:14px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{mortgage_lender}}</p>
+              <p style="color:#9aafc4;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">Origination: {{mortgage_orig_date}}</p>
+            </td>
+            <td width="25%" style="vertical-align:top;">
+              <p style="color:#6b7c93;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">LTV (current)</p>
+              <p style="color:#162032;font-size:20px;font-weight:bold;margin-top:4px;font-family:Arial,Helvetica,sans-serif;">{{current_ltv}}</p>
+              <p style="color:#9aafc4;font-size:10px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;">Balance ÷ AVM</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── MOTIVATION + INVESTMENT SIGNALS ──────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#162032;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#127919; Motivation Score &amp; Investment Signals</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px;">
+          <tr>
+            <td width="88" valign="middle" style="padding-right:20px;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="width:88px;height:88px;background:{{motivation_bg_color}};border-radius:50%;text-align:center;vertical-align:middle;">
+                    <p style="color:#ffffff;font-size:28px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{motivation_score}}</p>
+                    <p style="color:rgba(255,255,255,0.8);font-size:10px;font-family:Arial,Helvetica,sans-serif;">/ 100</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td valign="middle">
+              <p style="color:{{motivation_text_color}};font-size:16px;font-weight:bold;font-family:Arial,Helvetica,sans-serif;">{{motivation_tier}} Motivation</p>
+              <p style="color:#6b7c93;font-size:13px;margin-top:5px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;">{{motivation_interpretation}}</p>
+            </td>
+          </tr>
+        </table>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          {{motivation_indicators_html}}
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── DIVIDER ───────────────────────────────────────────────────────── -->
+    <tr><td style="height:8px;background:#f7f9fb;"></td></tr>
+
+    <!-- ── COMPS TABLE ────────────────────────────────────────────────────── -->
+    <tr>
+      <td style="padding:24px 32px;">
+        <p style="color:#162032;font-size:15px;font-weight:bold;letter-spacing:0.4px;font-family:Arial,Helvetica,sans-serif;border-bottom:2px solid #e8edf2;padding-bottom:10px;">&#128202; Recent Comparable Sales</p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          <tr style="background:#f0f5fa;">
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Address</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="center">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">SF</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="right">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Sale Price</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="right">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">$/SF</p>
+            </td>
+            <td style="padding:10px 12px;border-bottom:1px solid #e8edf2;" align="center">
+              <p style="color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;">Date</p>
+            </td>
+          </tr>
+          {{comps_rows_html}}
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+    <tr>
+      <td style="background:#f7f9fb;border-top:2px solid #e8edf2;padding:22px 32px;">
+        <p style="color:#6b7c93;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif;">
+          This Investment Analysis Report was prepared by <strong>{{agent_name}}</strong> of <strong>{{agent_brokerage}}</strong> using PropIntel data. Generated {{report_date}}. All financial projections are estimates based on market data and modeling assumptions — not a guarantee of returns. Verify all figures with actual financial statements, current rent rolls, and licensed professionals before investing.
+        </p>
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+          <tr>
+            <td>
+              <p style="color:#c0cdd9;font-size:10px;font-family:Arial,Helvetica,sans-serif;">Powered by <strong>PropIntel</strong> &mdash; propertyvalueintel.com</p>
+            </td>
+            <td align="right">
+              <p style="color:#c0cdd9;font-size:10px;font-family:Arial,Helvetica,sans-serif;">{{agent_phone}} &nbsp;|&nbsp; {{agent_email}}</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+  </table><!-- /container -->
+  </td></tr>
+</table><!-- /wrapper -->
+</div>
+</body>
+</html>
