@@ -236,6 +236,13 @@ def get_sold_comps(address: str, zipcode: str = "",
             pass
 
     if not lat or not lng:
+        # Fallback: use Realie's own property search to get lat/lng
+        detail = _address_lookup(address)
+        if not detail.get("error"):
+            lat = detail.get("latitude") or detail.get("lat")
+            lng = detail.get("longitude") or detail.get("lng")
+
+    if not lat or not lng:
         return {
             "available": False,
             "comps": [],
@@ -282,6 +289,14 @@ def get_sold_comps(address: str, zipcode: str = "",
             price_per_sf = round(sale_price / bldg_sf, 0) if bldg_sf and bldg_sf > 0 else None
             addr_str     = prop.get("addressFull") or prop.get("address", "")
             avm          = prop.get("modelValue")
+
+            # Filter out commercial / non-residential properties
+            if prop.get("residential") is False:
+                continue
+            if sale_price > 5_000_000:
+                continue
+            if bldg_sf and bldg_sf > 20_000:
+                continue
 
             comps.append({
                 "address":        addr_str,
