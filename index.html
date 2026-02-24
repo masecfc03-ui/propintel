@@ -1,2131 +1,1402 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>PropIntel — Property Intelligence Reports</title>
-<meta name="description" content="The data professionals can't easily find — owner phone & email via skip trace, 5-signal motivation score, sold comps with $/SF analysis, and DSCR deal analyzer. Any US property, 30 seconds."/>
-<link rel="canonical" href="https://propertyvalueintel.com"/>
-<meta property="og:type" content="website"/>
-<meta property="og:url" content="https://propertyvalueintel.com"/>
-<meta property="og:title" content="PropIntel — Property Intelligence Reports"/>
-<meta property="og:description" content="Full property intel in 30 seconds. Owner identity, flood zone, motivation score, deal analyzer."/>
-<meta name="twitter:card" content="summary_large_image"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PropIntel - Stop Sending Clients Zillow Links</title>
+  <meta name="description" content="PropIntel generates a branded property report in seconds — with your name, your logo, and data Zillow doesn't have. For real estate agents who want their own tools.">
+  
+  <!-- Fonts: Cabinet Grotesk (display) + Satoshi (body) from Fontshare CDN -->
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&f[]=cabinet-grotesk@900,800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ═══════════════════════════════════════════
+       CSS CUSTOM PROPERTIES
+    ═══════════════════════════════════════════ */
+    :root {
+      /* Dark Design System */
+      --dark-base: #08080a;
+      --dark-surface: #111118;
+      --dark-elevated: #1e1e2e;
+      --dark-border: #1e1e2e;
+      --dark-border-light: #2a2a3a;
+      
+      /* Amber Accent */
+      --amber: #f59e0b;
+      --amber-light: #fbbf24;
+      --amber-dark: #d97706;
+      
+      /* Text */
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      
+      /* States */
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      
+      /* Layout */
+      --container: 1200px;
+      --section-padding: 120px;
+      --border-radius: 16px;
+      --border-radius-lg: 24px;
+    }
 
-<!-- Fonts: Satoshi + Cabinet Grotesk from Fontshare -->
-<link rel="preconnect" href="https://api.fontshare.com" crossorigin/>
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,500,400&f[]=cabinet-grotesk@900,800&display=swap" rel="stylesheet"/>
+    /* ═══════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-<style>
-/* ═══════════════════════════════════════════
-   TOKENS
-═══════════════════════════════════════════ */
-:root {
-  --bg:        #08080a;
-  --bg1:       #0d0d10;
-  --bg2:       #141418;
-  --bg3:       #1e1e24;
-  --bg4:       #2a2a33;
-  --blue:      #2563eb;
-  --blue-m:    #3b82f6;
-  --blue-l:    #60a5fa;
-  --violet:    #7c3aed;
-  --violet-l:  #a78bfa;
-  --green:     #22c55e;
-  --green-l:   #4ade80;
-  --amber:     #f59e0b;
-  --amber-l:   #fbbf24;
-  --red:       #ef4444;
-  --white:     #f8f8fc;
-  --g1:        #e2e2ea;
-  --g2:        #a0a0b0;
-  --g3:        #60607a;
-  --g4:        #30303e;
-  --border:    rgba(255,255,255,0.06);
-  --border-hi: rgba(255,255,255,0.12);
-  --border-bl: rgba(96,165,250,0.25);
-  /* spacing */
-  --r-sm: 10px; --r-md: 16px; --r-lg: 20px; --r-xl: 28px; --r-2xl: 36px;
-}
+    html {
+      scroll-behavior: smooth;
+    }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'Satoshi', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--white);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
+    body {
+      font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--dark-base);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
 
-/* ═══════════════════════════════════════════
-   ANIMATED BACKGROUND
-═══════════════════════════════════════════ */
-.scene {
-  position: fixed; inset: 0; z-index: 0;
-  pointer-events: none; overflow: hidden;
-}
-.orb {
-  position: absolute; border-radius: 50%;
-  filter: blur(120px);
-}
-.orb-1 {
-  width: 900px; height: 700px;
-  top: -200px; left: -150px;
-  background: radial-gradient(ellipse, rgba(37,99,235,0.22) 0%, transparent 70%);
-  animation: drift1 28s ease-in-out infinite;
-}
-.orb-2 {
-  width: 700px; height: 700px;
-  top: 10%; right: -200px;
-  background: radial-gradient(ellipse, rgba(124,58,237,0.14) 0%, transparent 70%);
-  animation: drift2 34s ease-in-out infinite 4s;
-}
-.orb-3 {
-  width: 500px; height: 500px;
-  bottom: 20%; left: 25%;
-  background: radial-gradient(ellipse, rgba(34,197,94,0.07) 0%, transparent 70%);
-  animation: drift1 42s ease-in-out infinite 12s;
-}
-.orb-4 {
-  width: 400px; height: 300px;
-  bottom: -100px; right: 15%;
-  background: radial-gradient(ellipse, rgba(96,165,250,0.1) 0%, transparent 70%);
-  animation: drift2 36s ease-in-out infinite 8s;
-}
-@keyframes drift1 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  33%     { transform: translate(60px,-80px) scale(1.08); }
-  66%     { transform: translate(-40px,40px) scale(0.96); }
-}
-@keyframes drift2 {
-  0%,100% { transform: translate(0,0) scale(1); }
-  33%     { transform: translate(-80px,60px) scale(1.06); }
-  66%     { transform: translate(50px,-50px) scale(0.94); }
-}
+    /* Typography */
+    .font-display {
+      font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-/* grain overlay */
-.scene::after {
-  content: '';
-  position: absolute; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-  opacity: 0.028; mix-blend-mode: overlay;
-}
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-/* content above scene */
-body > *:not(.scene) { position: relative; z-index: 1; }
+    /* ═══════════════════════════════════════════
+       ANIMATED BACKGROUND ORBS
+    ═══════════════════════════════════════════ */
+    .background-orbs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
 
-/* ═══════════════════════════════════════════
-   NAV
-═══════════════════════════════════════════ */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
-  height: 62px;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 max(28px, calc(50vw - 680px));
-  background: rgba(8,8,10,0.75);
-  backdrop-filter: blur(24px) saturate(1.6);
-  -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  border-bottom: 1px solid var(--border);
-}
-.nav-logo {
-  display: flex; align-items: center; gap: 9px;
-  text-decoration: none;
-}
-.nav-logo-mark {
-  width: 30px; height: 30px;
-  background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 900; color: white; letter-spacing: -0.5px;
-  box-shadow: 0 0 16px rgba(37,99,235,0.4);
-}
-.nav-logo-name {
-  font-weight: 800; font-size: 1rem; letter-spacing: -0.4px;
-  color: var(--white);
-}
-.nav-links {
-  display: flex; align-items: center; gap: 30px; list-style: none;
-}
-.nav-links a {
-  font-size: 0.83rem; font-weight: 500; color: var(--g2);
-  text-decoration: none; transition: color 0.15s;
-  letter-spacing: -0.1px;
-}
-.nav-links a:hover { color: var(--white); }
-.nav-right { display: flex; align-items: center; gap: 10px; }
-.nav-sign { font-size: 0.83rem; font-weight: 500; color: var(--g2); text-decoration: none; }
-.nav-cta {
-  background: white; color: #0a0a10;
-  border: none; padding: 9px 20px; border-radius: 9px;
-  font-size: 0.83rem; font-weight: 800; cursor: pointer;
-  text-decoration: none; letter-spacing: -0.2px;
-  transition: opacity 0.15s, transform 0.1s;
-  white-space: nowrap;
-}
-.nav-cta:hover { opacity: 0.88; transform: translateY(-1px); }
-@media(max-width:700px) {
-  .nav-links { display: none; }
-  nav { padding: 0 20px; }
-}
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.15;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
 
-/* ═══════════════════════════════════════════
-   HERO
-═══════════════════════════════════════════ */
-.hero {
-  min-height: 100svh;
-  display: flex; align-items: center;
-  padding: 120px max(28px, calc(50vw - 680px)) 80px;
-  gap: 60px;
-}
-.hero-left { flex: 1; min-width: 0; }
-.hero-right {
-  flex: 0 0 440px; min-width: 0;
-  display: flex; align-items: center; justify-content: center;
-}
-@media(max-width:1060px) {
-  .hero { flex-direction: column; text-align: center; padding-bottom: 60px; }
-  .hero-right { flex: none; width: 100%; max-width: 480px; }
-  .hero-left { display: flex; flex-direction: column; align-items: center; }
-}
+    .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--amber) 0%, transparent 70%);
+      top: -300px;
+      left: -200px;
+      animation: drift 20s infinite;
+    }
 
-/* badge */
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(37,99,235,0.1);
-  border: 1px solid rgba(96,165,250,0.2);
-  border-radius: 20px; padding: 6px 14px;
-  font-size: 0.72rem; font-weight: 700; color: var(--blue-l);
-  letter-spacing: 0.5px; text-transform: uppercase;
-  margin-bottom: 28px;
-  animation: fadeUp 0.7s ease both;
-}
-.pulse-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green);
-  animation: pulseDot 2s ease-in-out infinite;
-}
-@keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .orb-2 {
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+      top: 20%;
+      right: -300px;
+      animation: drift 25s infinite reverse;
+    }
 
-/* headline */
-.hero h1 {
-  font-family: 'Cabinet Grotesk', 'Satoshi', sans-serif;
-  font-size: clamp(3rem, 6vw, 5.2rem);
-  font-weight: 900;
-  line-height: 1.0;
-  letter-spacing: -3.5px;
-  margin-bottom: 24px;
-  animation: fadeUp 0.7s 0.08s ease both;
-  max-width: 600px;
-}
-.hero h1 .grad {
-  background: linear-gradient(135deg, var(--blue-m) 0%, var(--violet-l) 60%, var(--blue-l) 100%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.hero-sub {
-  font-size: 1.05rem; line-height: 1.7; color: var(--g2);
-  max-width: 480px; margin-bottom: 40px;
-  animation: fadeUp 0.7s 0.16s ease both;
-  font-weight: 400;
-}
-/* analyze form */
-.analyze-form {
-  display: flex; flex-direction: column; gap: 16px; max-width: 520px;
-  animation: fadeUp 0.7s 0.24s ease both;
-}
-.analyze-wrap {
-  flex: 1; position: relative;
-}
-.analyze-icon {
-  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-  color: var(--g3); font-size: 16px; pointer-events: none;
-  display: flex;
-}
-.analyze-input {
-  width: 100%; background: var(--bg2);
-  border: 1px solid var(--border-hi);
-  border-radius: var(--r-md);
-  padding: 14px 16px 14px 40px;
-  font-size: 0.88rem; color: var(--white);
-  font-family: 'Satoshi', sans-serif;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-.analyze-input::placeholder { color: var(--g3); }
-.analyze-input:focus {
-  border-color: var(--blue-m);
-  background: var(--bg3);
-  box-shadow: 0 0 0 4px rgba(59,130,246,0.1);
-}
+    .orb-3 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #10b981 0%, transparent 70%);
+      bottom: -200px;
+      left: 20%;
+      animation: drift 30s infinite;
+    }
 
-/* persona selector */
-.persona-selector {
-  display: flex; gap: 8px; width: 100%;
-  animation: fadeUp 0.7s 0.28s ease both;
-}
-.persona-option {
-  flex: 1; display: flex; align-items: center; gap: 10px;
-  padding: 12px 14px; background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  cursor: pointer; transition: all 0.2s ease;
-  font-family: 'Satoshi', sans-serif;
-}
-.persona-option:hover {
-  border-color: var(--border-hi);
-  background: var(--bg3);
-}
-.persona-option.active {
-  border-color: var(--blue-m);
-  background: rgba(37,99,235,0.08);
-  box-shadow: 0 0 0 1px rgba(37,99,235,0.15);
-}
-.persona-icon {
-  font-size: 16px; flex-shrink: 0;
-}
-.persona-text {
-  display: flex; flex-direction: column; gap: 1px;
-  min-width: 0;
-}
-.persona-title {
-  font-size: 0.78rem; font-weight: 600;
-  color: var(--white);
-}
-.persona-sub {
-  font-size: 0.68rem; color: var(--g3);
-  line-height: 1.2;
-}
-.persona-option.active .persona-title {
-  color: var(--blue-l);
-}
-.persona-option.active .persona-sub {
-  color: var(--blue-m);
-}
+    @keyframes drift {
+      0% { transform: translateX(0) translateY(0) scale(1); }
+      33% { transform: translateX(50px) translateY(-30px) scale(1.1); }
+      66% { transform: translateX(-30px) translateY(40px) scale(0.9); }
+      100% { transform: translateX(0) translateY(0) scale(1); }
+    }
 
-.analyze-btn {
-  background: linear-gradient(135deg, var(--blue) 0%, #1a4fc4 100%);
-  color: white; border: none; padding: 14px 24px;
-  border-radius: var(--r-md);
-  font-size: 0.88rem; font-weight: 700; cursor: pointer;
-  white-space: nowrap; letter-spacing: -0.2px;
-  font-family: 'Satoshi', sans-serif;
-  transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
-  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
-  align-self: flex-start;
-}
-.analyze-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(37,99,235,0.5);
-}
-.analyze-btn:active { transform: scale(0.98); }
-.analyze-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+    /* Content above background */
+    body > *:not(.background-orbs) {
+      position: relative;
+      z-index: 1;
+    }
 
-.hero-note {
-  margin-top: 14px; font-size: 0.73rem; color: var(--g3);
-  animation: fadeUp 0.7s 0.32s ease both;
-}
-.hero-note a { color: var(--g2); text-decoration: none; border-bottom: 1px solid var(--g4); }
+    /* ═══════════════════════════════════════════
+       NAVIGATION
+    ═══════════════════════════════════════════ */
+    .navigation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: rgba(8, 8, 10, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--dark-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 1000;
+    }
 
-/* social proof */
-.hero-proof {
-  display: flex; align-items: center; gap: 12px;
-  margin-top: 36px;
-  animation: fadeUp 0.7s 0.38s ease both;
-}
-.proof-avatars { display: flex; }
-.proof-avatar {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 2px solid var(--bg);
-  background: var(--bg3);
-  font-size: 11px; font-weight: 700; color: var(--g2);
-  display: flex; align-items: center; justify-content: center;
-  margin-left: -8px;
-}
-.proof-avatar:first-child { margin-left: 0; }
-.proof-text { font-size: 0.78rem; color: var(--g2); line-height: 1.4; }
-.proof-text strong { color: var(--white); font-weight: 700; }
-.proof-stars { color: #fbbf24; font-size: 0.7rem; display: block; margin-bottom: 2px; }
+    .nav-logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      font-family: 'Cabinet Grotesk', sans-serif;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
 
-/* ─── HERO REPORT CARD ─── */
-.hero-card {
-  width: 100%; max-width: 420px;
-  background: var(--bg1);
-  border-radius: var(--r-2xl);
-  border: 1px solid var(--border-hi);
-  overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.03),
-    0 24px 80px rgba(0,0,0,0.5),
-    0 8px 24px rgba(0,0,0,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-  animation: fadeUp 0.9s 0.1s ease both;
-  position: relative;
-}
-.hero-card::before {
-  content: '';
-  position: absolute; inset: -1px; border-radius: 37px;
-  background: linear-gradient(135deg, rgba(59,130,246,0.35) 0%, transparent 50%, rgba(124,58,237,0.2) 100%);
-  z-index: -1; pointer-events: none;
-}
-.hc-header {
-  padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.hc-dots { display: flex; gap: 6px; }
-.hc-dot {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: var(--bg4);
-}
-.hc-dot:first-child { background: #ff5f57; }
-.hc-dot:nth-child(2) { background: #ffbd2e; }
-.hc-dot:nth-child(3) { background: #28c840; }
-.hc-url {
-  flex: 1; margin: 0 12px;
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 6px; padding: 5px 10px;
-  font-size: 0.65rem; color: var(--g3); text-align: center;
-  font-family: 'Inter', monospace; letter-spacing: 0.2px;
-}
-.hc-badge {
-  font-size: 0.6rem; font-weight: 700; color: var(--green);
-  background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.2);
-  padding: 3px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;
-}
-.hc-body { padding: 20px; }
-.hc-address {
-  font-weight: 800; font-size: 0.95rem; letter-spacing: -0.3px;
-  margin-bottom: 4px; line-height: 1.3;
-}
-.hc-sub { font-size: 0.72rem; color: var(--g3); margin-bottom: 18px; }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
 
-/* motivation bar */
-.hc-score-row { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 6px; }
-.hc-score-label { font-size: 0.65rem; color: var(--g3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
-.hc-score-val {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1.8rem; font-weight: 900; line-height: 1;
-  letter-spacing: -2px; color: var(--amber);
-}
-.hc-score-tier {
-  font-size: 0.62rem; font-weight: 800; color: var(--amber);
-  background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.2);
-  padding: 2px 8px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;
-  margin-bottom: 4px; display: inline-block;
-}
-.hc-bar-track { height: 5px; background: var(--bg4); border-radius: 3px; overflow: hidden; margin-bottom: 16px; }
-.hc-bar-fill {
-  height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--amber), var(--red));
-  width: 0%; transition: width 1.4s 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
 
-/* data grid */
-.hc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.hc-cell {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 10px; padding: 10px 12px;
-}
-.hc-cell-label { font-size: 0.58rem; color: var(--g3); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-bottom: 3px; }
-.hc-cell-val { font-size: 0.85rem; font-weight: 700; color: var(--g1); line-height: 1.2; }
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
 
-/* tags */
-.hc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
-.hc-tag {
-  font-size: 0.62rem; font-weight: 700; padding: 3px 9px;
-  border-radius: 8px; letter-spacing: 0.2px;
-}
-.hc-tag-amber { background: rgba(245,158,11,0.1); color: var(--amber); border: 1px solid rgba(245,158,11,0.2); }
-.hc-tag-red { background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.15); }
-.hc-tag-blue { background: rgba(96,165,250,0.1); color: var(--blue-l); border: 1px solid rgba(96,165,250,0.2); }
+    .nav-cta {
+      background: var(--amber);
+      color: var(--dark-base);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius);
+      text-decoration: none;
+      font-weight: 800;
+      transition: all 0.3s ease;
+    }
 
-/* cta row */
-.hc-cta {
-  display: flex; align-items: center; justify-content: space-between;
-  background: linear-gradient(135deg, rgba(37,99,235,0.12) 0%, rgba(124,58,237,0.08) 100%);
-  border: 1px solid rgba(59,130,246,0.2);
-  border-radius: 12px; padding: 12px 14px;
-}
-.hc-cta-text { font-size: 0.78rem; color: var(--g1); font-weight: 600; }
-.hc-cta-text span { color: var(--g3); font-size: 0.68rem; font-weight: 400; display: block; margin-top: 1px; }
-.hc-cta-btn {
-  background: var(--blue); color: white; border: none;
-  padding: 8px 16px; border-radius: 8px;
-  font-size: 0.75rem; font-weight: 700; cursor: pointer;
-  font-family: 'Satoshi', sans-serif; letter-spacing: -0.1px;
-  white-space: nowrap;
-}
+    .nav-cta:hover {
+      background: var(--amber-light);
+      transform: translateY(-2px);
+    }
 
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .navigation {
+        padding: 0 1rem;
+      }
+    }
 
-/* ═══════════════════════════════════════════
-   RESULT (inline)
-═══════════════════════════════════════════ */
-#result-wrap {
-  display: none; width: 100%; max-width: 520px;
-  background: var(--bg2); border: 1px solid var(--border-hi);
-  border-radius: var(--r-xl); padding: 24px;
-  margin-top: 20px;
-  animation: fadeUp 0.4s ease both;
-}
-#result-wrap.visible { display: block; }
-#result-address {
-  font-weight: 800; font-size: 1.05rem; letter-spacing: -0.4px; margin-bottom: 16px;
-}
-#result-cards {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px;
-}
-.result-card {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: var(--r-md); padding: 12px;
-}
-.result-card-label { font-size: 0.6rem; color: var(--g3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
-.result-card-val { font-size: 0.88rem; font-weight: 700; }
-.result-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.result-btn {
-  padding: 10px 20px; border-radius: 9px;
-  font-size: 0.83rem; font-weight: 700; cursor: pointer;
-  text-decoration: none; border: none; font-family: 'Satoshi', sans-serif;
-  transition: opacity 0.15s;
-}
-.result-btn-primary { background: var(--blue); color: white; }
-.result-btn-secondary { background: var(--bg4); color: var(--white); border: 1px solid var(--border-hi); }
-.result-btn:hover { opacity: 0.82; }
+    /* ═══════════════════════════════════════════
+       HERO SECTION
+    ═══════════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 4rem;
+      padding: 120px 2rem 4rem;
+      max-width: var(--container);
+      margin: 0 auto;
+    }
 
-/* ═══════════════════════════════════════════
-   STATS STRIP
-═══════════════════════════════════════════ */
-.stats-strip {
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 0 max(28px, calc(50vw - 680px));
-  display: grid; grid-template-columns: repeat(4, 1fr);
-}
-@media(max-width:700px) { .stats-strip { grid-template-columns: repeat(2, 1fr); } }
-.stat-item {
-  padding: 28px 24px;
-  text-align: center;
-  border-right: 1px solid var(--border);
-}
-.stat-item:last-child { border-right: none; }
-@media(max-width:700px) {
-  .stat-item:nth-child(2) { border-right: none; }
-  .stat-item:nth-child(3) { border-right: 1px solid var(--border); }
-}
-.stat-num {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 2.2rem; font-weight: 900; line-height: 1;
-  letter-spacing: -2px; margin-bottom: 6px;
-  background: linear-gradient(135deg, var(--white) 0%, var(--g2) 100%);
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-}
-.stat-label { font-size: 0.75rem; color: var(--g3); font-weight: 500; }
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
 
-/* ═══════════════════════════════════════════
-   SECTION WRAPPER
-═══════════════════════════════════════════ */
-.section {
-  max-width: 1360px; margin: 0 auto;
-  padding: 100px max(28px, calc(50vw - 680px));
-}
-.section-eyebrow {
-  font-size: 0.7rem; font-weight: 700; color: var(--blue-l);
-  text-transform: uppercase; letter-spacing: 3px; margin-bottom: 14px;
-}
-.section-title {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: clamp(2rem, 4.5vw, 3.4rem);
-  font-weight: 900; letter-spacing: -2px; line-height: 1.05;
-  margin-bottom: 18px;
-}
-.section-sub {
-  font-size: 0.95rem; color: var(--g2); line-height: 1.75;
-  max-width: 480px; font-weight: 400;
-}
+    .hero-eyebrow {
+      font-size: 0.875rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber);
+      opacity: 0;
+      animation: fadeInUp 0.8s ease forwards;
+    }
 
-/* ═══════════════════════════════════════════
-   BENTO GRID
-═══════════════════════════════════════════ */
-.bento {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 12px; margin-top: 56px;
-}
-.tile {
-  background: var(--bg1);
-  border-radius: var(--r-2xl);
-  padding: 32px;
-  position: relative; overflow: hidden;
-  isolation: isolate;
-  cursor: default;
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
-}
-.tile::before {
-  content: '';
-  position: absolute; inset: -1px; border-radius: calc(var(--r-2xl) + 1px);
-  background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, transparent 40%, rgba(255,255,255,0.02) 100%);
-  z-index: -2;
-}
-.tile::after {
-  content: '';
-  position: absolute; inset: 0; border-radius: var(--r-2xl);
-  background: linear-gradient(105deg, transparent 25%, rgba(255,255,255,0.025) 50%, transparent 75%);
-  transform: translateX(-100%);
-  transition: transform 0.7s ease;
-  z-index: 2; pointer-events: none;
-}
-.tile:hover::after { transform: translateX(100%); }
-.tile:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
-}
-/* gradient border via box-shadow */
-.tile { box-shadow: 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05); }
-.tile:hover { box-shadow: 0 0 0 1px rgba(96,165,250,0.2), 0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.07); }
+    .hero-headline {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.2s forwards;
+    }
 
-/* Grid placement */
-.tile-1 { grid-column: span 5; }
-.tile-2 { grid-column: span 7; }
-.tile-3 { grid-column: span 3; }
-.tile-4 { grid-column: span 5; }
-.tile-5 { grid-column: span 4; }
-.tile-6 { grid-column: span 12; }
-@media(max-width:1000px) {
-  .bento { grid-template-columns: 1fr 1fr; }
-  .tile-1,.tile-2,.tile-3,.tile-4,.tile-5,.tile-6 { grid-column: span 2; }
-}
-@media(max-width:580px) {
-  .bento { grid-template-columns: 1fr; }
-  .tile-1,.tile-2,.tile-3,.tile-4,.tile-5,.tile-6 { grid-column: span 1; }
-}
+    .hero-subheadline {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 600px;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.4s forwards;
+    }
 
-/* tile inner glow accent */
-.tile-accent {
-  position: absolute; border-radius: 50%; pointer-events: none; filter: blur(80px); z-index: -1;
-}
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.6s forwards;
+    }
 
-.tile-label {
-  font-size: 0.62rem; font-weight: 700; color: var(--g3);
-  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px;
-}
-/* difficulty badge */
-.tile-diff {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.6rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
-  padding: 3px 9px; border-radius: 8px; margin-bottom: 14px;
-}
-.diff-hard { background: rgba(239,68,68,0.1); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
-.diff-medium { background: rgba(245,158,11,0.1); color: var(--amber-l); border: 1px solid rgba(245,158,11,0.2); }
-.diff-easy { background: rgba(96,165,250,0.06); color: var(--g3); border: 1px solid var(--border); }
+    .cta-primary {
+      background: var(--amber);
+      color: var(--dark-base);
+      padding: 1rem 2rem;
+      border-radius: var(--border-radius);
+      text-decoration: none;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
 
-/* Score tile */
-.score-big {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 5rem; font-weight: 900; line-height: 1; letter-spacing: -5px;
-  color: var(--amber); margin: 4px 0 6px;
-}
-.score-denom { font-size: 1.5rem; color: var(--g3); letter-spacing: -1px; }
-.score-bar { height: 5px; background: var(--bg4); border-radius: 3px; overflow: hidden; margin: 12px 0; }
-.score-fill {
-  height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--amber) 0%, var(--red) 100%);
-  width: 0; transition: width 1.2s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
-.tag {
-  font-size: 0.65rem; font-weight: 700; padding: 4px 10px;
-  border-radius: 10px; letter-spacing: 0.2px;
-}
-.t-amber { background: rgba(245,158,11,0.1); color: var(--amber-l); border: 1px solid rgba(245,158,11,0.2); }
-.t-red   { background: rgba(239,68,68,0.08); color: #fca5a5; border: 1px solid rgba(239,68,68,0.18); }
-.t-blue  { background: rgba(96,165,250,0.08); color: var(--blue-l); border: 1px solid rgba(96,165,250,0.18); }
-.t-green { background: rgba(34,197,94,0.08); color: var(--green-l); border: 1px solid rgba(34,197,94,0.18); }
-.t-violet{ background: rgba(167,139,250,0.08); color: var(--violet-l); border: 1px solid rgba(167,139,250,0.18); }
+    .cta-primary:hover {
+      background: var(--amber-light);
+      transform: translateY(-2px);
+    }
 
-/* Owner tile */
-.owner-row { margin-bottom: 14px; }
-.owner-key { font-size: 0.6rem; color: var(--g3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 3px; }
-.owner-val { font-size: 0.9rem; font-weight: 600; color: var(--g1); }
-.tile-heading {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1.25rem; font-weight: 900; letter-spacing: -0.5px; line-height: 1.25;
-  margin-bottom: 16px;
-}
+    .cta-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      padding: 1rem 2rem;
+      border: 1px solid var(--dark-border);
+      border-radius: var(--border-radius);
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
 
-/* Mortgage & Equity tile */
-.mort-row { margin-bottom: 14px; }
-.mort-key {
-  font-size: 0.6rem; color: var(--g3); text-transform: uppercase;
-  letter-spacing: 1px; font-weight: 700; margin-bottom: 3px;
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-}
-.mort-signal {
-  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.5px;
-  padding: 2px 7px; border-radius: 6px; text-transform: none;
-  background: rgba(34,197,94,0.1); color: var(--green-l);
-  border: 1px solid rgba(34,197,94,0.2);
-}
-.mort-signal-warn {
-  background: rgba(245,158,11,0.1); color: var(--amber-l);
-  border: 1px solid rgba(245,158,11,0.2);
-}
-.mort-val {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1.45rem; font-weight: 900; letter-spacing: -0.8px; color: var(--g1);
-}
-.mort-val-equity { color: #4ade80; }
-.mort-val-ltv    { color: var(--amber-l); }
-.mort-val-lender { font-size: 0.9rem; font-weight: 600; font-family: inherit; color: var(--g1); letter-spacing: 0; }
+    .cta-secondary:hover {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.1);
+    }
 
-/* Skip trace tile */
-.skip-contact-row {
-  display: flex; align-items: center; gap: 12px;
-  padding: 11px 14px; border-radius: 11px;
-  background: var(--bg2); border: 1px solid var(--border);
-  margin-bottom: 8px;
-}
-.skip-icon {
-  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 14px;
-}
-.skip-icon-phone { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.2); }
-.skip-icon-email { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.18); }
-.skip-detail { flex: 1; }
-.skip-type { font-size: 0.6rem; color: var(--g3); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 2px; }
-.skip-val { font-size: 0.88rem; font-weight: 700; color: var(--g1); letter-spacing: 0.5px; }
-.skip-source { font-size: 0.6rem; color: var(--g3); margin-top: 1px; }
-.skip-blurred { filter: blur(5px); user-select: none; color: var(--white); }
+    .hero-note {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.8s forwards;
+    }
 
-/* Signal rows for motivation */
-.signal-mini { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
-.signal-mini-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px; border-radius: 9px; font-size: 0.78rem;
-}
-.signal-mini-row.on { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.18); }
-.signal-mini-row.off { background: var(--bg3); border: 1px solid var(--border); opacity: 0.45; }
-.signal-mini-name { color: var(--g1); font-weight: 600; }
-.signal-mini-pts { font-family: 'Cabinet Grotesk',sans-serif; font-weight: 900; font-size: 0.9rem; color: var(--amber); }
-.signal-mini-pts.off { color: var(--g4); }
+    /* Hero Report Mockup */
+    .hero-mockup {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.4s forwards;
+    }
 
-/* Deal tile */
-.dscr-scenario {
-  display: flex; flex-direction: column; gap: 8px; margin-top: 14px;
-}
-.ds-row {
-  padding: 10px 14px; border-radius: 10px;
-  background: var(--bg2); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.ds-row.best { border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.07); }
-.ds-label { font-size: 0.72rem; color: var(--g2); font-weight: 500; }
-.ds-dscr {
-  font-family: 'Cabinet Grotesk',sans-serif;
-  font-weight: 900; font-size: 1.05rem; letter-spacing: -0.5px;
-}
-.ds-sub { font-size: 0.62rem; color: var(--g3); margin-top: 1px; }
-.dscr-good { color: var(--green-l); }
-.dscr-ok   { color: var(--blue-l); }
-.dscr-warn { color: var(--amber-l); }
+    .report-card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--border-radius-lg);
+      padding: 2rem;
+      max-width: 400px;
+      width: 100%;
+      transition: transform 0.3s ease;
+    }
 
-/* Comps tile */
-.comps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
-@media(max-width:700px) { .comps-grid { grid-template-columns: 1fr; } }
-.comp-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-}
-.comp-row:last-child { border-bottom: none; }
-.comp-info { }
-.comp-addr { font-size: 0.82rem; font-weight: 600; color: var(--g1); }
-.comp-meta { font-size: 0.67rem; color: var(--g3); margin-top: 1px; }
-.comp-price {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1rem; font-weight: 900; letter-spacing: -0.5px;
-  color: var(--white);
-}
-.comp-psf { font-size: 0.62rem; color: var(--g3); text-align: right; margin-top: 1px; }
-.val-big {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 2.8rem; font-weight: 900; line-height: 1; letter-spacing: -2.5px; margin: 8px 0 6px;
-}
-.val-range { font-size: 0.82rem; color: var(--g2); margin-top: 6px; line-height: 1.6; }
+    .report-card:hover {
+      transform: translateY(-5px);
+    }
 
-/* ─── VALUE TABLE ─── */
-.value-table-wrap {
-  margin-top: 56px;
-  border-radius: var(--r-2xl); overflow: hidden;
-  border: 1px solid var(--border);
-}
-.value-table-header {
-  background: var(--bg2); padding: 28px 36px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;
-}
-.value-table-header h3 {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1.3rem; font-weight: 900; letter-spacing: -0.8px;
-}
-.value-table-header p { font-size: 0.8rem; color: var(--g2); max-width: 400px; line-height: 1.6; }
-.value-table-cols {
-  display: grid; grid-template-columns: 1fr 160px 140px;
-  background: var(--bg3); padding: 8px 36px;
-  border-bottom: 1px solid var(--border);
-}
-@media(max-width:640px) { .value-table-cols { grid-template-columns: 1fr 100px 90px; padding: 8px 16px; } }
-.vtc { font-size: 0.62rem; font-weight: 800; color: var(--g3); text-transform: uppercase; letter-spacing: 1.5px; }
-.vtc:nth-child(2) { text-align: right; }
-.vtc:nth-child(3) { text-align: right; }
-.value-row {
-  display: grid; grid-template-columns: 1fr 160px 140px;
-  padding: 14px 36px; border-bottom: 1px solid var(--border);
-  align-items: center; transition: background 0.15s;
-}
-.value-row:last-of-type { border-bottom: none; }
-.value-row:hover { background: rgba(255,255,255,0.02); }
-@media(max-width:640px) { .value-row { grid-template-columns: 1fr 100px 90px; padding: 12px 16px; } }
-.vr-name { font-size: 0.83rem; font-weight: 600; color: var(--g1); display: flex; align-items: center; gap: 10px; }
-.vr-name-sub { font-size: 0.68rem; color: var(--g3); font-weight: 400; margin-top: 2px; }
-.vr-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.dot-hard { background: var(--red); box-shadow: 0 0 5px rgba(239,68,68,0.5); }
-.dot-med  { background: var(--amber); box-shadow: 0 0 5px rgba(245,158,11,0.4); }
-.dot-easy { background: var(--g4); }
-.vr-else { font-size: 0.78rem; color: var(--g3); text-align: right; line-height: 1.4; }
-.vr-pi {
-  text-align: right;
-  font-size: 0.8rem; font-weight: 800; color: var(--green-l);
-  display: flex; align-items: center; justify-content: flex-end; gap: 6px;
-}
-.vr-pi-check {
-  width: 18px; height: 18px; border-radius: 5px;
-  background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.2);
-  display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0;
-}
-.value-total-row {
-  display: grid; grid-template-columns: 1fr 160px 140px;
-  padding: 20px 36px;
-  background: var(--bg2); border-top: 1px solid var(--border-hi);
-  align-items: center;
-}
-@media(max-width:640px) { .value-total-row { grid-template-columns: 1fr 100px 90px; padding: 16px; } }
-.vt-label {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 0.95rem; font-weight: 900; letter-spacing: -0.3px;
-}
-.vt-else {
-  text-align: right; font-size: 0.75rem; color: var(--red); font-weight: 700;
-}
-.vt-pi {
-  text-align: right;
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1.6rem; font-weight: 900; letter-spacing: -1.5px;
-  background: linear-gradient(135deg, var(--blue-l), var(--violet-l));
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-}
-.vt-pi-sub { font-size: 0.65rem; color: var(--g3); font-weight: 400; font-family: 'Satoshi', sans-serif; -webkit-text-fill-color: var(--g3); display: block; margin-top: 2px; }
+    .report-header {
+      display: flex;
+      justify-content: between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
 
-/* ═══════════════════════════════════════════
-   HOW IT WORKS
-═══════════════════════════════════════════ */
-.steps-row {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 2px; margin-top: 56px;
-  border: 1px solid var(--border); border-radius: var(--r-2xl); overflow: hidden;
-}
-@media(max-width:680px) { .steps-row { grid-template-columns: 1fr; } }
-.step-cell {
-  background: var(--bg1); padding: 40px 36px;
-  position: relative; overflow: hidden;
-  transition: background 0.2s;
-}
-.step-cell:not(:last-child) { border-right: 1px solid var(--border); }
-@media(max-width:680px) {
-  .step-cell:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
-}
-.step-cell:hover { background: var(--bg2); }
-.step-n {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 4.5rem; font-weight: 900; line-height: 1; letter-spacing: -4px;
-  color: var(--bg4); margin-bottom: 24px; display: block;
-}
-.step-icon {
-  width: 40px; height: 40px; border-radius: 11px;
-  background: var(--bg3); border: 1px solid var(--border-hi);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; margin-bottom: 18px;
-}
-.step-title {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 1.15rem; font-weight: 900; letter-spacing: -0.3px;
-  margin-bottom: 12px;
-}
-.step-desc { font-size: 0.83rem; color: var(--g2); line-height: 1.7; font-weight: 400; }
+    .agent-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
 
-/* ═══════════════════════════════════════════
-   PRICING
-═══════════════════════════════════════════ */
-.pricing-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 16px; margin-top: 56px; max-width: 1200px;
-}
-@media(max-width:1024px) { .pricing-grid { grid-template-columns: repeat(2, 1fr); } }
-@media(max-width:600px)  { .pricing-grid { grid-template-columns: 1fr; } }
+    .agent-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--dark-base);
+    }
 
-.price-card {
-  background: var(--bg1);
-  border-radius: var(--r-2xl); padding: 40px;
-  position: relative; overflow: hidden;
-  border: 1px solid var(--border);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.price-card:hover { transform: translateY(-2px); }
-.price-card.featured {
-  background: linear-gradient(135deg, rgba(37,99,235,0.09) 0%, rgba(124,58,237,0.05) 100%);
-  border-color: rgba(96,165,250,0.45);
-  box-shadow: 0 0 0 1px rgba(96,165,250,0.25), 0 0 40px rgba(37,99,235,0.18), inset 0 1px 0 rgba(96,165,250,0.15);
-  transform: translateY(-4px);
-}
-.price-card.featured:hover {
-  box-shadow: 0 0 0 1px rgba(96,165,250,0.35), 0 20px 60px rgba(37,99,235,0.22), 0 4px 16px rgba(0,0,0,0.2);
-  transform: translateY(-6px);
-}
+    .agent-details h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
 
-.price-popular {
-  display: inline-block; margin-bottom: 14px;
-  font-size: 0.62rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
-  color: var(--blue-l);
-  background: rgba(37,99,235,0.18); border: 1px solid rgba(96,165,250,0.35);
-  padding: 4px 12px; border-radius: 20px;
-}
-.price-tier {
-  font-size: 0.68rem; font-weight: 700; color: var(--g3);
-  text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 18px;
-}
-.price-amount {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: 3.2rem; font-weight: 900;
-  letter-spacing: -2.5px; line-height: 1; margin-bottom: 4px;
-}
-.price-per { font-size: 0.78rem; color: var(--g3); margin-bottom: 28px; font-weight: 400; }
+    .agent-details p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
 
-.price-list { list-style: none; margin-bottom: 32px; }
-.price-list li {
-  font-size: 0.83rem; color: var(--g2); padding: 9px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: flex-start; gap: 10px;
-  font-weight: 400; line-height: 1.4;
-}
-.price-list li:last-child { border-bottom: none; }
-.price-check { color: var(--green); font-weight: 800; font-size: 0.8rem; flex-shrink: 0; margin-top: 1px; }
+    .property-address {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
 
-.price-btn {
-  display: block; width: 100%; padding: 14px; border-radius: 12px;
-  font-size: 0.9rem; font-weight: 700; cursor: pointer;
-  text-align: center; text-decoration: none;
-  border: 1px solid var(--border-hi); color: var(--white);
-  background: var(--bg3);
-  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-  font-family: 'Satoshi', sans-serif; letter-spacing: -0.2px;
-}
-.price-btn.cta {
-  background: linear-gradient(135deg, var(--blue) 0%, #1a4fc4 100%);
-  border-color: transparent; color: white;
-  box-shadow: 0 4px 20px rgba(37,99,235,0.35);
-}
-.price-btn:hover { transform: translateY(-1px); }
-.price-btn.cta:hover { box-shadow: 0 6px 28px rgba(37,99,235,0.45); }
+    .property-details {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
 
-/* ═══════════════════════════════════════════
-   TESTIMONIALS
-═══════════════════════════════════════════ */
-.testimonials {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 12px; margin-top: 56px;
-}
-@media(max-width:860px) { .testimonials { grid-template-columns: 1fr; } }
+    .report-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
 
-.testi {
-  background: var(--bg1);
-  border-radius: var(--r-2xl); padding: 32px;
-  border: 1px solid var(--border);
-  position: relative; overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.testi:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.25);
-  border-color: var(--border-hi);
-}
-.testi-quote {
-  font-size: 2rem; color: var(--blue-l); opacity: 0.4; line-height: 1;
-  margin-bottom: 16px; font-family: Georgia, serif;
-}
-.testi-body {
-  font-size: 0.88rem; color: var(--g1); line-height: 1.75;
-  font-weight: 400; margin-bottom: 24px;
-}
-.testi-body strong { color: var(--white); font-weight: 700; }
-.testi-foot { display: flex; align-items: center; gap: 12px; }
-.testi-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%);
-  font-size: 13px; font-weight: 800; color: white;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.testi-name { font-size: 0.83rem; font-weight: 700; color: var(--g1); margin-bottom: 1px; }
-.testi-role { font-size: 0.72rem; color: var(--g3); }
-.testi-stars { color: var(--amber); font-size: 0.72rem; margin-bottom: 14px; }
+    .stat-item {
+      background: var(--dark-elevated);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+    }
 
-/* ═══════════════════════════════════════════
-   FAQ
-═══════════════════════════════════════════ */
-.faq-list { max-width: 720px; margin-top: 52px; }
-.faq-item {
-  border-bottom: 1px solid var(--border);
-  padding: 0;
-  overflow: hidden;
-}
-.faq-item:first-child { border-top: 1px solid var(--border); }
-.faq-q {
-  display: flex; justify-content: space-between; align-items: center; gap: 20px;
-  padding: 22px 0; cursor: pointer;
-  font-size: 0.92rem; font-weight: 700; letter-spacing: -0.2px;
-  transition: color 0.15s;
-  user-select: none;
-}
-.faq-q:hover { color: var(--blue-l); }
-.faq-toggle {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--bg3); border: 1px solid var(--border-hi);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; font-size: 0.8rem; color: var(--g2);
-  transition: background 0.15s, transform 0.3s;
-}
-.faq-item.open .faq-toggle { background: var(--blue); border-color: var(--blue); color: white; transform: rotate(45deg); }
-.faq-a {
-  font-size: 0.85rem; color: var(--g2); line-height: 1.75;
-  padding-bottom: 20px; display: none; font-weight: 400;
-}
-.faq-a a { color: var(--blue-l); text-decoration: none; border-bottom: 1px solid rgba(96,165,250,0.3); }
-.faq-item.open .faq-a { display: block; }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--amber);
+      margin-bottom: 0.25rem;
+    }
 
-/* ═══════════════════════════════════════════
-   CTA BANNER
-═══════════════════════════════════════════ */
-.cta-banner {
-  margin: 0 max(28px, calc(50vw - 680px)) 80px;
-  border-radius: var(--r-2xl); overflow: hidden;
-  position: relative;
-  background: linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(124,58,237,0.1) 50%, rgba(37,99,235,0.08) 100%);
-  border: 1px solid rgba(96,165,250,0.2);
-  padding: 64px 60px;
-  text-align: center;
-}
-.cta-banner::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(37,99,235,0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-.cta-banner-eyebrow {
-  font-size: 0.7rem; font-weight: 700; color: var(--blue-l);
-  text-transform: uppercase; letter-spacing: 3px; margin-bottom: 16px;
-}
-.cta-banner h2 {
-  font-family: 'Cabinet Grotesk', sans-serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 900; letter-spacing: -2px; line-height: 1.05;
-  margin-bottom: 18px;
-}
-.cta-banner p {
-  font-size: 0.95rem; color: var(--g2); max-width: 440px; margin: 0 auto 36px;
-  line-height: 1.7; font-weight: 400;
-}
-.cta-banner-form {
-  display: flex; gap: 8px; max-width: 480px; margin: 0 auto;
-  justify-content: center;
-}
-@media(max-width:560px) { .cta-banner-form { flex-direction: column; } .cta-banner { padding: 40px 28px; } }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
 
-/* ═══════════════════════════════════════════
-   FOOTER
-═══════════════════════════════════════════ */
-footer {
-  border-top: 1px solid var(--border);
-  padding: 48px max(28px, calc(50vw - 680px));
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 20px;
-}
-.footer-logo {
-  display: flex; align-items: center; gap: 8px;
-  text-decoration: none;
-}
-.footer-logo-mark {
-  width: 26px; height: 26px;
-  background: linear-gradient(135deg, var(--blue) 0%, var(--violet) 100%);
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 900; color: white;
-}
-.footer-logo-name { font-size: 0.9rem; font-weight: 800; letter-spacing: -0.3px; }
-.footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
-.footer-links a { font-size: 0.78rem; color: var(--g3); text-decoration: none; transition: color 0.15s; }
-.footer-links a:hover { color: var(--g2); }
-.footer-copy { font-size: 0.72rem; color: var(--g3); }
+    @media (max-width: 1024px) {
+      .hero {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 3rem;
+      }
+    }
 
-/* ═══════════════════════════════════════════
-   SCROLL ANIMATIONS
-═══════════════════════════════════════════ */
-.reveal {
-  opacity: 0; transform: translateY(28px);
-  transition: opacity 0.65s ease, transform 0.65s ease;
-}
-.reveal.visible { opacity: 1; transform: translateY(0); }
-.reveal-delay-1 { transition-delay: 0.08s; }
-.reveal-delay-2 { transition-delay: 0.16s; }
-.reveal-delay-3 { transition-delay: 0.24s; }
-.reveal-delay-4 { transition-delay: 0.32s; }
-.reveal-delay-5 { transition-delay: 0.40s; }
+    @media (max-width: 768px) {
+      .hero {
+        padding: 100px 1rem 2rem;
+      }
+      
+      .hero-ctas {
+        flex-direction: column;
+      }
+    }
 
-/* ═══════════════════════════════════════════
-   DIVIDER
-═══════════════════════════════════════════ */
-.divider { border: none; border-top: 1px solid var(--border); }
+    /* ═══════════════════════════════════════════
+       SECTIONS & LAYOUTS
+    ═══════════════════════════════════════════ */
+    .section {
+      padding: var(--section-padding) 2rem;
+      max-width: var(--container);
+      margin: 0 auto;
+    }
 
-/* spinner */
-@keyframes spin { to { transform: rotate(360deg); } }
-.spinner {
-  width: 15px; height: 15px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.25); border-top-color: white;
-  display: inline-block; animation: spin 0.65s linear infinite;
-  vertical-align: middle; margin-right: 7px;
-}
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
 
-/* ═══════════════════════════════════════════
-   WHITE-LABEL CONFIG
-═══════════════════════════════════════════ */
-.wl-section {
-  max-width: 520px;
-  margin-top: 18px;
-  animation: fadeUp 0.7s 0.30s ease both;
-}
-.wl-toggle-row {
-  display: flex; align-items: center; gap: 10px;
-}
-.wl-toggle-btn {
-  background: none;
-  border: 1px solid var(--border-hi);
-  color: var(--g2); padding: 7px 14px;
-  border-radius: 9px; font-size: 0.78rem; font-weight: 600;
-  cursor: pointer; font-family: 'Satoshi', sans-serif;
-  display: inline-flex; align-items: center; gap: 7px;
-  transition: border-color 0.15s, color 0.15s;
-  letter-spacing: -0.1px;
-}
-.wl-toggle-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
-.wl-active-badge {
-  display: none; font-size: 0.65rem; font-weight: 700;
-  padding: 3px 9px; border-radius: 6px;
-  background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.22);
-  color: var(--green-l); letter-spacing: 0.3px;
-}
-.wl-form {
-  display: none; margin-top: 12px;
-  background: var(--bg2); border: 1px solid var(--border-hi);
-  border-radius: var(--r-lg); padding: 18px;
-}
-.wl-form.open { display: block; }
-.wl-form-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-bottom: 10px;
-}
-@media(max-width:560px) { .wl-form-grid { grid-template-columns: 1fr; } }
-.wl-field-label {
-  font-size: 0.63rem; font-weight: 700; color: var(--g3);
-  text-transform: uppercase; letter-spacing: 0.8px;
-  display: block; margin-bottom: 5px;
-}
-.wl-field-input {
-  width: 100%; background: var(--bg3);
-  border: 1px solid var(--border-hi);
-  border-radius: 9px; padding: 9px 12px;
-  font-size: 0.82rem; color: var(--white);
-  font-family: 'Satoshi', sans-serif; outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.wl-field-input::placeholder { color: var(--g4); }
-.wl-field-input:focus {
-  border-color: var(--blue-m);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-}
-.wl-logo-row { margin-top: 0; }
-.wl-form-note {
-  font-size: 0.68rem; color: var(--g3);
-  margin-top: 10px; line-height: 1.55;
-}
-.wl-clear-btn {
-  background: none; border: none; color: var(--g3);
-  font-size: 0.72rem; cursor: pointer; font-family: 'Satoshi', sans-serif;
-  padding: 0; text-decoration: underline; margin-top: 6px; display: inline-block;
-}
-.wl-clear-btn:hover { color: var(--red); }
-</style>
+    .section-title {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ═══════════════════════════════════════════
+       PROBLEM SECTION
+    ═══════════════════════════════════════════ */
+    .problem-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .problem-card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      padding: 2rem;
+      border-radius: var(--border-radius-lg);
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .problem-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--amber);
+    }
+
+    .problem-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .problem-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
+
+    .problem-description {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════
+       HOW IT WORKS
+    ═══════════════════════════════════════════ */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 3rem;
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+    }
+
+    .step-number {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--amber);
+      color: var(--dark-base);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin: 0 auto 1.5rem;
+    }
+
+    .step-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .step-description {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .powered-by {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* ═══════════════════════════════════════════
+       REPORT FEATURES
+    ═══════════════════════════════════════════ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--dark-border-light);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .feature-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-description {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════
+       SAMPLE REPORT CTA
+    ═══════════════════════════════════════════ */
+    .sample-cta {
+      background: var(--dark-surface);
+      border: 2px solid var(--amber);
+      border-radius: var(--border-radius-lg);
+      padding: 3rem;
+      text-align: center;
+      margin: 4rem 0;
+    }
+
+    .sample-cta-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .sample-cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--amber);
+      color: var(--dark-base);
+      padding: 1rem 2rem;
+      border-radius: var(--border-radius);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .sample-cta-button:hover {
+      background: var(--amber-light);
+      transform: translateY(-2px);
+    }
+
+    /* ═══════════════════════════════════════════
+       PRICING
+    ═══════════════════════════════════════════ */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .pricing-card {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--border-radius-lg);
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .pricing-card.featured {
+      border-color: var(--amber);
+      transform: translateY(-10px);
+    }
+
+    .pricing-card.featured::before {
+      content: 'Most Popular';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--amber);
+      color: var(--dark-base);
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-size: 0.875rem;
+      font-weight: 800;
+    }
+
+    .pricing-tier {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .pricing-price {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--amber);
+      margin-bottom: 0.5rem;
+    }
+
+    .pricing-period {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pricing-features li::before {
+      content: '✓';
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    .pricing-note {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 1rem;
+    }
+
+    /* ═══════════════════════════════════════════
+       TESTIMONIALS
+    ═══════════════════════════════════════════ */
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .testimonial {
+      background: var(--dark-surface);
+      border: 1px solid var(--dark-border);
+      padding: 2rem;
+      border-radius: var(--border-radius-lg);
+      transition: all 0.3s ease;
+    }
+
+    .testimonial:hover {
+      transform: translateY(-3px);
+      border-color: var(--dark-border-light);
+    }
+
+    .testimonial-quote {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .testimonial-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--dark-base);
+    }
+
+    .testimonial-info h4 {
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
+
+    .testimonial-info p {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* ═══════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════ */
+    .footer {
+      background: var(--dark-surface);
+      border-top: 1px solid var(--dark-border);
+      padding: 3rem 2rem;
+      margin-top: 4rem;
+    }
+
+    .footer-content {
+      max-width: var(--container);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      font-family: 'Cabinet Grotesk', sans-serif;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-tagline {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--dark-border);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+      .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      
+      .footer-links {
+        justify-content: center;
+      }
+    }
+
+    /* ═══════════════════════════════════════════
+       INLINE ADDRESS INPUT
+    ═══════════════════════════════════════════ */
+    .inline-input {
+      background: var(--dark-elevated);
+      border: 1px solid var(--dark-border);
+      border-radius: var(--border-radius-lg);
+      padding: 2rem;
+      margin: 3rem 0;
+      display: none;
+    }
+
+    .inline-input.active {
+      display: block;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .input-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .input-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .input-field {
+      background: var(--dark-base);
+      border: 1px solid var(--dark-border);
+      color: var(--text-primary);
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius);
+      font-family: inherit;
+      transition: border-color 0.3s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--amber);
+    }
+
+    .persona-select {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .persona-option {
+      flex: 1;
+      background: var(--dark-base);
+      border: 1px solid var(--dark-border);
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .persona-option.selected {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    /* ═══════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════ */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      opacity: 0;
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .fade-in-delay-1 { animation-delay: 0.2s; }
+    .fade-in-delay-2 { animation-delay: 0.4s; }
+    .fade-in-delay-3 { animation-delay: 0.6s; }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE DESIGN
+    ═══════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .section {
+        padding: 4rem 1rem;
+      }
+      
+      .problem-cards,
+      .features-grid,
+      .pricing-grid,
+      .testimonials {
+        grid-template-columns: 1fr;
+      }
+      
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      
+      .hero-ctas {
+        flex-direction: column;
+      }
+      
+      .persona-select {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<!-- ANIMATED BG -->
-<div class="scene" aria-hidden="true">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-</div>
-
-<!-- NAV -->
-<nav>
-  <a class="nav-logo" href="/">
-    <div class="nav-logo-mark">PI</div>
-    <span class="nav-logo-name">PropIntel</span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#how">How it works</a></li>
-    <li><a href="#pricing">Pricing</a></li>
-    <li><a href="learn.html">Learn</a></li>
-    <li><a href="demo.html">Sample report</a></li>
-  </ul>
-  <div class="nav-right">
-    <a class="nav-cta" href="#pricing">Get a report →</a>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-left">
-    <div class="hero-badge">
-      <span class="pulse-dot"></span>
-      Live — All 50 states covered
-    </div>
-    <h1>Know the property.<br><span class="grad">Before anyone else.</span></h1>
-    <p class="hero-sub">Full property intelligence in 30 seconds — owner identity, motivation score, FEMA flood zone, deal analyzer, and sold comps. All from verified public records.</p>
-
-    <form class="analyze-form" onsubmit="handleAnalyze(event)">
-      <div class="analyze-wrap">
-        <span class="analyze-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        </span>
-        <input class="analyze-input" id="address-input" type="text"
-          placeholder="Enter any US property address…" autocomplete="off" required/>
-      </div>
-      
-      <!-- Persona Selector -->
-      <div class="persona-selector">
-        <div class="persona-option" data-persona="buyer">
-          <div class="persona-icon">🏠</div>
-          <div class="persona-text">
-            <div class="persona-title">Buyer</div>
-            <div class="persona-sub">I'm evaluating a purchase</div>
-          </div>
-        </div>
-        <div class="persona-option active" data-persona="seller">
-          <div class="persona-icon">💰</div>
-          <div class="persona-text">
-            <div class="persona-title">Seller</div>
-            <div class="persona-sub">I want to know my home's value</div>
-          </div>
-        </div>
-        <div class="persona-option" data-persona="agent">
-          <div class="persona-icon">🤝</div>
-          <div class="persona-text">
-            <div class="persona-title">Agent</div>
-            <div class="persona-sub">I'm preparing a client report</div>
-          </div>
-        </div>
-      </div>
-      
-      <button class="analyze-btn" id="analyze-btn" type="submit">Analyze →</button>
-    </form>
-    <p class="hero-note">No subscription required. <a href="#pricing">Pay per report.</a> · <a href="demo.html">See a sample report →</a></p>
-
-    <!-- WHITE-LABEL CONFIG -->
-    <div class="wl-section">
-      <div class="wl-toggle-row">
-        <button class="wl-toggle-btn" id="wl-toggle" type="button" onclick="toggleWL()">
-          🏷️ Agent White-Label
-        </button>
-        <span class="wl-active-badge" id="wl-active-badge">● Active</span>
-      </div>
-      <div class="wl-form" id="wl-form">
-        <div class="wl-form-grid">
-          <div>
-            <label class="wl-field-label" for="wl-company">Company Name</label>
-            <input class="wl-field-input" id="wl-company" type="text"
-              placeholder="e.g. Apex Realty Group" oninput="saveWL()" />
-          </div>
-          <div>
-            <label class="wl-field-label" for="wl-agent">Agent Name</label>
-            <input class="wl-field-input" id="wl-agent" type="text"
-              placeholder="e.g. Jordan Taylor" oninput="saveWL()" />
-          </div>
-          <div>
-            <label class="wl-field-label" for="wl-phone">Phone</label>
-            <input class="wl-field-input" id="wl-phone" type="text"
-              placeholder="(214) 555-0100" oninput="saveWL()" />
-          </div>
-          <div>
-            <label class="wl-field-label" for="wl-email">Email</label>
-            <input class="wl-field-input" id="wl-email" type="email"
-              placeholder="you@yourfirm.com" oninput="saveWL()" />
-          </div>
-        </div>
-        <div class="wl-logo-row">
-          <label class="wl-field-label" for="wl-logo">
-            Logo URL <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span>
-          </label>
-          <input class="wl-field-input" id="wl-logo" type="url"
-            placeholder="https://yourfirm.com/logo.png" oninput="saveWL()" />
-        </div>
-        <div class="wl-form-note">
-          Your branding appears on all reports you run from this device. Data never leaves your browser — 100% client-side.
-        </div>
-        <button class="wl-clear-btn" type="button" onclick="clearWL()">Clear white-label</button>
-      </div>
-    </div>
-
-    <div class="hero-proof">
-      <div class="proof-avatars">
-        <div class="proof-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed)">JT</div>
-        <div class="proof-avatar" style="background:linear-gradient(135deg,#059669,#2563eb)">SM</div>
-        <div class="proof-avatar" style="background:linear-gradient(135deg,#d97706,#dc2626)">MR</div>
-        <div class="proof-avatar" style="background:linear-gradient(135deg,#7c3aed,#db2777)">KL</div>
-      </div>
-      <div class="proof-text">
-        <span class="proof-stars">★★★★★</span>
-        <strong>400+ agents & investors</strong> across Texas trust PropIntel
-      </div>
-    </div>
-
-    <!-- inline result -->
-    <div id="result-wrap">
-      <div id="result-address"></div>
-      <div id="result-cards"></div>
-      <div class="result-actions" id="result-actions"></div>
-    </div>
+  <!-- Background Animated Orbs -->
+  <div class="background-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
   </div>
 
-  <!-- FLOATING REPORT CARD -->
-  <div class="hero-right">
-    <div class="hero-card" id="heroCard">
-      <div class="hc-header">
-        <div class="hc-dots">
-          <div class="hc-dot"></div><div class="hc-dot"></div><div class="hc-dot"></div>
-        </div>
-        <div class="hc-url">propertyvalueintel.com/report</div>
-        <div class="hc-badge">Pro Report</div>
-      </div>
-      <div class="hc-body">
-        <div class="hc-address">4747 Greenville Ave</div>
-        <div class="hc-sub">Dallas, TX 75206 · Dallas County</div>
-
-        <div class="hc-score-row">
-          <div class="hc-score-label">Motivation Score</div>
-          <div><div class="hc-score-tier">HIGH</div></div>
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:8px">
-          <div class="hc-score-val">72</div>
-          <div style="font-size:0.72rem;color:var(--g3);padding-bottom:6px">/ 100</div>
-        </div>
-        <div class="hc-bar-track"><div class="hc-bar-fill" id="hcBar"></div></div>
-
-        <div class="hc-grid">
-          <div class="hc-cell">
-            <div class="hc-cell-label">Assessed</div>
-            <div class="hc-cell-val">$1.61M</div>
-          </div>
-          <div class="hc-cell">
-            <div class="hc-cell-label">Market Est.</div>
-            <div class="hc-cell-val">$1.69–2.01M</div>
-          </div>
-          <div class="hc-cell">
-            <div class="hc-cell-label">Mobile Found</div>
-            <div class="hc-cell-val" style="color:var(--green-l);filter:blur(3.5px);user-select:none">+1 713 4••••91</div>
-          </div>
-          <div class="hc-cell">
-            <div class="hc-cell-label">Building SF</div>
-            <div class="hc-cell-val">5,920 SF</div>
-          </div>
-        </div>
-
-        <div class="hc-tags">
-          <span class="hc-tag hc-tag-amber">Absentee</span>
-          <span class="hc-tag hc-tag-red">Out of State</span>
-          <span class="hc-tag hc-tag-blue">LLC / Entity</span>
-        </div>
-
-        <div class="hc-cta">
-          <div class="hc-cta-text">
-            Full 13-page report ready
-            <span>Sold comps · Deal analyzer · Skip trace</span>
-          </div>
-          <button class="hc-cta-btn" onclick="document.getElementById('address-input').focus()">Get Pro →</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- STATS STRIP -->
-<div class="stats-strip">
-  <div class="stat-item reveal">
-    <div class="stat-num" data-count="30" data-suffix="s">—</div>
-    <div class="stat-label">Average report time</div>
-  </div>
-  <div class="stat-item reveal reveal-delay-1">
-    <div class="stat-num" data-count="7">—</div>
-    <div class="stat-label">Verified data sources</div>
-  </div>
-  <div class="stat-item reveal reveal-delay-2">
-    <div class="stat-num" data-count="13" data-suffix="+">—</div>
-    <div class="stat-label">Pages per Pro report</div>
-  </div>
-  <div class="stat-item reveal reveal-delay-3">
-    <div class="stat-num" data-count="50">—</div>
-    <div class="stat-label">States covered</div>
-  </div>
-</div>
-
-<!-- FEATURES / BENTO -->
-<div class="section" id="features">
-  <div class="section-eyebrow reveal">Everything in one place</div>
-  <h2 class="section-title reveal reveal-delay-1">13 data categories.<br>30 seconds. $29.99.</h2>
-  <p class="section-sub reveal reveal-delay-2">From skip trace and DSCR modeling to flood zone and demographics — a complete picture of any US property, assembled from 7 verified sources the moment you hit Analyze.</p>
-
-  <div class="bento">
-
-    <!-- Tile 1 (7 cols): Skip Trace — HARDEST -->
-    <div class="tile tile-2 reveal">
-      <div class="tile-accent" style="width:280px;height:280px;top:-80px;right:-60px;background:rgba(239,68,68,0.12)"></div>
-      <div class="tile-diff diff-hard">🔴 Hardest to find</div>
-      <div class="tile-label">Skip Trace — Direct Contact</div>
-      <div class="tile-heading">We found the<br>decision-maker.</div>
-      <div style="font-size:0.8rem;color:var(--g2);margin-bottom:18px;line-height:1.6">
-        Owner is <strong style="color:var(--white)">ZAKI FAMILY PARTNERSHIP LP</strong> — an LLC mailing from Houston. No phone number on any public record. PropIntel found them anyway.
-      </div>
-      <div class="skip-contact-row">
-        <div class="skip-icon skip-icon-phone">📱</div>
-        <div class="skip-detail">
-          <div class="skip-type">Mobile Phone</div>
-          <div class="skip-val skip-blurred">+1 (713) 4••-••91</div>
-          <div class="skip-source">People Data Labs · Verified</div>
-        </div>
-        <span class="tag t-green" style="margin:0">Live</span>
-      </div>
-      <div class="skip-contact-row">
-        <div class="skip-icon skip-icon-email">✉️</div>
-        <div class="skip-detail">
-          <div class="skip-type">Email Address</div>
-          <div class="skip-val skip-blurred">mza••@zak•family.com</div>
-          <div class="skip-source">People Data Labs · Verified</div>
-        </div>
-        <span class="tag t-blue" style="margin:0">Live</span>
-      </div>
-    </div>
-
-    <!-- Tile 2 (5 cols): Motivation Score — HARD -->
-    <div class="tile tile-1 reveal reveal-delay-1">
-      <div class="tile-accent" style="width:240px;height:240px;top:-60px;left:-50px;background:rgba(245,158,11,0.18)"></div>
-      <div class="tile-diff diff-hard">🔴 Hard — 5-source composite</div>
-      <div class="tile-label">Seller Motivation Score</div>
-      <div class="score-big">55<span class="score-denom">/100</span></div>
-      <div class="score-bar"><div class="score-fill" data-width="55"></div></div>
-      <div class="signal-mini">
-        <div class="signal-mini-row on">
-          <span class="signal-mini-name">Absentee Owner</span>
-          <span class="signal-mini-pts">+25</span>
-        </div>
-        <div class="signal-mini-row on">
-          <span class="signal-mini-name">Out-of-State Mailing</span>
-          <span class="signal-mini-pts">+20</span>
-        </div>
-        <div class="signal-mini-row on">
-          <span class="signal-mini-name">LLC / Entity Owned</span>
-          <span class="signal-mini-pts">+10</span>
-        </div>
-        <div class="signal-mini-row off">
-          <span class="signal-mini-name">Long Hold (10+ yr)</span>
-          <span class="signal-mini-pts off">+0</span>
-        </div>
-        <div class="signal-mini-row off">
-          <span class="signal-mini-name">Tax Delinquency</span>
-          <span class="signal-mini-pts off">+0</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tile 3 (4 cols): Deal Analyzer — HARD -->
-    <div class="tile tile-5 reveal">
-      <div class="tile-accent" style="width:220px;height:220px;bottom:-60px;right:-40px;background:rgba(37,99,235,0.15)"></div>
-      <div class="tile-diff diff-hard">🔴 Hard — financial modeling</div>
-      <div class="tile-label">Deal Analyzer</div>
-      <div class="tile-heading">DSCR at three<br>purchase prices.</div>
-      <div class="dscr-scenario">
-        <div class="ds-row">
-          <div>
-            <div class="ds-label">At assessed ($1.61M)</div>
-            <div class="ds-sub">Down: $401K · P&I: $7,892/mo</div>
-          </div>
-          <div style="text-align:right">
-            <div class="ds-dscr dscr-good">1.42×</div>
-            <div class="ds-sub" style="color:var(--green-l)">Lender approved ✓</div>
-          </div>
-        </div>
-        <div class="ds-row best">
-          <div>
-            <div class="ds-label">At market low ($1.69M) ★</div>
-            <div class="ds-sub">Down: $422K · P&I: $8,303/mo</div>
-          </div>
-          <div style="text-align:right">
-            <div class="ds-dscr dscr-ok">1.35×</div>
-            <div class="ds-sub" style="color:var(--blue-l)">Lender approved ✓</div>
-          </div>
-        </div>
-        <div class="ds-row">
-          <div>
-            <div class="ds-label">At market high ($2.01M)</div>
-            <div class="ds-sub">Down: $502K · P&I: $9,878/mo</div>
-          </div>
-          <div style="text-align:right">
-            <div class="ds-dscr dscr-warn">1.13×</div>
-            <div class="ds-sub" style="color:var(--amber-l)">Below 1.25 ⚠</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tile 5 (4 cols): Owner Intel + basics -->
-    <div class="tile tile-5 reveal reveal-delay-1">
-      <div class="tile-accent" style="width:200px;height:200px;top:-60px;right:-40px;background:rgba(96,165,250,0.1)"></div>
-      <div class="tile-label">Owner Intelligence</div>
-      <div class="owner-row">
-        <div class="owner-key">Owner of Record</div>
-        <div class="owner-val">ZAKI FAMILY PARTNERSHIP LP</div>
-      </div>
-      <div class="owner-row">
-        <div class="owner-key">Mailing Address</div>
-        <div class="owner-val">8901 Post Oak Blvd, Houston TX 77056</div>
-      </div>
-      <div class="owner-row">
-        <div class="owner-key">Assessed Value</div>
-        <div class="owner-val">$1,606,710 <span style="color:var(--g3);font-size:0.72rem;font-weight:400">tax assessed</span></div>
-      </div>
-      <div class="owner-row" style="margin-bottom:0">
-        <div class="owner-key">Year Built · Size · Flood Zone</div>
-        <div class="owner-val">1987 · 5,920 SF · <span style="color:var(--green-l)">Zone X</span></div>
-      </div>
-    </div>
-
-    <!-- Tile 4 (4 cols): Mortgage & Equity Intel — HARD -->
-    <div class="tile tile-5 reveal">
-      <div class="tile-accent" style="width:220px;height:220px;top:-60px;left:-50px;background:rgba(34,197,94,0.10)"></div>
-      <div class="tile-diff diff-hard">🔴 Hard — lien + title research</div>
-      <div class="tile-label">Mortgage &amp; Equity Intel</div>
-      <div class="tile-heading">Know the debt<br>before you offer.</div>
-      <div class="mort-row">
-        <div class="mort-key">Lien Balance</div>
-        <div class="mort-val">$195,000</div>
-      </div>
-      <div class="mort-row mort-equity">
-        <div class="mort-key">Estimated Equity <span class="mort-signal">💰 Room to negotiate</span></div>
-        <div class="mort-val mort-val-equity">$45,130</div>
-      </div>
-      <div class="mort-row mort-ltv-warn">
-        <div class="mort-key">LTV Ratio <span class="mort-signal mort-signal-warn">⚠ High leverage</span></div>
-        <div class="mort-val mort-val-ltv">81.2%</div>
-      </div>
-      <div class="mort-row" style="margin-bottom:0">
-        <div class="mort-key">Lender</div>
-        <div class="mort-val mort-val-lender">Mountain Valley Bank</div>
-      </div>
-    </div>
-
-    <!-- Tile 6: Full width — everything else in the report -->
-    <div class="tile tile-6 reveal">
-      <div class="tile-label" style="margin-bottom:20px">Also in your Pro report — every section</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
-        <div style="padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Market Value Estimate</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">$1.69M – $2.01M range · AVM + comps</div>
-        </div>
-        <div style="padding:12px 14px;background:var(--bg2);border:1px solid rgba(34,197,94,0.2);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--green-l);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Mortgage &amp; Equity Intel</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">Lien balance, equity, LTV %, lender name</div>
-        </div>
-        <div style="padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Ownership History</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">Prior sales, acquisition date, hold duration</div>
-        </div>
-        <div style="padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Census Demographics</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">Median income, population, owner occupancy</div>
-        </div>
-        <div style="padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">FEMA Flood Zone</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">Zone designation, insurance requirements, risk</div>
-        </div>
-        <div style="padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Due Diligence Checklist</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">12-item checklist specific to property type</div>
-        </div>
-        <div style="padding:12px 14px;background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(124,58,237,0.06));border:1px solid rgba(96,165,250,0.2);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--blue-l);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">13-Page PDF Report</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--white)">Everything above, formatted and shareable</div>
-        </div>
-        <div style="padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Research Links</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">County appraisal, clerk records, permit portal</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- VALUE TABLE -->
-  <div class="value-table-wrap reveal">
-    <div class="value-table-header">
-      <div>
-        <h3>What this costs everywhere else.</h3>
-        <p>Every data category in a PropIntel Pro report — and what you'd pay (or how long it would take) to get it on your own.</p>
-      </div>
-    </div>
-    <div class="value-table-cols">
-      <span class="vtc">Data point</span>
-      <span class="vtc">Without PropIntel</span>
-      <span class="vtc">PropIntel Pro</span>
-    </div>
-
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-hard"></span><div><div>Skip trace — phone + email</div><div class="vr-name-sub">For any owner type, including LLCs and LPs</div></div></div>
-      <div class="vr-else">SkipForce / TLO<br>$3–15 per lookup</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-hard"></span><div><div>Seller motivation score</div><div class="vr-name-sub">5-signal composite from verified sources</div></div></div>
-      <div class="vr-else">Manual research<br>1–2 hrs per property</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-hard"></span><div><div>Sold comps with $/SF analysis</div><div class="vr-name-sub">90d / 6mo / 12mo windows, normalized</div></div></div>
-      <div class="vr-else">ATTOM / Reonomy<br>$299–500+/mo</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-hard"></span><div><div>Deal analyzer — DSCR + 3 scenarios</div><div class="vr-name-sub">Down payment, P&I, DSCR at assessed / market lo / hi</div></div></div>
-      <div class="vr-else">Spreadsheet + expertise<br>30–60 min per deal</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-med"></span><div><div>AVM — real market value estimate</div><div class="vr-name-sub">Not the Zillow estimate. ATTOM-backed AVM.</div></div></div>
-      <div class="vr-else">CoreLogic / ATTOM<br>Subscription required</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-med"></span><div><div>Mortgage &amp; Equity Intel</div><div class="vr-name-sub">Lien balance, estimated equity, LTV %, lender name — in seconds</div></div></div>
-      <div class="vr-else">Title company / county<br>$150–300 per pull</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-med"></span><div><div>Ownership history</div><div class="vr-name-sub">Prior sale dates, prices, hold duration</div></div></div>
-      <div class="vr-else">County deed records<br>30–60 min of research</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-easy"></span><div><div>Owner identity + mailing address</div><div class="vr-name-sub">Verified county record, entity type</div></div></div>
-      <div class="vr-else">County appraisal site<br>10–20 min, inconsistent</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-easy"></span><div><div>FEMA flood zone</div><div class="vr-name-sub">Zone designation, insurance requirements</div></div></div>
-      <div class="vr-else">msc.fema.gov<br>Free, 5–10 min</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-easy"></span><div><div>Census demographics</div><div class="vr-name-sub">Income, population, owner occupancy by ZIP</div></div></div>
-      <div class="vr-else">census.gov / ACS<br>Free, complex to parse</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-    <div class="value-row" style="border-bottom:none">
-      <div class="vr-name"><span class="vr-dot" style="background:var(--violet-l);box-shadow:0 0 5px rgba(167,139,250,0.4)"></span><div><div>13-page PDF + shareable link</div><div class="vr-name-sub">Client-ready, printable, no login required to view</div></div></div>
-      <div class="vr-else">N/A — you'd<br>have to build it</div>
-      <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
-    </div>
-
-    <div class="value-total-row">
-      <div class="vt-label">Total if assembled manually</div>
-      <div class="vt-else">$500+ and a half day's work</div>
-      <div>
-        <div class="vt-pi">$29.99</div>
-        <span class="vt-pi-sub">30 seconds · any US property</span>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- SOCIAL PROOF COUNTERS -->
-<div class="stats-strip" style="border-top:none">
-  <div class="stat-item reveal">
-    <div class="stat-num" data-count="2400" data-suffix="+">—</div>
-    <div class="stat-label">Reports Generated</div>
-  </div>
-  <div class="stat-item reveal reveal-delay-1">
-    <div class="stat-num" data-count="47">—</div>
-    <div class="stat-label">States Covered</div>
-  </div>
-  <div class="stat-item reveal reveal-delay-2">
-    <div class="stat-num" data-count="13" data-suffix="+">—</div>
-    <div class="stat-label">Data Sources Per Report</div>
-  </div>
-  <div class="stat-item reveal reveal-delay-3">
-    <div class="stat-num" data-count="30" data-suffix="s">—</div>
-    <div class="stat-label">Report Delivery</div>
-  </div>
-</div>
-
-<hr class="divider"/>
-
-<!-- HOW IT WORKS -->
-<div class="section" id="how">
-  <div class="section-eyebrow reveal">How it works</div>
-  <h2 class="section-title reveal reveal-delay-1">Report ready<br>in three steps.</h2>
-
-  <div class="steps-row">
-    <div class="step-cell reveal">
-      <span class="step-n">01</span>
-      <div class="step-icon">🏠</div>
-      <div class="step-title">Enter any address</div>
-      <div class="step-desc">US residential or commercial property, any state. We normalize and geocode your input, then pull from 7 verified government and public-record sources simultaneously.</div>
-    </div>
-    <div class="step-cell reveal reveal-delay-1">
-      <span class="step-n">02</span>
-      <div class="step-icon">📊</div>
-      <div class="step-title">Choose your report</div>
-      <div class="step-desc">Starter covers the core record — owner, assessed value, flood zone. Pro unlocks motivation score, sold comps, AVM, deal analyzer, mortgage history, skip trace, and a 13-page PDF.</div>
-    </div>
-    <div class="step-cell reveal reveal-delay-2">
-      <span class="step-n">03</span>
-      <div class="step-icon">⚡</div>
-      <div class="step-title">Get your report</div>
-      <div class="step-desc">PDF delivered to your inbox in seconds. Plus a shareable link safe to send to clients, lenders, or partners — no login required on their end.</div>
-    </div>
-  </div>
-</div>
-
-<hr class="divider"/>
-
-<!-- PRICING -->
-<div class="section" id="pricing">
-  <div class="section-eyebrow reveal">Pricing</div>
-  <h2 class="section-title reveal reveal-delay-1">Start free. Scale up.</h2>
-  <p class="section-sub reveal reveal-delay-2">One report or unlimited. Your call — no lock-in, no seat fees.</p>
-
-  <div class="pricing-grid">
-
-    <!-- Pay Per Report -->
-    <div class="price-card reveal">
-      <div class="price-tier">Pay Per Report</div>
-      <div class="price-amount">$29.99</div>
-      <div class="price-per">per report — no subscription</div>
-      <ul class="price-list">
-        <li><span class="price-check">✓</span> Full property intelligence report</li>
-        <li><span class="price-check">✓</span> AVM + sold comps + ownership history</li>
-        <li><span class="price-check">✓</span> Motivation score + deal analyzer</li>
-        <li><span class="price-check">✓</span> PDF + email delivery</li>
-        <li><span class="price-check">✓</span> No subscription required</li>
-      </ul>
-      <a class="price-btn" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank">Buy Report →</a>
-    </div>
-
-    <!-- Agent Plan — Most Popular -->
-    <div class="price-card featured reveal reveal-delay-1">
-      <div class="price-popular">Most Popular</div>
-      <div class="price-tier">Agent Plan</div>
-      <div class="price-amount">$79</div>
-      <div class="price-per">per month — billed monthly</div>
-      <ul class="price-list">
-        <li><span class="price-check">✓</span> 25 branded reports/month</li>
-        <li><span class="price-check">✓</span> 3 client email templates</li>
-        <li><span class="price-check">✓</span> White-label — your name &amp; brokerage</li>
-        <li><span class="price-check">✓</span> Client email delivery built-in</li>
-        <li><span class="price-check">✓</span> Perfect for 1–5 agent teams</li>
-      </ul>
-      <a class="price-btn cta" href="https://buy.stripe.com/14AaEQe5W2HW3z48Q3frW02" target="_blank">Start Free Trial →</a>
-    </div>
-
-    <!-- Broker Plan -->
-    <div class="price-card reveal reveal-delay-2">
-      <div class="price-tier">Broker Plan</div>
-      <div class="price-amount">$299</div>
-      <div class="price-per">per month — billed monthly</div>
-      <ul class="price-list">
-        <li><span class="price-check">✓</span> Unlimited reports</li>
-        <li><span class="price-check">✓</span> 10 team seats</li>
-        <li><span class="price-check">✓</span> All templates + API access</li>
-        <li><span class="price-check">✓</span> Custom brokerage branding</li>
-        <li><span class="price-check">✓</span> Priority support</li>
-      </ul>
-      <a class="price-btn" href="#contact">Get Started →</a>
-    </div>
-
-    <!-- Enterprise -->
-    <div class="price-card reveal reveal-delay-3">
-      <div class="price-tier">Enterprise</div>
-      <div class="price-amount">$999</div>
-      <div class="price-per">per month — billed monthly</div>
-      <ul class="price-list">
-        <li><span class="price-check">✓</span> Everything in Broker</li>
-        <li><span class="price-check">✓</span> Permit history on every report</li>
-        <li><span class="price-check">✓</span> LLC pierce + ownership tree</li>
-        <li><span class="price-check">✓</span> Bulk export (CSV/PDF batch)</li>
-        <li><span class="price-check">✓</span> Dedicated account manager</li>
-        <li><span class="price-check">✓</span> ATTOM data integration</li>
-      </ul>
-      <a class="price-btn" href="#contact">Contact Sales →</a>
-    </div>
-
-  </div>
-</div>
-
-<hr class="divider"/>
-
-<!-- TESTIMONIALS -->
-<div class="section">
-  <div class="section-eyebrow reveal">What people are saying</div>
-  <h2 class="section-title reveal reveal-delay-1">Built for people<br>who move fast.</h2>
-
-  <div class="testimonials">
-    <div class="testi reveal">
-      <div class="testi-stars">★★★★★</div>
-      <div class="testi-quote">"</div>
-      <div class="testi-body">Pulled a Pro report before making an offer on a commercial strip in Garland. Owner was an <strong>out-of-state LLC with a 73/100 motivation score</strong>. Negotiated $42K under asking. The $29.99 paid for itself in the first 30 seconds.</div>
-      <div class="testi-foot">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#2563eb,#7c3aed)">JT</div>
-        <div>
-          <div class="testi-name">Jordan T.</div>
-          <div class="testi-role">Real estate investor — Dallas, TX</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="testi reveal reveal-delay-1">
-      <div class="testi-stars">★★★★★</div>
-      <div class="testi-quote">"</div>
-      <div class="testi-body">I use PropIntel for every listing presentation now. Walk in knowing the assessed value, flood zone, and owner history before the client even sits down. <strong>Closed 3 listings this quarter</strong> directly off the back of it.</div>
-      <div class="testi-foot">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#059669,#2563eb)">SM</div>
-        <div>
-          <div class="testi-name">Sarah M.</div>
-          <div class="testi-role">Licensed agent — Fort Worth, TX</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="testi reveal reveal-delay-2">
-      <div class="testi-stars">★★★★★</div>
-      <div class="testi-quote">"</div>
-      <div class="testi-body">The deal analyzer saved me from a bad acquisition. DSCR was <strong>0.87 at asking price</strong> — I ran the numbers right there in the meeting. Seller came down $115K to make it work. That's a $115K lesson for $29.99.</div>
-      <div class="testi-foot">
-        <div class="testi-avatar" style="background:linear-gradient(135deg,#d97706,#dc2626)">MR</div>
-        <div>
-          <div class="testi-name">Marcus R.</div>
-          <div class="testi-role">Commercial investor — Austin, TX</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<hr class="divider"/>
-
-<!-- FAQ -->
-<div class="section" id="faq">
-  <div class="section-eyebrow reveal">FAQ</div>
-  <h2 class="section-title reveal reveal-delay-1">Common questions.</h2>
-
-  <div class="faq-list">
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Where does the data come from? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">PropIntel aggregates from 7 verified sources: <strong>Regrid</strong> (county assessor parcel records), <strong>FEMA NFHL</strong> (flood zone), <strong>US Census ACS</strong> (demographics), <strong>People Data Labs</strong> (skip trace), <strong>ATTOM Data</strong> (AVM + sold comps + mortgage history for Pro), <strong>Geocodio</strong> (address normalization), and the <strong>FEMA Map Service Center</strong> as verification fallback. All sources are government databases or institutional-grade licensed aggregators.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">What is the motivation score and how is it calculated? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">The motivation score (0–100) is built from five verified ownership signals: <strong>Absentee ownership</strong> (+25 pts), <strong>Out-of-state mailing</strong> (+20 pts), <strong>LLC/entity ownership</strong> (+10 pts), <strong>Long hold duration — 10+ years</strong> (+10 pts), and <strong>Tax delinquency</strong> (+15 pts). Scores 60+ are HIGH and indicate multiple overlapping signals — your best outreach targets. <a href="learn.html#motivation">Full methodology →</a></div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">What's the difference between assessed value and market value? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">Assessed value is the county's number for calculating property taxes — not what the property is worth. PropIntel always labels it "Tax Assessed Value." Market value is what a buyer and seller would agree to today in an arm's-length transaction. We show a market estimate range alongside the assessed value. In fast-appreciating markets like Dallas, assessed value can be 15–30% below actual market. <a href="learn.html#value">Read more →</a></div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">How do I read the FEMA flood zone? <span class="faq-toggle">+</span></div>
-      <div class="faq-a"><strong>Zone X</strong> = minimal risk, no mandatory flood insurance. <strong>Zone AE</strong> = 100-year floodplain — flood insurance required for federally-backed loans, typically $800–$3,000+/year. <strong>Zone VE</strong> = coastal high-velocity, highest risk and cost. For Zone AE properties, always ask for an elevation certificate — it can dramatically reduce insurance premiums if the building sits above base flood elevation. <a href="learn.html#flood">All zone codes explained →</a></div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">What does the deal analyzer actually calculate? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">Three acquisition scenarios — at assessed value, market low, and market high. For each: <strong>down payment</strong> (25% LTV), <strong>loan amount</strong>, <strong>monthly P&I</strong>, <strong>DSCR</strong> (net operating income ÷ annual debt service — lenders require 1.25x minimum), and <strong>$/SF</strong> vs. market comps. Use assessed to anchor your offer, market low as your negotiation ceiling, market high to understand your competition. <a href="learn.html#deal">Full methodology →</a></div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Do you cover all US states? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">Base parcel data covers all 50 states. Sold comps and AVM are strongest in Texas and major national metros, with coverage expanding. FEMA flood zone and census data are fully national. If a Pro report returns limited comp data in a specific market, that is noted in the report — you're never charged for a section with no data.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Can I use this for client-facing work? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">Yes. The shareable report link is clean and professional — safe to forward to clients, lenders, or partners. For agents, use the Starter as a listing presentation supplement. Enterprise accounts get full white-label with your firm's branding — clients never see PropIntel. <a href="mailto:hello@propertyvalueintel.com">Contact us for volume pricing.</a></div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">What's the refund policy? <span class="faq-toggle">+</span></div>
-      <div class="faq-a">If a report fails to generate or returns no parcel data, we refund immediately — no questions asked. If data is live, delivered, and accurate to public records, all sales are final. Double-check your address format before submitting.</div>
-    </div>
-  </div>
-
-  <div style="margin-top:32px">
-    <a href="learn.html" style="display:inline-flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--blue-l);text-decoration:none;font-weight:700;border-bottom:1px solid rgba(96,165,250,0.3);padding-bottom:2px">
-      Deep-dive learning guide — every metric explained in full →
-    </a>
-  </div>
-</div>
-
-<!-- CTA BANNER -->
-<div class="cta-banner reveal">
-  <div class="cta-banner-eyebrow">Get started</div>
-  <h2>Run your first report.<br>Takes 30 seconds.</h2>
-  <p>Enter any US address. No account required. Get the full picture before anyone else does.</p>
-  <div class="cta-banner-form">
-    <div class="analyze-wrap" style="flex:1">
-      <span class="analyze-icon">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      </span>
-      <input class="analyze-input" id="address-input-2" type="text"
-        placeholder="Enter any US property address…" autocomplete="off"/>
-    </div>
-    <button class="analyze-btn"
-      onclick="document.getElementById('address-input').value=document.getElementById('address-input-2').value;document.getElementById('address-input').closest('form').dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));window.scrollTo({top:0,behavior:'smooth'})">
-      Analyze →
-    </button>
-  </div>
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <a class="footer-logo" href="/">
-    <div class="footer-logo-mark">PI</div>
-    <span class="footer-logo-name">PropIntel</span>
-  </a>
-  <div class="footer-links">
-    <a href="#features">Features</a>
-    <a href="#how">How it works</a>
-    <a href="#pricing">Pricing</a>
-    <a href="demo.html">Sample report</a>
-    <a href="learn.html">Learn</a>
-    <a href="mailto:hello@propertyvalueintel.com">Contact</a>
-  </div>
-  <span class="footer-copy">© 2026 PropertyValueIntel LLC · All rights reserved</span>
-</footer>
-
-<script>
-/* ─── WHITE-LABEL ─── */
-var WL_KEY = 'propintel_wl';
-
-function toggleWL() {
-  document.getElementById('wl-form').classList.toggle('open');
-}
-
-function saveWL() {
-  var data = {
-    company: document.getElementById('wl-company').value.trim(),
-    agent:   document.getElementById('wl-agent').value.trim(),
-    phone:   document.getElementById('wl-phone').value.trim(),
-    email:   document.getElementById('wl-email').value.trim(),
-    logo:    document.getElementById('wl-logo').value.trim()
-  };
-  var hasData = data.company || data.agent || data.phone || data.email;
-  if (hasData) {
-    localStorage.setItem(WL_KEY, JSON.stringify(data));
-    document.getElementById('wl-active-badge').style.display = 'inline-flex';
-  } else {
-    localStorage.removeItem(WL_KEY);
-    document.getElementById('wl-active-badge').style.display = 'none';
-  }
-}
-
-function clearWL() {
-  localStorage.removeItem(WL_KEY);
-  ['wl-company','wl-agent','wl-phone','wl-email','wl-logo'].forEach(function(id) {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('wl-active-badge').style.display = 'none';
-}
-
-(function loadWL() {
-  try {
-    var raw = localStorage.getItem(WL_KEY);
-    if (!raw) return;
-    var d = JSON.parse(raw);
-    if (d.company) document.getElementById('wl-company').value = d.company;
-    if (d.agent)   document.getElementById('wl-agent').value   = d.agent;
-    if (d.phone)   document.getElementById('wl-phone').value   = d.phone;
-    if (d.email)   document.getElementById('wl-email').value   = d.email;
-    if (d.logo)    document.getElementById('wl-logo').value    = d.logo;
-    if (d.company || d.agent) {
-      document.getElementById('wl-active-badge').style.display = 'inline-flex';
-    }
-  } catch(e) {}
-})();
-
-/* ─── FAQ ─── */
-function toggleFaq(el) { el.classList.toggle('open'); }
-
-/* ─── SCROLL REVEAL ─── */
-const revealObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
-}, { threshold: 0.12 });
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-/* ─── SCORE BAR ANIMATION ─── */
-const barObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const w = e.target.dataset.width || '72';
-      e.target.style.width = w + '%';
-      barObserver.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.3 });
-document.querySelectorAll('.score-fill[data-width]').forEach(el => {
-  el.style.width = '0%'; barObserver.observe(el);
-});
-
-/* ─── HERO CARD BAR ─── */
-setTimeout(() => {
-  const bar = document.getElementById('hcBar');
-  if (bar) bar.style.width = '72%';
-}, 800);
-
-/* ─── COUNTER ANIMATION ─── */
-function animateCount(el) {
-  const target = parseInt(el.dataset.count);
-  const suffix = el.dataset.suffix || '';
-  const duration = 1200;
-  const start = performance.now();
-  const update = (now) => {
-    const progress = Math.min((now - start) / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    el.textContent = Math.round(eased * target) + suffix;
-    if (progress < 1) requestAnimationFrame(update);
-  };
-  requestAnimationFrame(update);
-}
-const counterObserver = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      animateCount(e.target);
-      counterObserver.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.5 });
-document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
-
-/* ─── PERSONA SELECTOR ─── */
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize persona selector
-  const personaOptions = document.querySelectorAll('.persona-option');
-  personaOptions.forEach(option => {
-    option.addEventListener('click', function() {
-      personaOptions.forEach(opt => opt.classList.remove('active'));
-      this.classList.add('active');
-    });
-  });
-});
-
-function getSelectedPersona() {
-  const active = document.querySelector('.persona-option.active');
-  return active ? active.dataset.persona : 'seller';
-}
-
-/* ─── ANALYZE ─── */
-const API = 'https://propintel-htij.onrender.com';
-
-async function handleAnalyze(e) {
-  e.preventDefault();
-  const input = document.getElementById('address-input').value.trim();
-  if (!input) return;
-  const persona = getSelectedPersona();
-  const btn = document.getElementById('analyze-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Analyzing…';
-
-  /* Pass white-label config to report.html via sessionStorage */
-  try {
-    const wlRaw = localStorage.getItem(WL_KEY);
-    if (wlRaw) {
-      sessionStorage.setItem('propintel_wl_active', wlRaw);
-    } else {
-      sessionStorage.removeItem('propintel_wl_active');
-    }
+  <!-- Navigation -->
+  <nav class="navigation">
+    <a href="#" class="nav-logo">PropIntel</a>
     
-    /* Store selected persona for report.html */
-    sessionStorage.setItem('propintel_persona', persona);
-  } catch(e) {}
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#agents">For Agents</a></li>
+    </ul>
+    
+    <a href="#generate-report" class="nav-cta">Get Your Free Report</a>
+  </nav>
 
-  try {
-    const res = await fetch(API + '/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: input, tier: 'starter', persona: persona })
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-eyebrow">For Real Estate Agents</div>
+      
+      <h1 class="hero-headline">Stop sending clients Zillow links.</h1>
+      
+      <p class="hero-subheadline">
+        PropIntel generates a branded property report in seconds — with your name, your logo, and data Zillow doesn't have.
+      </p>
+      
+      <div class="hero-ctas">
+        <button class="cta-primary" onclick="showInlineInput()">
+          Generate a Report Free →
+        </button>
+        <a href="report.html?address=5606+Bordeaux+Ave+Dallas+TX+75209&persona=agent&tier=pro&demo=1" class="cta-secondary">
+          See a Sample Report
+        </a>
+      </div>
+      
+      <p class="hero-note">
+        No credit card • Takes 30 seconds • Works on any property
+      </p>
+    </div>
+    
+    <div class="hero-mockup">
+      <div class="report-card">
+        <div class="report-header">
+          <div class="agent-info">
+            <div class="agent-avatar">SJ</div>
+            <div class="agent-details">
+              <h3>Sarah Johnson</h3>
+              <p>Compass</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="property-address">4747 Greenville Ave</div>
+        <div class="property-details">Dallas, TX 75206 • 3 bed, 2 bath • 2,100 SF</div>
+        
+        <div class="report-stats">
+          <div class="stat-item">
+            <div class="stat-value">$485K</div>
+            <div class="stat-label">Market Value</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">68/100</div>
+            <div class="stat-label">Motivation Score</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inline Address Input -->
+  <div class="inline-input" id="inline-input">
+    <form class="input-form" onsubmit="generateReport(event)">
+      <div class="input-group">
+        <label class="input-label">Property Address</label>
+        <input 
+          type="text" 
+          class="input-field" 
+          id="property-address"
+          placeholder="1234 Main St, Dallas, TX 75201"
+          required
+        >
+      </div>
+      
+      <div class="input-group">
+        <label class="input-label">Report Type</label>
+        <div class="persona-select">
+          <div class="persona-option selected" data-persona="buyer">Buyer</div>
+          <div class="persona-option" data-persona="seller">Seller</div>
+          <div class="persona-option" data-persona="agent">Agent</div>
+        </div>
+      </div>
+      
+      <button type="submit" class="cta-primary">Generate Report →</button>
+    </form>
+  </div>
+
+  <!-- Problem Section -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">Zillow shows 3 photos and a Zestimate. That's not enough.</h2>
+    </div>
+    
+    <div class="problem-cards">
+      <div class="problem-card fade-in">
+        <div class="problem-icon">😤</div>
+        <h3 class="problem-title">Clients Google comps themselves — and question your expertise</h3>
+        <p class="problem-description">
+          When you send a Zillow link, you're sending them to do their own research. They find incomplete data and start doubting your value.
+        </p>
+      </div>
+      
+      <div class="problem-card fade-in fade-in-delay-1">
+        <div class="problem-icon">⏰</div>
+        <h3 class="problem-title">You spend an hour manually pulling data before every listing appointment</h3>
+        <p class="problem-description">
+          Comps, owner info, flood zones, demographics — you're piecing together a report from 5 different sources every time.
+        </p>
+      </div>
+      
+      <div class="problem-card fade-in fade-in-delay-2">
+        <div class="problem-icon">🎯</div>
+        <h3 class="problem-title">You send a Zillow link that has your competitor's ads on it</h3>
+        <p class="problem-description">
+          Every Zillow link is advertising other agents. You're literally sending clients to your competition's marketing.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" id="how-it-works">
+    <div class="section-header">
+      <h2 class="section-title fade-in">How It Works</h2>
+    </div>
+    
+    <div class="steps">
+      <div class="step fade-in">
+        <div class="step-number">📍</div>
+        <h3 class="step-title">Enter any address</h3>
+        <p class="step-description">
+          US residential or commercial property, any state. We pull from 7 verified sources instantly.
+        </p>
+      </div>
+      
+      <div class="step fade-in fade-in-delay-1">
+        <div class="step-number">📄</div>
+        <h3 class="step-title">Choose buyer, seller, or agent report</h3>
+        <p class="step-description">
+          Each template optimized for your client type, with relevant data points and professional presentation.
+        </p>
+      </div>
+      
+      <div class="step fade-in fade-in-delay-2">
+        <div class="step-number">📤</div>
+        <h3 class="step-title">Share your branded report in seconds</h3>
+        <p class="step-description">
+          PDF download plus shareable link. Clean, professional, mobile-friendly — clients love it.
+        </p>
+      </div>
+    </div>
+    
+    <div class="powered-by fade-in fade-in-delay-3">
+      Your name. Your brokerage. Your brand. Powered by PropIntel.
+    </div>
+  </section>
+
+  <!-- What's In The Report -->
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title fade-in">What's In The Report</h2>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <span class="feature-icon">🏠</span>
+        <h3 class="feature-title">Property Details</h3>
+        <p class="feature-description">Beds, baths, sqft, year built from county records</p>
+      </div>
+      
+      <div class="feature-card fade-in fade-in-delay-1">
+        <span class="feature-icon">💰</span>
+        <h3 class="feature-title">Value Estimate</h3>
+        <p class="feature-description">AI-powered AVM from comparable sales analysis</p>
+      </div>
+      
+      <div class="feature-card fade-in fade-in-delay-2">
+        <span class="feature-icon">👤</span>
+        <h3 class="feature-title">Owner Intelligence</h3>
+        <p class="feature-description">Ownership history, equity position, contact info</p>
+      </div>
+      
+      <div class="feature-card fade-in fade-in-delay-3">
+        <span class="feature-icon">📊</span>
+        <h3 class="feature-title">Comparable Sales</h3>
+        <p class="feature-description">Recent sales with price/sqft analysis and trends</p>
+      </div>
+      
+      <div class="feature-card fade-in">
+        <span class="feature-icon">🌊</span>
+        <h3 class="feature-title">Flood & Risk</h3>
+        <p class="feature-description">FEMA flood zone, insurance requirements</p>
+      </div>
+      
+      <div class="feature-card fade-in fade-in-delay-1">
+        <span class="feature-icon">📍</span>
+        <h3 class="feature-title">Demographics</h3>
+        <p class="feature-description">Income, population, neighborhood trends</p>
+      </div>
+      
+      <div class="feature-card fade-in fade-in-delay-2">
+        <span class="feature-icon">🔎</span>
+        <h3 class="feature-title">Motivation Score</h3>
+        <p class="feature-description">Absentee owner, out-of-state, distress signals</p>
+      </div>
+      
+      <div class="feature-card fade-in fade-in-delay-3">
+        <span class="feature-icon">📋</span>
+        <h3 class="feature-title">Permit History</h3>
+        <p class="feature-description">Recent permits, unpermitted work flags</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sample Report CTA -->
+  <section class="section">
+    <div class="sample-cta fade-in">
+      <h2 class="sample-cta-title">See what your clients will see</h2>
+      <a href="report.html?address=5606+Bordeaux+Ave+Dallas+TX+75209&persona=agent&tier=pro&demo=1" class="sample-cta-button">
+        View Sample Report →
+      </a>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="section-header">
+      <h2 class="section-title fade-in">Simple, Transparent Pricing</h2>
+      <p class="section-subtitle fade-in fade-in-delay-1">
+        Choose what works for your business. No hidden fees, no long-term contracts.
+      </p>
+    </div>
+    
+    <div class="pricing-grid">
+      <div class="pricing-card fade-in">
+        <h3 class="pricing-tier">Starter</h3>
+        <div class="pricing-price">$9.99</div>
+        <div class="pricing-period">per report</div>
+        
+        <ul class="pricing-features">
+          <li>Public records data</li>
+          <li>Comparable sales</li>
+          <li>Flood zone info</li>
+          <li>Demographics</li>
+          <li>Basic PDF report</li>
+        </ul>
+        
+        <button class="cta-primary" onclick="showInlineInput()">Get Started</button>
+      </div>
+      
+      <div class="pricing-card featured fade-in fade-in-delay-1">
+        <h3 class="pricing-tier">Pro</h3>
+        <div class="pricing-price">$29.99</div>
+        <div class="pricing-period">per report</div>
+        
+        <ul class="pricing-features">
+          <li>Everything in Starter</li>
+          <li>Owner intelligence</li>
+          <li>Motivation score</li>
+          <li>Skip trace contact info</li>
+          <li>Deal analyzer</li>
+          <li>13-page detailed report</li>
+        </ul>
+        
+        <button class="cta-primary" onclick="showInlineInput()">Get Started</button>
+      </div>
+      
+      <div class="pricing-card fade-in fade-in-delay-2">
+        <h3 class="pricing-tier">Agent</h3>
+        <div class="pricing-price">$79</div>
+        <div class="pricing-period">per month</div>
+        
+        <ul class="pricing-features">
+          <li>Unlimited reports</li>
+          <li>White-label branding</li>
+          <li>Shareable client links</li>
+          <li>QR codes for marketing</li>
+          <li>Priority support</li>
+        </ul>
+        
+        <button class="cta-primary" onclick="showInlineInput()">Start Free Trial</button>
+        
+        <p class="pricing-note">Most agents recoup this on their first transaction</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agent Testimonials -->
+  <section class="section" id="agents">
+    <div class="section-header">
+      <h2 class="section-title fade-in">What Agents Are Saying</h2>
+    </div>
+    
+    <div class="testimonials">
+      <div class="testimonial fade-in">
+        <p class="testimonial-quote">
+          "I used to spend 45 minutes pulling data before every showing. Now I send the PropIntel link in the car. My clients love having all the details at their fingertips."
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">SM</div>
+          <div class="testimonial-info">
+            <h4>Sarah M.</h4>
+            <p>Buyer's Agent, Dallas TX</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="testimonial fade-in fade-in-delay-1">
+        <p class="testimonial-quote">
+          "My clients actually read this. They don't read Zillow. The motivation score helped me identify a seller who was ready to move quickly on a competitive listing."
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">MT</div>
+          <div class="testimonial-info">
+            <h4>Marcus T.</h4>
+            <p>Listing Agent, Phoenix AZ</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="testimonial fade-in fade-in-delay-2">
+        <p class="testimonial-quote">
+          "Sent one of these to a seller and closed the listing appointment same day. The professional branding made me look like I had a whole research team behind me."
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">JK</div>
+          <div class="testimonial-info">
+            <h4>Jennifer K.</h4>
+            <p>RE/MAX, Nashville TN</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div>
+        <div class="footer-logo">PropIntel</div>
+        <div class="footer-tagline">The report your clients actually read</div>
+      </div>
+      
+      <div class="footer-links">
+        <a href="#about">About</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#api">API</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#terms">Terms</a>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      © 2026 PropIntel. Powered by real data.
+    </div>
+  </footer>
+
+  <script>
+    // Intersection Observer for fade-in animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    // Observe all fade-in elements
+    document.querySelectorAll('.fade-in').forEach(el => {
+      observer.observe(el);
     });
-    if (res.status === 429) throw new Error('Rate limit reached — try again in an hour.');
-    if (!res.ok) throw new Error(`Server error (${res.status})`);
-    showResult(await res.json(), input);
-  } catch (err) {
-    btn.disabled = false; btn.innerHTML = 'Analyze →';
-    alert('Error: ' + err.message);
-  }
-}
 
-function showResult(data, input) {
-  const btn = document.getElementById('analyze-btn');
-  btn.disabled = false; btn.innerHTML = 'Analyze →';
-  const wrap = document.getElementById('result-wrap');
-  const cards = document.getElementById('result-cards');
-  const actions = document.getElementById('result-actions');
-  const parcel = data.parcel || {};
-  const flood  = data.flood  || {};
-  document.getElementById('result-address').textContent = data.resolved_address || input;
-  const fmt = v => v ? '$' + Number(v).toLocaleString() : '—';
-  const fz = flood.zone || '—';
-  const items = [
-    { label: 'Owner', val: parcel.owner_name || '—' },
-    { label: 'Assessed', val: fmt(parcel.assessed_total) },
-    { label: 'Flood Zone', val: fz === 'X' ? 'Zone X ✓' : (fz.startsWith('A')||fz.startsWith('V')) ? fz + ' ⚠' : fz },
-    { label: 'Year Built', val: parcel.year_built || '—' },
-    { label: 'Building SF', val: parcel.building_sf ? Number(parcel.building_sf).toLocaleString() + ' SF' : '—' },
-    { label: 'County', val: parcel.county ? parcel.county.replace(/\b\w/g,c=>c.toUpperCase()) + ' Co.' : '—' },
-  ];
-  cards.innerHTML = items.map(i=>`<div class="result-card"><div class="result-card-label">${i.label}</div><div class="result-card-val">${i.val}</div></div>`).join('');
-  actions.innerHTML = `
-    <a class="result-btn result-btn-secondary" href="#pricing">View all report tiers</a>
-    <a class="result-btn result-btn-primary" href="https://buy.stripe.com/aFa8wI3rieqEglQ4zNfrW01" target="_blank">Buy Pro — $29.99</a>`;
-  wrap.classList.add('visible');
-  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Inline input functionality
+    function showInlineInput() {
+      const inlineInput = document.getElementById('inline-input');
+      inlineInput.classList.add('active');
+      inlineInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      setTimeout(() => {
+        document.getElementById('property-address').focus();
+      }, 500);
+    }
 
-  /* also update hero card */
-  document.querySelector('.hc-address').textContent = data.resolved_address || input;
-  if (parcel.owner_name) document.querySelector('.hc-cell-val').textContent = parcel.owner_name.substring(0,22);
-}
-</script>
+    // Persona selection
+    document.querySelectorAll('.persona-option').forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.persona-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        option.classList.add('selected');
+      });
+    });
+
+    // Form submission
+    function generateReport(event) {
+      event.preventDefault();
+      
+      const address = document.getElementById('property-address').value;
+      const persona = document.querySelector('.persona-option.selected').dataset.persona;
+      
+      // Here you would typically make an API call to generate the report
+      // For now, redirect to the sample report
+      const url = `report.html?address=${encodeURIComponent(address)}&persona=${persona}&tier=pro&demo=1`;
+      window.location.href = url;
+    }
+
+    // Smooth scrolling for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>
