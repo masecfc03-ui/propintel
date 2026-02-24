@@ -612,6 +612,31 @@ nav {
   margin-bottom: 16px;
 }
 
+/* Mortgage & Equity tile */
+.mort-row { margin-bottom: 14px; }
+.mort-key {
+  font-size: 0.6rem; color: var(--g3); text-transform: uppercase;
+  letter-spacing: 1px; font-weight: 700; margin-bottom: 3px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.mort-signal {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.5px;
+  padding: 2px 7px; border-radius: 6px; text-transform: none;
+  background: rgba(34,197,94,0.1); color: var(--green-l);
+  border: 1px solid rgba(34,197,94,0.2);
+}
+.mort-signal-warn {
+  background: rgba(245,158,11,0.1); color: var(--amber-l);
+  border: 1px solid rgba(245,158,11,0.2);
+}
+.mort-val {
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 1.45rem; font-weight: 900; letter-spacing: -0.8px; color: var(--g1);
+}
+.mort-val-equity { color: #4ade80; }
+.mort-val-ltv    { color: var(--amber-l); }
+.mort-val-lender { font-size: 0.9rem; font-weight: 600; font-family: inherit; color: var(--g1); letter-spacing: 0; }
+
 /* Skip trace tile */
 .skip-contact-row {
   display: flex; align-items: center; gap: 12px;
@@ -1032,6 +1057,75 @@ footer {
   display: inline-block; animation: spin 0.65s linear infinite;
   vertical-align: middle; margin-right: 7px;
 }
+
+/* ═══════════════════════════════════════════
+   WHITE-LABEL CONFIG
+═══════════════════════════════════════════ */
+.wl-section {
+  max-width: 520px;
+  margin-top: 18px;
+  animation: fadeUp 0.7s 0.30s ease both;
+}
+.wl-toggle-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.wl-toggle-btn {
+  background: none;
+  border: 1px solid var(--border-hi);
+  color: var(--g2); padding: 7px 14px;
+  border-radius: 9px; font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; font-family: 'Satoshi', sans-serif;
+  display: inline-flex; align-items: center; gap: 7px;
+  transition: border-color 0.15s, color 0.15s;
+  letter-spacing: -0.1px;
+}
+.wl-toggle-btn:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+.wl-active-badge {
+  display: none; font-size: 0.65rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 6px;
+  background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.22);
+  color: var(--green-l); letter-spacing: 0.3px;
+}
+.wl-form {
+  display: none; margin-top: 12px;
+  background: var(--bg2); border: 1px solid var(--border-hi);
+  border-radius: var(--r-lg); padding: 18px;
+}
+.wl-form.open { display: block; }
+.wl-form-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 10px;
+}
+@media(max-width:560px) { .wl-form-grid { grid-template-columns: 1fr; } }
+.wl-field-label {
+  font-size: 0.63rem; font-weight: 700; color: var(--g3);
+  text-transform: uppercase; letter-spacing: 0.8px;
+  display: block; margin-bottom: 5px;
+}
+.wl-field-input {
+  width: 100%; background: var(--bg3);
+  border: 1px solid var(--border-hi);
+  border-radius: 9px; padding: 9px 12px;
+  font-size: 0.82rem; color: var(--white);
+  font-family: 'Satoshi', sans-serif; outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.wl-field-input::placeholder { color: var(--g4); }
+.wl-field-input:focus {
+  border-color: var(--blue-m);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+.wl-logo-row { margin-top: 0; }
+.wl-form-note {
+  font-size: 0.68rem; color: var(--g3);
+  margin-top: 10px; line-height: 1.55;
+}
+.wl-clear-btn {
+  background: none; border: none; color: var(--g3);
+  font-size: 0.72rem; cursor: pointer; font-family: 'Satoshi', sans-serif;
+  padding: 0; text-decoration: underline; margin-top: 6px; display: inline-block;
+}
+.wl-clear-btn:hover { color: var(--red); }
 </style>
 </head>
 <body>
@@ -1083,6 +1177,51 @@ footer {
       <button class="analyze-btn" id="analyze-btn" type="submit">Analyze →</button>
     </form>
     <p class="hero-note">No subscription required. <a href="#pricing">Pay per report.</a> · <a href="demo.html">See a sample report →</a></p>
+
+    <!-- WHITE-LABEL CONFIG -->
+    <div class="wl-section">
+      <div class="wl-toggle-row">
+        <button class="wl-toggle-btn" id="wl-toggle" type="button" onclick="toggleWL()">
+          🏷️ Agent White-Label
+        </button>
+        <span class="wl-active-badge" id="wl-active-badge">● Active</span>
+      </div>
+      <div class="wl-form" id="wl-form">
+        <div class="wl-form-grid">
+          <div>
+            <label class="wl-field-label" for="wl-company">Company Name</label>
+            <input class="wl-field-input" id="wl-company" type="text"
+              placeholder="e.g. Apex Realty Group" oninput="saveWL()" />
+          </div>
+          <div>
+            <label class="wl-field-label" for="wl-agent">Agent Name</label>
+            <input class="wl-field-input" id="wl-agent" type="text"
+              placeholder="e.g. Jordan Taylor" oninput="saveWL()" />
+          </div>
+          <div>
+            <label class="wl-field-label" for="wl-phone">Phone</label>
+            <input class="wl-field-input" id="wl-phone" type="text"
+              placeholder="(214) 555-0100" oninput="saveWL()" />
+          </div>
+          <div>
+            <label class="wl-field-label" for="wl-email">Email</label>
+            <input class="wl-field-input" id="wl-email" type="email"
+              placeholder="you@yourfirm.com" oninput="saveWL()" />
+          </div>
+        </div>
+        <div class="wl-logo-row">
+          <label class="wl-field-label" for="wl-logo">
+            Logo URL <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span>
+          </label>
+          <input class="wl-field-input" id="wl-logo" type="url"
+            placeholder="https://yourfirm.com/logo.png" oninput="saveWL()" />
+        </div>
+        <div class="wl-form-note">
+          Your branding appears on all reports you run from this device. Data never leaves your browser — 100% client-side.
+        </div>
+        <button class="wl-clear-btn" type="button" onclick="clearWL()">Clear white-label</button>
+      </div>
+    </div>
 
     <div class="hero-proof">
       <div class="proof-avatars">
@@ -1254,8 +1393,8 @@ footer {
       </div>
     </div>
 
-    <!-- Tile 3 (5 cols): Deal Analyzer — HARD -->
-    <div class="tile tile-1 reveal">
+    <!-- Tile 3 (4 cols): Deal Analyzer — HARD -->
+    <div class="tile tile-5 reveal">
       <div class="tile-accent" style="width:220px;height:220px;bottom:-60px;right:-40px;background:rgba(37,99,235,0.15)"></div>
       <div class="tile-diff diff-hard">🔴 Hard — financial modeling</div>
       <div class="tile-label">Deal Analyzer</div>
@@ -1294,8 +1433,8 @@ footer {
       </div>
     </div>
 
-    <!-- Tile 5: Owner Intel + basics -->
-    <div class="tile tile-1 reveal reveal-delay-1">
+    <!-- Tile 5 (4 cols): Owner Intel + basics -->
+    <div class="tile tile-5 reveal reveal-delay-1">
       <div class="tile-accent" style="width:200px;height:200px;top:-60px;right:-40px;background:rgba(96,165,250,0.1)"></div>
       <div class="tile-label">Owner Intelligence</div>
       <div class="owner-row">
@@ -1316,6 +1455,30 @@ footer {
       </div>
     </div>
 
+    <!-- Tile 4 (4 cols): Mortgage & Equity Intel — HARD -->
+    <div class="tile tile-5 reveal">
+      <div class="tile-accent" style="width:220px;height:220px;top:-60px;left:-50px;background:rgba(34,197,94,0.10)"></div>
+      <div class="tile-diff diff-hard">🔴 Hard — lien + title research</div>
+      <div class="tile-label">Mortgage &amp; Equity Intel</div>
+      <div class="tile-heading">Know the debt<br>before you offer.</div>
+      <div class="mort-row">
+        <div class="mort-key">Lien Balance</div>
+        <div class="mort-val">$195,000</div>
+      </div>
+      <div class="mort-row mort-equity">
+        <div class="mort-key">Estimated Equity <span class="mort-signal">💰 Room to negotiate</span></div>
+        <div class="mort-val mort-val-equity">$45,130</div>
+      </div>
+      <div class="mort-row mort-ltv-warn">
+        <div class="mort-key">LTV Ratio <span class="mort-signal mort-signal-warn">⚠ High leverage</span></div>
+        <div class="mort-val mort-val-ltv">81.2%</div>
+      </div>
+      <div class="mort-row" style="margin-bottom:0">
+        <div class="mort-key">Lender</div>
+        <div class="mort-val mort-val-lender">Mountain Valley Bank</div>
+      </div>
+    </div>
+
     <!-- Tile 6: Full width — everything else in the report -->
     <div class="tile tile-6 reveal">
       <div class="tile-label" style="margin-bottom:20px">Also in your Pro report — every section</div>
@@ -1324,9 +1487,9 @@ footer {
           <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Market Value Estimate</div>
           <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">$1.69M – $2.01M range · AVM + comps</div>
         </div>
-        <div style="padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:11px">
-          <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Mortgage & Equity</div>
-          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">Estimated balance, equity %, lien position</div>
+        <div style="padding:12px 14px;background:var(--bg2);border:1px solid rgba(34,197,94,0.2);border-radius:11px">
+          <div style="font-size:0.62rem;color:var(--green-l);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Mortgage &amp; Equity Intel</div>
+          <div style="font-size:0.85rem;font-weight:600;color:var(--g1)">Lien balance, equity, LTV %, lender name</div>
         </div>
         <div style="padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:11px">
           <div style="font-size:0.62rem;color:var(--g3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Ownership History</div>
@@ -1397,8 +1560,8 @@ footer {
       <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
     </div>
     <div class="value-row">
-      <div class="vr-name"><span class="vr-dot dot-med"></span><div><div>Mortgage balance & equity position</div><div class="vr-name-sub">Estimated outstanding balance, equity %</div></div></div>
-      <div class="vr-else">ATTOM / title search<br>$150–300 per search</div>
+      <div class="vr-name"><span class="vr-dot dot-med"></span><div><div>Mortgage &amp; Equity Intel</div><div class="vr-name-sub">Lien balance, estimated equity, LTV %, lender name — in seconds</div></div></div>
+      <div class="vr-else">Title company / county<br>$150–300 per pull</div>
       <div class="vr-pi"><span class="vr-pi-check">✓</span>Included</div>
     </div>
     <div class="value-row">
@@ -1650,6 +1813,55 @@ footer {
 </footer>
 
 <script>
+/* ─── WHITE-LABEL ─── */
+var WL_KEY = 'propintel_wl';
+
+function toggleWL() {
+  document.getElementById('wl-form').classList.toggle('open');
+}
+
+function saveWL() {
+  var data = {
+    company: document.getElementById('wl-company').value.trim(),
+    agent:   document.getElementById('wl-agent').value.trim(),
+    phone:   document.getElementById('wl-phone').value.trim(),
+    email:   document.getElementById('wl-email').value.trim(),
+    logo:    document.getElementById('wl-logo').value.trim()
+  };
+  var hasData = data.company || data.agent || data.phone || data.email;
+  if (hasData) {
+    localStorage.setItem(WL_KEY, JSON.stringify(data));
+    document.getElementById('wl-active-badge').style.display = 'inline-flex';
+  } else {
+    localStorage.removeItem(WL_KEY);
+    document.getElementById('wl-active-badge').style.display = 'none';
+  }
+}
+
+function clearWL() {
+  localStorage.removeItem(WL_KEY);
+  ['wl-company','wl-agent','wl-phone','wl-email','wl-logo'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('wl-active-badge').style.display = 'none';
+}
+
+(function loadWL() {
+  try {
+    var raw = localStorage.getItem(WL_KEY);
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    if (d.company) document.getElementById('wl-company').value = d.company;
+    if (d.agent)   document.getElementById('wl-agent').value   = d.agent;
+    if (d.phone)   document.getElementById('wl-phone').value   = d.phone;
+    if (d.email)   document.getElementById('wl-email').value   = d.email;
+    if (d.logo)    document.getElementById('wl-logo').value    = d.logo;
+    if (d.company || d.agent) {
+      document.getElementById('wl-active-badge').style.display = 'inline-flex';
+    }
+  } catch(e) {}
+})();
+
 /* ─── FAQ ─── */
 function toggleFaq(el) { el.classList.toggle('open'); }
 
@@ -1713,6 +1925,17 @@ async function handleAnalyze(e) {
   const btn = document.getElementById('analyze-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Analyzing…';
+
+  /* Pass white-label config to report.html via sessionStorage */
+  try {
+    const wlRaw = localStorage.getItem(WL_KEY);
+    if (wlRaw) {
+      sessionStorage.setItem('propintel_wl_active', wlRaw);
+    } else {
+      sessionStorage.removeItem('propintel_wl_active');
+    }
+  } catch(e) {}
+
   try {
     const res = await fetch(API + '/api/analyze', {
       method: 'POST',
