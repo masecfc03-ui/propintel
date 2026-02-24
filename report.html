@@ -550,6 +550,18 @@
     .skip-upgrade-title { font-size: 0.72rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
     .skip-upgrade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     @media (max-width: 600px) { .skip-upgrade-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) {
+      .score-row { grid-template-columns: repeat(2, 1fr); }
+      .deal-grid  { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .score-row    { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .deal-grid    { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .profile-grid { grid-template-columns: repeat(2, 1fr); }
+      .section-card { padding: 16px 14px; }
+      .topbar-addr  { font-size: 0.8rem; }
+    }
     .skip-item {
       padding: 10px 14px; border-radius: 8px;
       font-size: 0.82rem; border: 1px solid var(--border);
@@ -1313,10 +1325,12 @@
         </tr>`;
       }).join('');
       document.getElementById('biz-body').innerHTML = `
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table class="biz-table">
           <thead><tr><th>Suite</th><th>Business Name</th><th>Status</th><th>Since</th></tr></thead>
           <tbody>${tbody}</tbody>
         </table>
+        </div>
         <p style="font-size:0.72rem;color:var(--text3);margin-top:10px">Active registration does not confirm current occupancy. Field verify.</p>`;
     }
 
