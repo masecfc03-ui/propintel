@@ -12,6 +12,15 @@ import os
 import json
 import urllib.request
 import urllib.parse
+import ssl
+
+# macOS Python 3.9 SSL cert fix
+_ssl_ctx = ssl.create_default_context()
+_ssl_ctx.check_hostname = False
+_ssl_ctx.verify_mode = ssl.CERT_NONE
+_https_handler = urllib.request.HTTPSHandler(context=_ssl_ctx)
+_opener = urllib.request.build_opener(_https_handler)
+urllib.request.install_opener(_opener)
 from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
