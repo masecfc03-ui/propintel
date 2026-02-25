@@ -1,0 +1,515 @@
+{
+  "generated_at": "2026-02-25T17:57:49.978351",
+  "date": "2026-02-25",
+  "leads": {
+    "kaufman_total": 9300,
+    "johnson_total": 5356,
+    "total_all": 14656,
+    "skip_traced": 744,
+    "sms_ready": 467,
+    "email_ready": 420,
+    "emailed_total": 408,
+    "by_tier": {
+      "WARM": 2396,
+      "COLD": 6904
+    },
+    "by_stage": {},
+    "by_county": {}
+  },
+  "email": {
+    "source": "Mailgun API (live)",
+    "accepted": 903,
+    "delivered": 632,
+    "opened": 17,
+    "failed_bounced": 289,
+    "open_rate": "2.7%",
+    "bounce_rate": "32.0%",
+    "replied": 0,
+    "note": "Seller outreach only (420 Kaufman leads). Buyer intros counted separately."
+  },
+  "sms": {
+    "total_sent": 5,
+    "sent_today": 0,
+    "queued": 467,
+    "status": "Blocked \u2014 A2P 10DLC carrier auth pending"
+  },
+  "mail": {
+    "total_sent": 3,
+    "queued": 467,
+    "cost_est": "$2.67"
+  },
+  "offers": {
+    "batch_offer_letters": 467,
+    "contracts_generated": 3,
+    "deal_packages": 2,
+    "offer_price": "$8,500 batch / custom per deal",
+    "formula": "ARV \u00d7 60% \u2212 $7,500 (standard) | Confirmed buyer: buyer price \u2212 $1K min"
+  },
+  "buyers": {
+    "total_in_crm": 20,
+    "real_named_buyers": 17,
+    "tbd_placeholders": 3,
+    "with_email": 7,
+    "with_phone": 10,
+    "intro_emails_sent": 7,
+    "responded": 0,
+    "deals_closed": 0,
+    "total_fees_earned": "$0",
+    "table": [
+      {
+        "id": "B001",
+        "name": "We Buy Land Quick",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$75,000",
+        "phone": "(469) 529-7977",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B002",
+        "name": "Compass Land Capital",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$200,000",
+        "phone": "(512) 213-0572",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B003",
+        "name": "Jeremy",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$300,000",
+        "phone": "(615) 745-1017",
+        "email": "Jeremy@valuelandbuyers.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B004",
+        "name": "Selling Land Fast",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$250,000",
+        "phone": "(346) 207-1246",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B005",
+        "name": "Aaron Timmer",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$500,000",
+        "phone": "",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B006",
+        "name": "Land Buyers in Texas",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$300,000",
+        "phone": "",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B007",
+        "name": "Pope Company Custom Homes",
+        "type": "Spec Builder",
+        "counties": "Kaufman, Henderson",
+        "max_price": "$40,000",
+        "phone": "(903) 200-4905",
+        "email": "info@popehomes.net",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B008",
+        "name": "TBD - Subdivision Developer",
+        "type": "Developer",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$300,000",
+        "phone": "",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "prospecting"
+      },
+      {
+        "id": "B009",
+        "name": "TBD - Mobile Home / Rural Residential",
+        "type": "Mobile Home",
+        "counties": "Kaufman, Johnson, Ellis",
+        "max_price": "$25,000",
+        "phone": "",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "prospecting"
+      },
+      {
+        "id": "B010",
+        "name": "TBD - Solar / Renewable Energy",
+        "type": "Solar",
+        "counties": "Kaufman, Hunt, Henderson",
+        "max_price": "$1,000,000",
+        "phone": "",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "prospecting"
+      },
+      {
+        "id": "B011",
+        "name": "Bloomfield Homes",
+        "type": "Spec Builder",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$2,000,000",
+        "phone": "(817) 809-8240",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B012",
+        "name": "John Houston Homes",
+        "type": "Spec Builder",
+        "counties": "Ellis, Johnson",
+        "max_price": "$500,000",
+        "phone": "",
+        "email": "info@jhoustonhomes.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B013",
+        "name": "Easy Land Sale",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$300,000",
+        "phone": "(321) 340-6079",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B014",
+        "name": "DC Land Buyers",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$500,000",
+        "phone": "",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B015",
+        "name": "EasyLandSell",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$500,000",
+        "phone": "",
+        "email": "support@easylandsell.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B016",
+        "name": "Texas Hunting Land LLC",
+        "type": "Recreational",
+        "counties": "Henderson, Hunt, Navarro",
+        "max_price": "$200,000",
+        "phone": "",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B017",
+        "name": "Land Over Texas",
+        "type": "Developer",
+        "counties": "Kaufman, Hunt, Ellis",
+        "max_price": "$400,000",
+        "phone": "",
+        "email": "",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B018",
+        "name": "John Bielamowicz",
+        "type": "Developer",
+        "counties": "Kaufman, Dallas, Collin",
+        "max_price": "$5,000,000",
+        "phone": "(214) 842-6869",
+        "email": "john@bielpartners.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B019",
+        "name": "Grant Glasco",
+        "type": "Developer",
+        "counties": "Kaufman, Dallas, Collin",
+        "max_price": "$5,000,000",
+        "phone": "(214) 448-0134",
+        "email": "grant@glascocommercial.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B020",
+        "name": "Jerrod Simmons",
+        "type": "Developer",
+        "counties": "Kaufman, Dallas, Collin",
+        "max_price": "$5,000,000",
+        "phone": "(214) 842-6869",
+        "email": "jerrod@bielpartners.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      }
+    ]
+  },
+  "revenue": {
+    "total_earned": "$0",
+    "deals_closed": 0,
+    "deals_in_contract": 0,
+    "deals_active": 0,
+    "note": "No deals closed yet. First outreach sent today (Feb 25, 2026)."
+  },
+  "projections": {
+    "warning": "ESTIMATES ONLY \u2014 no historical data yet",
+    "emails_delivered": 632,
+    "openers_so_far": 17,
+    "est_responses": "6\u201319 (1\u20133% industry avg)",
+    "est_closes": "0\u20135 (need buyer confirmed first)",
+    "avg_fee_range": "$5,000\u2013$15,000 per deal",
+    "sms_queued": "467 leads (A2P auth pending \u2014 0 sent yet)",
+    "basis": "Email open rate benchmark: 2-5%. Motivated seller close rate: 10-25%."
+  },
+  "counties": [
+    {
+      "county": "Kaufman",
+      "leads": 9300,
+      "skip_traced": 744,
+      "emailed": 408,
+      "sms_ready": 467,
+      "status": "Active"
+    },
+    {
+      "county": "Johnson",
+      "leads": 5356,
+      "skip_traced": 0,
+      "emailed": 0,
+      "sms_ready": 0,
+      "status": "Addresses needed"
+    },
+    {
+      "county": "Ellis",
+      "leads": 0,
+      "skip_traced": 0,
+      "emailed": 0,
+      "sms_ready": 0,
+      "status": "Browser needed to pull"
+    },
+    {
+      "county": "Hunt",
+      "leads": 0,
+      "skip_traced": 0,
+      "emailed": 0,
+      "sms_ready": 0,
+      "status": "Browser needed to pull"
+    },
+    {
+      "county": "Henderson",
+      "leads": 0,
+      "skip_traced": 0,
+      "emailed": 0,
+      "sms_ready": 0,
+      "status": "Not started"
+    },
+    {
+      "county": "Navarro",
+      "leads": 0,
+      "skip_traced": 0,
+      "emailed": 0,
+      "sms_ready": 0,
+      "status": "Not started"
+    },
+    {
+      "county": "Parker",
+      "leads": 0,
+      "skip_traced": 0,
+      "emailed": 0,
+      "sms_ready": 0,
+      "status": "Not started"
+    },
+    {
+      "county": "Tarrant",
+      "leads": 0,
+      "skip_traced": 0,
+      "emailed": 0,
+      "sms_ready": 0,
+      "status": "Not started"
+    }
+  ],
+  "git_log": [
+    {
+      "hash": "ed32174",
+      "date": "2026-02-25",
+      "message": "Fix activity reporter: real Mailgun stats, accurate buyer/lead counts, /bin/zsh revenue"
+    },
+    {
+      "hash": "cc154ae",
+      "date": "2026-02-25",
+      "message": "Add 3 buyers (Biel Partners x2, Glasco Commercial) \u2014 20 buyers total; send intro emails to Kaufman devs"
+    },
+    {
+      "hash": "a597754",
+      "date": "2026-02-25",
+      "message": "feat: full ops activity dashboard \u2014 pipeline, buyers, projections, offers, git log, blockers"
+    },
+    {
+      "hash": "7c719e6",
+      "date": "2026-02-25",
+      "message": "feat: expand buyer list to 17 \u2014 Bloomfield Homes, JH Homes, Easy Land, DC Land, EasyLandSell, TX Hunting Land, Land Over TX"
+    },
+    {
+      "hash": "f3e544a",
+      "date": "2026-02-25",
+      "message": "feat: 7 real buyers sourced and loaded \u2014 DFW land buyers, TX cash buyers, builder"
+    },
+    {
+      "hash": "a889015",
+      "date": "2026-02-25",
+      "message": "feat: reverse acquisition engine + buyer CRM \u2014 demand-driven deal sourcing"
+    },
+    {
+      "hash": "fd5eb03",
+      "date": "2026-02-25",
+      "message": "fix: dynamic kanban, stage persistence, outreach status, broken field refs in tracker"
+    },
+    {
+      "hash": "419ee7c",
+      "date": "2026-02-25",
+      "message": "feat: DataZapp prep + full email blast complete"
+    },
+    {
+      "hash": "04aa12f",
+      "date": "2026-02-25",
+      "message": "feat: DataZapp skip trace engine + ready for Johnson County"
+    },
+    {
+      "hash": "80cc584",
+      "date": "2026-02-25",
+      "message": "feat: email outreach engine + tracker filters"
+    },
+    {
+      "hash": "e5897d8",
+      "date": "2026-02-25",
+      "message": "feat: tracker county/tier filters + improved filterLeads"
+    },
+    {
+      "hash": "16f3f17",
+      "date": "2026-02-25",
+      "message": "ops: server script + 467 offer letters + daily brief cron at 7AM CT"
+    },
+    {
+      "hash": "030fa33",
+      "date": "2026-02-25",
+      "message": "feat: daily brief + Johnson tracerfy upload + 467 offer letters generated"
+    },
+    {
+      "hash": "4cc2901",
+      "date": "2026-02-25",
+      "message": "feat: Johnson County 5,356 leads scored + top 200 HOT added to tracker"
+    },
+    {
+      "hash": "972f11e",
+      "date": "2026-02-25",
+      "message": "data: Johnson County 5,356 vacant land parcels (Feb 2026 roll)"
+    }
+  ],
+  "blockers": [
+    {
+      "item": "SMS A2P 10DLC",
+      "detail": "467 leads queued, carrier auth pending \u2014 no action needed, just waiting",
+      "priority": "medium"
+    },
+    {
+      "item": "Johnson County Addresses",
+      "detail": "5,356 leads with no situs address \u2014 need skip trace service that accepts name+county",
+      "priority": "high"
+    },
+    {
+      "item": "Ellis/Hunt data pull",
+      "detail": "CAD portals JS-only, need browser tool active",
+      "priority": "medium"
+    },
+    {
+      "item": "DataZapp API key",
+      "detail": "Email sent to support@datazapp.com \u2014 awaiting key",
+      "priority": "low"
+    },
+    {
+      "item": "Reddit account",
+      "detail": "5 comment scripts ready, need account at reddit.com with mason@propertyvalueintel.com",
+      "priority": "low"
+    }
+  ],
+  "next_actions": [
+    {
+      "action": "Call (469) 529-7977",
+      "detail": "We Buy Land Quick \u2014 local DFW buyer, confirm criteria",
+      "priority": "HIGH"
+    },
+    {
+      "action": "Call (817) 809-8240",
+      "detail": "Bloomfield Homes \u2014 ask for land acquisitions dept",
+      "priority": "HIGH"
+    },
+    {
+      "action": "Text (346) 207-1246",
+      "detail": "Selling Land Fast \u2014 confirm TX counties + criteria",
+      "priority": "HIGH"
+    },
+    {
+      "action": "Merge PR #43",
+      "detail": "propintel repo \u2014 feat/zillow-agent-scraper open",
+      "priority": "medium"
+    },
+    {
+      "action": "Reddit account",
+      "detail": "Create at reddit.com \u2014 5 comment scripts waiting",
+      "priority": "low"
+    }
+  ]
+}
