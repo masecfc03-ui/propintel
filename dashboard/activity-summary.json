@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T19:59:50.964508",
+  "generated_at": "2026-02-25T21:00:00.589070",
   "date": "2026-02-25",
   "leads": {
     "kaufman_total": 9300,
@@ -18,12 +18,12 @@
   },
   "email": {
     "source": "Mailgun API (live)",
-    "accepted": 926,
-    "delivered": 649,
-    "opened": 17,
-    "failed_bounced": 296,
-    "open_rate": "2.6%",
-    "bounce_rate": "32.0%",
+    "accepted": 939,
+    "delivered": 659,
+    "opened": 24,
+    "failed_bounced": 299,
+    "open_rate": "3.6%",
+    "bounce_rate": "31.8%",
     "replied": 0,
     "note": "Seller outreach only (420 Kaufman leads). Buyer intros counted separately."
   },
@@ -46,12 +46,12 @@
     "formula": "ARV \u00d7 60% \u2212 $7,500 (standard) | Confirmed buyer: buyer price \u2212 $1K min"
   },
   "buyers": {
-    "total_in_crm": 29,
-    "real_named_buyers": 26,
+    "total_in_crm": 38,
+    "real_named_buyers": 35,
     "tbd_placeholders": 3,
-    "with_email": 16,
-    "with_phone": 16,
-    "intro_emails_sent": 13,
+    "with_email": 24,
+    "with_phone": 20,
+    "intro_emails_sent": 18,
     "responded": 0,
     "deals_closed": 0,
     "total_fees_earned": "$0",
@@ -403,6 +403,114 @@
         "last_contact": "2026-02-25",
         "deals": 0,
         "status": "emailed"
+      },
+      {
+        "id": "B030",
+        "name": "Remarkable Land LLC",
+        "type": "Wholesaler Retailer",
+        "counties": "Kaufman, Ellis, Henderson",
+        "max_price": "$500,000",
+        "phone": "(855) 833-5263",
+        "email": "hello@remarkableland.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "new"
+      },
+      {
+        "id": "B031",
+        "name": "Hanover Property Company",
+        "type": "Developer Builder",
+        "counties": "Ellis, Kaufman, Johnson",
+        "max_price": "$50,000,000",
+        "phone": "",
+        "email": "ben.luedtke@hanoverproperty.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "new"
+      },
+      {
+        "id": "B032",
+        "name": "Enel North America",
+        "type": "Solar Developer",
+        "counties": "Kaufman, Ellis, Henderson",
+        "max_price": "$10,000,000",
+        "phone": "",
+        "email": "landowners@enelgreenpower.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "new"
+      },
+      {
+        "id": "B033",
+        "name": "D.R. Horton DFW",
+        "type": "Developer Builder",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$100,000,000",
+        "phone": "(817) 230-0800",
+        "email": "",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "call_required"
+      },
+      {
+        "id": "B034",
+        "name": "Clint Vincent",
+        "type": "Developer Builder",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$50,000,000",
+        "phone": "(817) 809-8240",
+        "email": "Clint@bloomfieldhomes.net",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B035",
+        "name": "Austin Weller",
+        "type": "Developer Builder",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$50,000,000",
+        "phone": "",
+        "email": "Austin.Weller@meritagehomes.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B036",
+        "name": "Dustin Skogman",
+        "type": "Developer Builder",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$50,000,000",
+        "phone": "",
+        "email": "Dustin.Skogman@lgihomes.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B037",
+        "name": "Mitch Casillas",
+        "type": "Developer Builder",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$50,000,000",
+        "phone": "(817) 230-0800",
+        "email": "mcasillas@drhorton.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B038",
+        "name": "Chance Jones",
+        "type": "Developer Builder",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$50,000,000",
+        "phone": "",
+        "email": "cjones@coventryhomes.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
       }
     ]
   },
@@ -415,9 +523,9 @@
   },
   "projections": {
     "warning": "ESTIMATES ONLY \u2014 no historical data yet",
-    "emails_delivered": 649,
-    "openers_so_far": 17,
-    "est_responses": "6\u201319 (1\u20133% industry avg)",
+    "emails_delivered": 659,
+    "openers_so_far": 24,
+    "est_responses": "7\u201320 (1\u20133% industry avg)",
     "est_closes": "0\u20135 (need buyer confirmed first)",
     "avg_fee_range": "$5,000\u2013$15,000 per deal",
     "sms_queued": "467 leads (A2P auth pending \u2014 0 sent yet)",
@@ -491,6 +599,21 @@
   ],
   "git_log": [
     {
+      "hash": "52eba98",
+      "date": "2026-02-25",
+      "message": "feat: 5 real land acquisition contacts added (B034-B038); emails sent to Clint Vincent/Bloomfield, Austin Weller/Meritage, Dustin Skogman/LGI, Mitch Casillas/DRHorton, Chance Jones/Coventry"
+    },
+    {
+      "hash": "896337c",
+      "date": "2026-02-25",
+      "message": "feat: BCC masonmathis78@gmail.com on all outbound emails (email-outreach, buyer-crm, drip-sequence)"
+    },
+    {
+      "hash": "51926ac",
+      "date": "2026-02-25",
+      "message": "feat: 4 new buyers (B030-B033); emails sent to Remarkable Land, Hanover Property, Enel NA; drip sequence synced; dashboard upgraded with 6,653 enhanced leads"
+    },
+    {
       "hash": "17f95fb",
       "date": "2026-02-25",
       "message": "feat: tracker wired to external leads-data-enhanced.js (6,653 skip-traced leads); reply-monitor live (10min cron); publish-dashboard syncs all dashboard files"
@@ -549,21 +672,6 @@
       "hash": "a889015",
       "date": "2026-02-25",
       "message": "feat: reverse acquisition engine + buyer CRM \u2014 demand-driven deal sourcing"
-    },
-    {
-      "hash": "fd5eb03",
-      "date": "2026-02-25",
-      "message": "fix: dynamic kanban, stage persistence, outreach status, broken field refs in tracker"
-    },
-    {
-      "hash": "419ee7c",
-      "date": "2026-02-25",
-      "message": "feat: DataZapp prep + full email blast complete"
-    },
-    {
-      "hash": "04aa12f",
-      "date": "2026-02-25",
-      "message": "feat: DataZapp skip trace engine + ready for Johnson County"
     }
   ],
   "blockers": [
