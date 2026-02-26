@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T19:43:49.976906",
+  "generated_at": "2026-02-25T19:59:50.964508",
   "date": "2026-02-25",
   "leads": {
     "kaufman_total": 9300,
@@ -491,6 +491,11 @@
   ],
   "git_log": [
     {
+      "hash": "17f95fb",
+      "date": "2026-02-25",
+      "message": "feat: tracker wired to external leads-data-enhanced.js (6,653 skip-traced leads); reply-monitor live (10min cron); publish-dashboard syncs all dashboard files"
+    },
+    {
       "hash": "b60b2fe",
       "date": "2026-02-25",
       "message": "Drip sequence manager (4-touch, 410 leads, cron 9AM), Kemp comps, Susan offer math"
@@ -559,11 +564,6 @@
       "hash": "04aa12f",
       "date": "2026-02-25",
       "message": "feat: DataZapp skip trace engine + ready for Johnson County"
-    },
-    {
-      "hash": "80cc584",
-      "date": "2026-02-25",
-      "message": "feat: email outreach engine + tracker filters"
     }
   ],
   "blockers": [
