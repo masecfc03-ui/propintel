@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T18:59:42.055448",
+  "generated_at": "2026-02-25T19:00:10.564770",
   "date": "2026-02-25",
   "leads": {
     "kaufman_total": 9300,
@@ -18,8 +18,8 @@
   },
   "email": {
     "source": "Mailgun API (live)",
-    "accepted": 924,
-    "delivered": 647,
+    "accepted": 925,
+    "delivered": 648,
     "opened": 17,
     "failed_bounced": 296,
     "open_rate": "2.6%",
@@ -46,12 +46,12 @@
     "formula": "ARV \u00d7 60% \u2212 $7,500 (standard) | Confirmed buyer: buyer price \u2212 $1K min"
   },
   "buyers": {
-    "total_in_crm": 28,
-    "real_named_buyers": 25,
+    "total_in_crm": 29,
+    "real_named_buyers": 26,
     "tbd_placeholders": 3,
-    "with_email": 15,
-    "with_phone": 15,
-    "intro_emails_sent": 12,
+    "with_email": 16,
+    "with_phone": 16,
+    "intro_emails_sent": 13,
     "responded": 0,
     "deals_closed": 0,
     "total_fees_earned": "$0",
@@ -391,6 +391,18 @@
         "last_contact": "Never",
         "deals": 0,
         "status": "active"
+      },
+      {
+        "id": "B029",
+        "name": "Scott Theeringer / Phil Tinsley",
+        "type": "Developer",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$5,000,000",
+        "phone": "(972) 946-4055",
+        "email": "info@ma-devco.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
       }
     ]
   },
@@ -403,7 +415,7 @@
   },
   "projections": {
     "warning": "ESTIMATES ONLY \u2014 no historical data yet",
-    "emails_delivered": 647,
+    "emails_delivered": 648,
     "openers_so_far": 17,
     "est_responses": "6\u201319 (1\u20133% industry avg)",
     "est_closes": "0\u20135 (need buyer confirmed first)",
@@ -479,6 +491,11 @@
   ],
   "git_log": [
     {
+      "hash": "d33d2d6",
+      "date": "2026-02-25",
+      "message": "29 buyers total; M&A Development, Lightsource bp, VanDusen Timber added; enhanced scoring published"
+    },
+    {
       "hash": "0d0e154",
       "date": "2026-02-25",
       "message": "Add 5 buyers (25 total), enhanced lead scoring (3,558 HOT), follow-up emails to 7 openers"
@@ -547,11 +564,6 @@
       "hash": "030fa33",
       "date": "2026-02-25",
       "message": "feat: daily brief + Johnson tracerfy upload + 467 offer letters generated"
-    },
-    {
-      "hash": "4cc2901",
-      "date": "2026-02-25",
-      "message": "feat: Johnson County 5,356 leads scored + top 200 HOT added to tracker"
     }
   ],
   "blockers": [
