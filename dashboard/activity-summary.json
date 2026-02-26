@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T17:57:49.978351",
+  "generated_at": "2026-02-25T18:54:20.582016",
   "date": "2026-02-25",
   "leads": {
     "kaufman_total": 9300,
@@ -18,12 +18,12 @@
   },
   "email": {
     "source": "Mailgun API (live)",
-    "accepted": 903,
-    "delivered": 632,
+    "accepted": 915,
+    "delivered": 644,
     "opened": 17,
-    "failed_bounced": 289,
-    "open_rate": "2.7%",
-    "bounce_rate": "32.0%",
+    "failed_bounced": 295,
+    "open_rate": "2.6%",
+    "bounce_rate": "32.2%",
     "replied": 0,
     "note": "Seller outreach only (420 Kaufman leads). Buyer intros counted separately."
   },
@@ -46,12 +46,12 @@
     "formula": "ARV \u00d7 60% \u2212 $7,500 (standard) | Confirmed buyer: buyer price \u2212 $1K min"
   },
   "buyers": {
-    "total_in_crm": 20,
-    "real_named_buyers": 17,
+    "total_in_crm": 25,
+    "real_named_buyers": 22,
     "tbd_placeholders": 3,
-    "with_email": 7,
-    "with_phone": 10,
-    "intro_emails_sent": 7,
+    "with_email": 12,
+    "with_phone": 13,
+    "intro_emails_sent": 12,
     "responded": 0,
     "deals_closed": 0,
     "total_fees_earned": "$0",
@@ -295,6 +295,66 @@
         "last_contact": "2026-02-25",
         "deals": 0,
         "status": "emailed"
+      },
+      {
+        "id": "B021",
+        "name": "Keith Davis",
+        "type": "Developer",
+        "counties": "Ellis, Johnson, Dallas",
+        "max_price": "$2,000,000",
+        "phone": "",
+        "email": "keith@develop3group.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B022",
+        "name": "Stephanie Jones",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$300,000",
+        "phone": "(469) 564-8540",
+        "email": "stephanie@atlaslandbuyers.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B023",
+        "name": "We Buy Mobile Homes NTX",
+        "type": "Mobile Home",
+        "counties": "Johnson, Ellis, Navarro",
+        "max_price": "$30,000",
+        "phone": "(469) 840-4449",
+        "email": "info@webuymobilehomesntx.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B024",
+        "name": "Land Buyers in Texas",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$300,000",
+        "phone": "",
+        "email": "hello@landbuyersintexas.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
+      },
+      {
+        "id": "B025",
+        "name": "Robert",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$300,000",
+        "phone": "(888) 388-6328",
+        "email": "robert@buymyland.com",
+        "last_contact": "2026-02-25",
+        "deals": 0,
+        "status": "emailed"
       }
     ]
   },
@@ -307,7 +367,7 @@
   },
   "projections": {
     "warning": "ESTIMATES ONLY \u2014 no historical data yet",
-    "emails_delivered": 632,
+    "emails_delivered": 644,
     "openers_so_far": 17,
     "est_responses": "6\u201319 (1\u20133% industry avg)",
     "est_closes": "0\u20135 (need buyer confirmed first)",
@@ -383,6 +443,11 @@
   ],
   "git_log": [
     {
+      "hash": "0d0e154",
+      "date": "2026-02-25",
+      "message": "Add 5 buyers (25 total), enhanced lead scoring (3,558 HOT), follow-up emails to 7 openers"
+    },
+    {
       "hash": "ed32174",
       "date": "2026-02-25",
       "message": "Fix activity reporter: real Mailgun stats, accurate buyer/lead counts, /bin/zsh revenue"
@@ -451,11 +516,6 @@
       "hash": "4cc2901",
       "date": "2026-02-25",
       "message": "feat: Johnson County 5,356 leads scored + top 200 HOT added to tracker"
-    },
-    {
-      "hash": "972f11e",
-      "date": "2026-02-25",
-      "message": "data: Johnson County 5,356 vacant land parcels (Feb 2026 roll)"
     }
   ],
   "blockers": [
