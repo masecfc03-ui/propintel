@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-02-25T23:00:27.240679",
-  "date": "2026-02-25",
+  "generated_at": "2026-02-26T00:00:37.413163",
+  "date": "2026-02-26",
   "leads": {
     "kaufman_total": 9300,
     "johnson_total": 5356,
@@ -20,9 +20,9 @@
     "source": "Mailgun API (live)",
     "accepted": 939,
     "delivered": 659,
-    "opened": 26,
+    "opened": 27,
     "failed_bounced": 299,
-    "open_rate": "3.9%",
+    "open_rate": "4.1%",
     "bounce_rate": "31.8%",
     "replied": 0,
     "note": "Seller outreach only (420 Kaufman leads). Buyer intros counted separately."
@@ -524,7 +524,7 @@
   "projections": {
     "warning": "ESTIMATES ONLY \u2014 no historical data yet",
     "emails_delivered": 659,
-    "openers_so_far": 26,
+    "openers_so_far": 27,
     "est_responses": "7\u201320 (1\u20133% industry avg)",
     "est_closes": "0\u20135 (need buyer confirmed first)",
     "avg_fee_range": "$5,000\u2013$15,000 per deal",
