@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T19:02:21.528261",
+  "generated_at": "2026-02-25T19:12:43.411391",
   "date": "2026-02-25",
   "leads": {
     "kaufman_total": 9300,
@@ -19,7 +19,7 @@
   "email": {
     "source": "Mailgun API (live)",
     "accepted": 926,
-    "delivered": 648,
+    "delivered": 649,
     "opened": 17,
     "failed_bounced": 296,
     "open_rate": "2.6%",
@@ -415,7 +415,7 @@
   },
   "projections": {
     "warning": "ESTIMATES ONLY \u2014 no historical data yet",
-    "emails_delivered": 648,
+    "emails_delivered": 649,
     "openers_so_far": 17,
     "est_responses": "6\u201319 (1\u20133% industry avg)",
     "est_closes": "0\u20135 (need buyer confirmed first)",
@@ -491,6 +491,16 @@
   ],
   "git_log": [
     {
+      "hash": "b60b2fe",
+      "date": "2026-02-25",
+      "message": "Drip sequence manager (4-touch, 410 leads, cron 9AM), Kemp comps, Susan offer math"
+    },
+    {
+      "hash": "873c3af",
+      "date": "2026-02-25",
+      "message": "Add reply-monitor (10min cron), call-script generator, quick-comps tool, Mailgun inbound route, heartbeat alert check"
+    },
+    {
       "hash": "9e94ff6",
       "date": "2026-02-25",
       "message": "Deal flyer generator, M&A Development added (29 buyers), follow-ups to new openers"
@@ -554,16 +564,6 @@
       "hash": "80cc584",
       "date": "2026-02-25",
       "message": "feat: email outreach engine + tracker filters"
-    },
-    {
-      "hash": "e5897d8",
-      "date": "2026-02-25",
-      "message": "feat: tracker county/tier filters + improved filterLeads"
-    },
-    {
-      "hash": "16f3f17",
-      "date": "2026-02-25",
-      "message": "ops: server script + 467 offer letters + daily brief cron at 7AM CT"
     }
   ],
   "blockers": [
