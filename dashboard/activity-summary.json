@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T18:54:20.582016",
+  "generated_at": "2026-02-25T18:59:42.055448",
   "date": "2026-02-25",
   "leads": {
     "kaufman_total": 9300,
@@ -8,7 +8,7 @@
     "skip_traced": 744,
     "sms_ready": 467,
     "email_ready": 420,
-    "emailed_total": 408,
+    "emailed_total": 410,
     "by_tier": {
       "WARM": 2396,
       "COLD": 6904
@@ -18,12 +18,12 @@
   },
   "email": {
     "source": "Mailgun API (live)",
-    "accepted": 915,
-    "delivered": 644,
+    "accepted": 924,
+    "delivered": 647,
     "opened": 17,
-    "failed_bounced": 295,
+    "failed_bounced": 296,
     "open_rate": "2.6%",
-    "bounce_rate": "32.2%",
+    "bounce_rate": "32.0%",
     "replied": 0,
     "note": "Seller outreach only (420 Kaufman leads). Buyer intros counted separately."
   },
@@ -46,11 +46,11 @@
     "formula": "ARV \u00d7 60% \u2212 $7,500 (standard) | Confirmed buyer: buyer price \u2212 $1K min"
   },
   "buyers": {
-    "total_in_crm": 25,
-    "real_named_buyers": 22,
+    "total_in_crm": 28,
+    "real_named_buyers": 25,
     "tbd_placeholders": 3,
-    "with_email": 12,
-    "with_phone": 13,
+    "with_email": 15,
+    "with_phone": 15,
     "intro_emails_sent": 12,
     "responded": 0,
     "deals_closed": 0,
@@ -355,6 +355,42 @@
         "last_contact": "2026-02-25",
         "deals": 0,
         "status": "emailed"
+      },
+      {
+        "id": "B026",
+        "name": "Lightsource bp Land Team",
+        "type": "Solar",
+        "counties": "Navarro, Ellis, Henderson",
+        "max_price": "$10,000,000",
+        "phone": "",
+        "email": "landleasing@lightsourcebp.com",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B027",
+        "name": "VanDusen Timber",
+        "type": "Recreational",
+        "counties": "Henderson, Hunt, Navarro",
+        "max_price": "$150,000",
+        "phone": "(903) 576-0587",
+        "email": "info@vandusentimber.com",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
+      },
+      {
+        "id": "B028",
+        "name": "Value Land Buyers TX",
+        "type": "Investor Flipper",
+        "counties": "Kaufman, Ellis, Johnson",
+        "max_price": "$300,000",
+        "phone": "(469) 472-5313",
+        "email": "texas@valuelandbuyers.com",
+        "last_contact": "Never",
+        "deals": 0,
+        "status": "active"
       }
     ]
   },
@@ -367,7 +403,7 @@
   },
   "projections": {
     "warning": "ESTIMATES ONLY \u2014 no historical data yet",
-    "emails_delivered": 644,
+    "emails_delivered": 647,
     "openers_so_far": 17,
     "est_responses": "6\u201319 (1\u20133% industry avg)",
     "est_closes": "0\u20135 (need buyer confirmed first)",
@@ -380,7 +416,7 @@
       "county": "Kaufman",
       "leads": 9300,
       "skip_traced": 744,
-      "emailed": 408,
+      "emailed": 410,
       "sms_ready": 467,
       "status": "Active"
     },
