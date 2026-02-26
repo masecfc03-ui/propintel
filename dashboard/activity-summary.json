@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-02-25T19:00:10.564770",
+  "generated_at": "2026-02-25T19:02:21.528261",
   "date": "2026-02-25",
   "leads": {
     "kaufman_total": 9300,
@@ -18,7 +18,7 @@
   },
   "email": {
     "source": "Mailgun API (live)",
-    "accepted": 925,
+    "accepted": 926,
     "delivered": 648,
     "opened": 17,
     "failed_bounced": 296,
@@ -491,6 +491,11 @@
   ],
   "git_log": [
     {
+      "hash": "9e94ff6",
+      "date": "2026-02-25",
+      "message": "Deal flyer generator, M&A Development added (29 buyers), follow-ups to new openers"
+    },
+    {
       "hash": "d33d2d6",
       "date": "2026-02-25",
       "message": "29 buyers total; M&A Development, Lightsource bp, VanDusen Timber added; enhanced scoring published"
@@ -559,11 +564,6 @@
       "hash": "16f3f17",
       "date": "2026-02-25",
       "message": "ops: server script + 467 offer letters + daily brief cron at 7AM CT"
-    },
-    {
-      "hash": "030fa33",
-      "date": "2026-02-25",
-      "message": "feat: daily brief + Johnson tracerfy upload + 467 offer letters generated"
     }
   ],
   "blockers": [
