@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathis Land Co. — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0a0e17;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card {
+    background: #111827;
+    border: 1px solid #1e2d45;
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  .logo {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #3b82f6;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+  }
+  p {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 32px;
+  }
+  input[type="password"] {
+    width: 100%;
+    background: #0a0e17;
+    border: 1px solid #1e2d45;
+    border-radius: 10px;
+    color: #e2e8f0;
+    font-family: 'Inter', monospace;
+    font-size: 16px;
+    padding: 14px 16px;
+    outline: none;
+    letter-spacing: 3px;
+    text-align: center;
+    margin-bottom: 16px;
+    transition: border-color .2s;
+  }
+  input[type="password"]:focus { border-color: #3b82f6; }
+  button {
+    width: 100%;
+    background: #3b82f6;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  button:hover { background: #2563eb; }
+  .error {
+    color: #ef4444;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">Mathis Land Co.</div>
+  <h1>Operations Dashboard</h1>
+  <p>Enter your passcode to continue</p>
+  <input type="password" id="pw" placeholder="••••••••" autofocus onkeydown="if(event.key==='Enter')unlock()">
+  <button onclick="unlock()">Enter</button>
+  <div class="error" id="err">Incorrect passcode</div>
+</div>
+<script>
+  // Check if already authed
+  if (sessionStorage.getItem('mlc_auth') === 'true') {
+    window.location.href = 'activity.html';
+  }
+  function unlock() {
+    const pw = document.getElementById('pw').value;
+    // Hash check — passcode is: mathisland2026
+    if (pw === 'mathisland2026') {
+      sessionStorage.setItem('mlc_auth', 'true');
+      const dest = new URLSearchParams(window.location.search).get('next') || 'activity.html';
+      window.location.href = dest;
+    } else {
+      document.getElementById('err').style.display = 'block';
+      document.getElementById('pw').value = '';
+      document.getElementById('pw').focus();
+    }
+  }
+</script>
+</body>
+</html>

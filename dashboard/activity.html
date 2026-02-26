@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script>if(sessionStorage.getItem("mlc_auth")!=="true"){window.location.href="index.html?next="+encodeURIComponent(window.location.pathname.split("/").pop());};</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathis Land Co. — Operations Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:       #0a0e17;
+    --bg2:      #111827;
+    --bg3:      #1a2235;
+    --border:   #1e2d45;
+    --blue:     #3b82f6;
+    --blue2:    #1d4ed8;
+    --green:    #10b981;
+    --yellow:   #f59e0b;
+    --red:      #ef4444;
+    --purple:   #8b5cf6;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --hot:      #ef4444;
+    --warm:     #f59e0b;
+    --cold:     #475569;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #0a0e17 0%, #111827 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 1rem; }
+  .logo { font-size: 1.1rem; font-weight: 700; color: var(--blue); letter-spacing: -0.5px; }
+  .logo span { color: var(--text); font-weight: 400; }
+  .badge { background: var(--green); color: #fff; font-size: 0.65rem; font-weight: 700;
+           padding: 0.15rem 0.5rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .timestamp { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); }
+
+  /* ── LAYOUT ── */
+  .main { padding: 1.5rem 2rem; max-width: 1600px; margin: 0 auto; }
+
+  /* ── GRID ── */
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .grid-1 { margin-bottom: 1.5rem; }
+
+  @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px)  { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+  @media (max-width: 600px)  { .grid-4 { grid-template-columns: 1fr; } .main { padding: 1rem; } }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+                letter-spacing: 0.08em; color: var(--muted); }
+  .card-badge { font-size: 0.7rem; background: var(--bg3); border: 1px solid var(--border);
+                padding: 0.15rem 0.5rem; border-radius: 6px; color: var(--muted); }
+
+  /* ── STAT CARDS ── */
+  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .stat-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.4rem; }
+  .stat-value { font-size: 2rem; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+  .stat-value.blue   { color: var(--blue); }
+  .stat-value.green  { color: var(--green); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.red    { color: var(--red); }
+  .stat-value.purple { color: var(--purple); }
+  .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+  .stat-delta { font-size: 0.75rem; font-weight: 600; margin-top: 0.3rem; }
+  .stat-delta.up { color: var(--green); }
+  .stat-delta.neutral { color: var(--muted); }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--blue); margin-bottom: 0.75rem; margin-top: 0.25rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { text-align: left; padding: 0.5rem 0.75rem; font-size: 0.68rem; font-weight: 600;
+       text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+       border-bottom: 1px solid var(--border); }
+  td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #0d1520; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(59,130,246,0.04); }
+
+  /* ── TIER BADGES ── */
+  .tier { display: inline-block; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem;
+          border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tier-HOT  { background: rgba(239,68,68,0.15);  color: var(--hot); }
+  .tier-WARM { background: rgba(245,158,11,0.15); color: var(--warm); }
+  .tier-COLD { background: rgba(71,85,105,0.2);   color: #94a3b8; }
+  .tier-active { background: rgba(16,185,129,0.15); color: var(--green); }
+
+  /* ── PROGRESS BAR ── */
+  .progress-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+  .progress-label { font-size: 0.78rem; min-width: 110px; color: var(--text); }
+  .progress-bar { flex: 1; height: 6px; background: var(--bg3); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
+  .progress-val { font-size: 0.78rem; font-family: 'JetBrains Mono', monospace;
+                  color: var(--muted); min-width: 50px; text-align: right; }
+
+  /* ── MINI BARS ── */
+  .bar-chart { display: flex; flex-direction: column; gap: 0.4rem; }
+
+  /* ── BLOCKERS ── */
+  .blocker { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem;
+             background: var(--bg3); border-radius: 8px; margin-bottom: 0.5rem;
+             border-left: 3px solid var(--border); }
+  .blocker.high   { border-left-color: var(--red); }
+  .blocker.medium { border-left-color: var(--yellow); }
+  .blocker.low    { border-left-color: var(--muted); }
+  .blocker-item { font-weight: 600; font-size: 0.82rem; color: var(--text); margin-bottom: 0.15rem; }
+  .blocker-detail { font-size: 0.75rem; color: var(--muted); }
+
+  /* ── ACTIONS ── */
+  .action { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem;
+            background: var(--bg3); border-radius: 8px; margin-bottom: 0.5rem;
+            cursor: default; }
+  .action.HIGH { border-left: 3px solid var(--green); }
+  .action.medium { border-left: 3px solid var(--blue); }
+  .action.low    { border-left: 3px solid var(--muted); }
+  .action-num { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+                color: var(--blue); font-weight: 600; min-width: 30px; }
+  .action-text { font-weight: 600; font-size: 0.82rem; color: var(--text); margin-bottom: 0.15rem; }
+  .action-detail { font-size: 0.75rem; color: var(--muted); }
+
+  /* ── GIT LOG ── */
+  .commit { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border); }
+  .commit:last-child { border-bottom: none; }
+  .commit-hash { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+                 color: var(--blue); min-width: 52px; }
+  .commit-date { font-size: 0.72rem; color: var(--muted); min-width: 85px; }
+  .commit-msg  { font-size: 0.78rem; color: var(--text); }
+
+  /* ── COUNTY STATUS ── */
+  .county-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0;
+                border-bottom: 1px solid var(--border); }
+  .county-row:last-child { border-bottom: none; }
+  .county-name { font-weight: 600; min-width: 90px; font-size: 0.82rem; }
+  .county-stat { font-size: 0.75rem; color: var(--muted); flex: 1; }
+  .county-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green  { background: var(--green); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-red    { background: var(--red); }
+  .dot-gray   { background: var(--muted); }
+
+  /* ── PROJECTION BOX ── */
+  .proj-box { background: var(--bg3); border-radius: 10px; padding: 1rem; text-align: center; }
+  .proj-range { font-size: 1.4rem; font-weight: 800; color: var(--green); letter-spacing: -0.5px; }
+  .proj-label { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+
+  /* ── OUTREACH CHANNEL PILLS ── */
+  .channel-pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem;
+                  border-radius: 99px; font-size: 0.72rem; font-weight: 600; margin: 0.2rem; }
+  .pill-green  { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
+  .pill-yellow { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+  .pill-red    { background: rgba(239,68,68,0.12);  color: var(--red);    border: 1px solid rgba(239,68,68,0.25); }
+  .pill-blue   { background: rgba(59,130,246,0.12); color: var(--blue);   border: 1px solid rgba(59,130,246,0.25); }
+
+  /* ── LOADING ── */
+  .loading { text-align: center; padding: 3rem; color: var(--muted); }
+  .spinner { display: inline-block; width: 24px; height: 24px; border: 2px solid var(--border);
+             border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── MONO ── */
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+
+  /* ── REFRESH ── */
+  .refresh-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--muted);
+                 padding: 0.3rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;
+                 font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .refresh-btn:hover { border-color: var(--blue); color: var(--blue); }
+</style>
+</head>
+<body><nav style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#0d1117;border-bottom:1px solid #1e2d45;padding:10px 20px;display:flex;align-items:center;gap:20px;font-family:Inter,sans-serif;font-size:13px;"><span style="color:#3b82f6;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-right:8px;">Mathis Land Co.</span><a href="activity.html" style="color:#94a3b8;text-decoration:none;padding:5px 10px;border-radius:6px;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Activity</a><a href="tracker.html" style="color:#94a3b8;text-decoration:none;padding:5px 10px;border-radius:6px;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Tracker</a><a href="intake.html" style="color:#94a3b8;text-decoration:none;padding:5px 10px;border-radius:6px;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Intake</a><span style="flex:1"></span><a href="index.html" onclick="sessionStorage.clear()" style="color:#475569;text-decoration:none;font-size:12px;">Logout</a></nav><div style="height:44px"></div>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">Mathis Land Co. <span>Ops</span></div>
+    <div class="badge">Live</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <span class="timestamp" id="ts">—</span>
+    <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+</div>
+
+<div class="main" id="app">
+  <div class="loading"><div class="spinner"></div><br><br>Loading pipeline data...</div>
+</div>
+
+<script>
+let D = null;
+
+async function loadData() {
+  try {
+    const r = await fetch('activity-summary.json?t=' + Date.now());
+    if (!r.ok) throw new Error('not found');
+    D = await r.json();
+    render();
+  } catch(e) {
+    // Try relative path fallback
+    try {
+      const r2 = await fetch('../data/activity-summary.json?t=' + Date.now());
+      D = await r2.json();
+      render();
+    } catch(e2) {
+      document.getElementById('app').innerHTML = `
+        <div class="loading">
+          <div style="color:var(--red);font-size:1rem;margin-bottom:1rem">⚠ Data not loaded</div>
+          <div style="color:var(--muted);font-size:0.82rem">Run: <span class="mono">python3 scripts/activity-reporter.py</span><br>Then refresh this page.</div>
+        </div>`;
+    }
+  }
+}
+
+function fmt(n) { return Number(n).toLocaleString(); }
+function pct(a, b) { return b > 0 ? Math.round((a/b)*100) : 0; }
+
+function tierColor(t) {
+  return t === 'HOT' ? 'var(--hot)' : t === 'WARM' ? 'var(--yellow)' : 'var(--cold)';
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const L = D.leads;
+  const E = D.email;
+  const B = D.buyers;
+  const P = D.projections;
+  const ts = new Date(D.generated_at);
+  document.getElementById('ts').textContent = 'Updated ' + ts.toLocaleTimeString();
+
+  // Pipeline bar chart data
+  const stageOrder = ['PROSPECTING','CONTACTED','WARM','OFFER OUT','UNDER CONTRACT','CLOSED'];
+  const stageColors = {
+    'PROSPECTING': 'var(--muted)',
+    'CONTACTED':   'var(--blue)',
+    'WARM':        'var(--yellow)',
+    'OFFER OUT':   'var(--purple)',
+    'UNDER CONTRACT': 'var(--green)',
+    'CLOSED':      '#10b981'
+  };
+  const maxStage = Math.max(...stageOrder.map(s => L.by_stage[s] || 0), 1);
+
+  // Email by date chart
+  const dateKeys = Object.keys(E.by_date).slice(0,7).reverse();
+  const maxEmailDay = Math.max(...dateKeys.map(d => E.by_date[d]), 1);
+
+  app.innerHTML = `
+
+  <!-- ── TOP KPI ROW ── -->
+  <div class="section-label">📊 Pipeline Overview</div>
+  <div class="grid-4" style="margin-bottom:1.5rem">
+    <div class="stat-card">
+      <div class="stat-label">Total Leads</div>
+      <div class="stat-value blue">${fmt(L.total_all)}</div>
+      <div class="stat-sub">${fmt(L.kaufman_total)} Kaufman · ${fmt(L.johnson_total)} Johnson</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Skip Traced</div>
+      <div class="stat-value green">${fmt(L.skip_traced)}</div>
+      <div class="stat-sub">${pct(L.skip_traced, L.total_all)}% of total · phone + email</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Emails Sent</div>
+      <div class="stat-value yellow">${fmt(E.total_sent)}</div>
+      <div class="stat-sub">${fmt(L.sms_ready)} SMS queued · A2P pending</div>
+      <div class="stat-delta up">↑ ${E.sent_today} today · ${E.sent_yesterday} yesterday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Buyers</div>
+      <div class="stat-value purple">${B.active}</div>
+      <div class="stat-sub">${B.with_phone} with phone · ${B.with_email} with email</div>
+      <div class="stat-delta up">↑ ${B.contacted} contacted today</div>
+    </div>
+  </div>
+
+  <!-- ── PROJECTIONS ── -->
+  <div class="section-label">💰 Deal Projections</div>
+  <div class="grid-4" style="margin-bottom:1.5rem">
+    <div class="proj-box">
+      <div class="proj-label">Est. Responses</div>
+      <div class="proj-range">${fmt(P.est_responses_low)}–${fmt(P.est_responses_high)}</div>
+      <div class="proj-label">from ${fmt(P.emails_sent)} emails @ 2–5%</div>
+    </div>
+    <div class="proj-box">
+      <div class="proj-label">Est. Deals</div>
+      <div class="proj-range">${P.est_closes_low}–${P.est_closes_high}</div>
+      <div class="proj-label">20–30% close rate</div>
+    </div>
+    <div class="proj-box">
+      <div class="proj-label">Email Revenue Est.</div>
+      <div class="proj-range" style="font-size:1.1rem">${P.fee_low}–${P.fee_high}</div>
+      <div class="proj-label">$5K–$15K avg assignment fee</div>
+    </div>
+    <div class="proj-box">
+      <div class="proj-label">SMS Pipeline (when live)</div>
+      <div class="proj-range" style="font-size:1rem;color:var(--yellow)">${P.sms_pipeline_value.split('(')[0].trim()}</div>
+      <div class="proj-label">467 leads · A2P pending</div>
+    </div>
+  </div>
+
+  <!-- ── LEAD BREAKDOWN + EMAIL ACTIVITY ── -->
+  <div class="section-label">📋 Lead Breakdown</div>
+  <div class="grid-3" style="margin-bottom:1.5rem">
+
+    <!-- Tier breakdown -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Leads by Tier</div>
+        <div class="card-badge">${fmt(L.skip_traced)} skip traced</div>
+      </div>
+      <div class="bar-chart">
+        ${['HOT','WARM','COLD'].map(t => {
+          const n = L.by_tier[t] || 0;
+          const p = pct(n, L.skip_traced);
+          return `<div class="progress-row">
+            <div class="progress-label"><span class="tier tier-${t}">${t}</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${tierColor(t)}"></div></div>
+            <div class="progress-val">${fmt(n)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:1rem;padding-top:0.75rem;border-top:1px solid var(--border)">
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <span class="channel-pill pill-green">✓ ${fmt(L.emailed_total)} Emailed</span>
+          <span class="channel-pill pill-yellow">📱 ${fmt(L.sms_ready)} SMS-Ready</span>
+          <span class="channel-pill pill-blue">🔍 ${fmt(L.skip_traced)} Traced</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pipeline stages -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Pipeline Stages</div>
+        <div class="card-badge">${fmt(L.skip_traced)} total</div>
+      </div>
+      <div class="bar-chart">
+        ${stageOrder.map(s => {
+          const n = L.by_stage[s] || 0;
+          const p = pct(n, maxStage);
+          return `<div class="progress-row">
+            <div class="progress-label" style="font-size:0.72rem;color:var(--muted)">${s}</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${stageColors[s]}"></div></div>
+            <div class="progress-val">${fmt(n)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Email activity by day -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Email Activity</div>
+        <div class="card-badge">${fmt(E.total_sent)} total</div>
+      </div>
+      <div class="bar-chart">
+        ${dateKeys.map(d => {
+          const n = E.by_date[d] || 0;
+          const p = pct(n, maxEmailDay);
+          return `<div class="progress-row">
+            <div class="progress-label" style="font-size:0.72rem">${d.slice(5)}</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:var(--blue)"></div></div>
+            <div class="progress-val">${fmt(n)}</div>
+          </div>`;
+        }).join('')}
+        ${dateKeys.length === 0 ? '<div style="color:var(--muted);font-size:0.8rem;text-align:center;padding:1rem">No email log data yet</div>' : ''}
+      </div>
+      <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border);display:flex;gap:0.5rem;flex-wrap:wrap">
+        ${Object.entries(E.by_template).map(([t,n]) =>
+          `<span class="channel-pill pill-blue">${t}: ${n}</span>`
+        ).join('') || '<span style="color:var(--muted);font-size:0.75rem">No template data yet</span>'}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COUNTY STATUS ── -->
+  <div class="section-label">🗺 County Status</div>
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="card-header"><div class="card-title">8 Target Counties</div><div class="card-badge">DFW Region</div></div>
+      ${D.counties.map(c => {
+        const dot = c.status === 'Active' ? 'dot-green' :
+                    c.status.includes('needed') || c.status.includes('Addresses') ? 'dot-yellow' :
+                    c.status.includes('started') ? 'dot-gray' : 'dot-red';
+        return `<div class="county-row">
+          <div class="county-dot ${dot}"></div>
+          <div class="county-name">${c.county}</div>
+          <div class="county-stat">${fmt(c.leads)} leads · ${fmt(c.skip_traced)} traced · ${fmt(c.emailed)} emailed</div>
+          <div style="font-size:0.7rem;color:var(--muted)">${c.status}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Blockers -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Blockers</div><div class="card-badge">${D.blockers.length} items</div></div>
+      ${D.blockers.map(b =>
+        `<div class="blocker ${b.priority}">
+          <div>
+            <div class="blocker-item">${b.item}</div>
+            <div class="blocker-detail">${b.detail}</div>
+          </div>
+        </div>`
+      ).join('')}
+    </div>
+  </div>
+
+  <!-- ── BUYER LIST ── -->
+  <div class="section-label">🤝 Buyer List</div>
+  <div class="card grid-1">
+    <div class="card-header">
+      <div class="card-title">Active Buyers — ${B.active} total · ${B.with_phone} phones · ${B.with_email} emails · ${B.deals_closed} deals closed</div>
+      <div class="card-badge">${B.total_fees_earned} earned</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Name / Company</th><th>Type</th><th>Counties</th>
+            <th>Max Price</th><th>Phone</th><th>Email</th><th>Last Contact</th><th>Deals</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${B.table.map(b => `
+            <tr>
+              <td class="mono" style="color:var(--blue)">${b.id}</td>
+              <td style="font-weight:500">${b.name}</td>
+              <td><span class="tier tier-${b.status === 'active' ? 'WARM' : 'COLD'}" style="white-space:nowrap">${b.type}</span></td>
+              <td style="color:var(--muted);font-size:0.75rem">${b.counties}</td>
+              <td class="mono" style="color:var(--green)">${b.max_price}</td>
+              <td style="color:${b.phone ? 'var(--text)' : 'var(--muted)'}">${b.phone || '—'}</td>
+              <td style="color:${b.email ? 'var(--blue)' : 'var(--muted)'};font-size:0.75rem">${b.email || '—'}</td>
+              <td style="color:${b.last_contact === 'Never' ? 'var(--muted)' : 'var(--text)'}">${b.last_contact}</td>
+              <td style="text-align:center;color:${b.deals > 0 ? 'var(--green)' : 'var(--muted)'}">${b.deals}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── NEXT ACTIONS ── -->
+  <div class="section-label" style="margin-top:1.5rem">⚡ Next Actions</div>
+  <div class="grid-2">
+    <div>
+      ${D.next_actions.map((a, i) =>
+        `<div class="action ${a.priority}">
+          <div class="action-num">#${i+1}</div>
+          <div>
+            <div class="action-text">${a.action}</div>
+            <div class="action-detail">${a.detail}</div>
+          </div>
+        </div>`
+      ).join('')}
+    </div>
+
+    <!-- Git log -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Recent Builds</div><div class="card-badge">git log</div></div>
+      ${D.git_log.slice(0,10).map(c =>
+        `<div class="commit">
+          <div class="commit-hash">${c.hash}</div>
+          <div class="commit-date">${c.date}</div>
+          <div class="commit-msg">${c.message}</div>
+        </div>`
+      ).join('')}
+    </div>
+  </div>
+
+  <!-- ── OFFER MECHANICS ── -->
+  <div class="section-label" style="margin-top:0.5rem">🧮 Offer Engine</div>
+  <div class="grid-3" style="margin-bottom:2rem">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Confirmed Buyer</div></div>
+      <div class="mono" style="color:var(--green);font-size:0.85rem;line-height:2">
+        Offer = Buyer price − $1,000 min<br>
+        <span style="color:var(--muted)">Take whatever the deal gives</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Standard Deal</div></div>
+      <div class="mono" style="color:var(--blue);font-size:0.85rem;line-height:2">
+        ARV = CAD value × 1.3<br>
+        Buyer = ARV × 60%<br>
+        Offer = Buyer − $7,500
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Fee Tiers</div></div>
+      <div style="font-size:0.8rem;line-height:2">
+        <div>ARV &lt; $15K → <span style="color:var(--muted)">$1K–$3K fee</span></div>
+        <div>ARV $15–40K → <span style="color:var(--yellow)">$5K–$8K fee</span></div>
+        <div>ARV $40K+ → <span style="color:var(--green)">$8K–$15K+ fee</span></div>
+      </div>
+    </div>
+  </div>
+
+  `;
+}
+
+// Auto-refresh every 90s
+loadData();
+setInterval(loadData, 90000);
+
+// Update clock
+setInterval(() => {
+  if (D) document.getElementById('ts').textContent = 'Updated ' + new Date(D.generated_at).toLocaleTimeString();
+}, 1000);
+</script>
+</body>
+</html>

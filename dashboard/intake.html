@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script>if(sessionStorage.getItem("mlc_auth")!=="true"){window.location.href="index.html?next="+encodeURIComponent(window.location.pathname.split("/").pop());};</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Deal Intake — Mathis Land Co.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0a0e17;
+    --card: #111827;
+    --border: #1e2a3a;
+    --text: #e2e8f0;
+    --dim: #64748b;
+    --blue: #3b82f6;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .logo {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .logo span { color: var(--blue); }
+
+  .timestamp {
+    font-size: 11px;
+    color: var(--dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin: 20px 0 10px;
+  }
+
+  .field {
+    margin-bottom: 12px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px; /* prevents iOS zoom */
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--blue);
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: #334155;
+  }
+
+  textarea {
+    resize: none;
+    height: 80px;
+  }
+
+  .row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .row3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* Motivation toggle chips */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .chip {
+    display: none;
+  }
+
+  .chip + label {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 13px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin: 0;
+    letter-spacing: 0;
+  }
+
+  .chip:checked + label {
+    background: rgba(59,130,246,0.15);
+    border-color: var(--blue);
+    color: var(--text);
+  }
+
+  /* Score preview */
+  .score-preview {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 16px 0;
+  }
+
+  .score-val {
+    font-size: 32px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s;
+  }
+  .score-hot  { color: var(--green); }
+  .score-warm { color: var(--amber); }
+  .score-cold { color: var(--dim); }
+
+  .score-meta {
+    text-align: right;
+  }
+  .score-tier {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .score-factors {
+    font-size: 11px;
+    color: var(--dim);
+    margin-top: 3px;
+    max-width: 200px;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  /* Submit */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s;
+  }
+
+  .btn:active { opacity: 0.8; }
+
+  .btn-primary {
+    background: var(--blue);
+    color: white;
+    margin-bottom: 10px;
+  }
+
+  .btn-secondary {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  /* Success screen */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .success-icon {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  .success-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .success-sub {
+    font-size: 14px;
+    color: var(--dim);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: left;
+    margin-bottom: 20px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-key { color: var(--dim); }
+  .summary-val { font-weight: 600; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  select option { background: #1e293b; }
+</style>
+</head>
+<body><nav style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#0d1117;border-bottom:1px solid #1e2d45;padding:10px 20px;display:flex;align-items:center;gap:20px;font-family:Inter,sans-serif;font-size:13px;"><span style="color:#3b82f6;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-right:8px;">Mathis Land Co.</span><a href="activity.html" style="color:#94a3b8;text-decoration:none;padding:5px 10px;border-radius:6px;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Activity</a><a href="tracker.html" style="color:#94a3b8;text-decoration:none;padding:5px 10px;border-radius:6px;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Tracker</a><a href="intake.html" style="color:#94a3b8;text-decoration:none;padding:5px 10px;border-radius:6px;" onmouseover="this.style.color='#e2e8f0'" onmouseout="this.style.color='#94a3b8'">Intake</a><span style="flex:1"></span><a href="index.html" onclick="sessionStorage.clear()" style="color:#475569;text-decoration:none;font-size:12px;">Logout</a></nav><div style="height:44px"></div>
+
+<div id="form-view">
+  <div class="header">
+    <div>
+      <div class="logo">MATHIS LAND <span>CO.</span></div>
+    </div>
+    <div class="timestamp" id="now">—</div>
+  </div>
+
+  <form id="intake-form">
+
+    <!-- SELLER INFO -->
+    <div class="section-label">Seller Info</div>
+
+    <div class="row2">
+      <div class="field">
+        <label>First Name</label>
+        <input type="text" id="seller_first" placeholder="John" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Last Name</label>
+        <input type="text" id="seller_last" placeholder="Smith" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Phone Number</label>
+      <input type="tel" id="seller_phone" placeholder="(972) 555-1234">
+    </div>
+
+    <div class="field">
+      <label>Email (optional)</label>
+      <input type="email" id="seller_email" placeholder="john@email.com">
+    </div>
+
+    <!-- PROPERTY INFO -->
+    <div class="divider"></div>
+    <div class="section-label">Property</div>
+
+    <div class="field">
+      <label>Street Address</label>
+      <input type="text" id="prop_address" placeholder="5474 FM 987" autocomplete="off">
+    </div>
+
+    <div class="row3">
+      <div class="field">
+        <label>City</label>
+        <input type="text" id="prop_city" placeholder="Kaufman">
+      </div>
+      <div class="field">
+        <label>County</label>
+        <select id="prop_county">
+          <option value="Kaufman">Kaufman</option>
+          <option value="Tarrant">Tarrant</option>
+          <option value="Hunt">Hunt</option>
+          <option value="Ellis">Ellis</option>
+          <option value="Johnson">Johnson</option>
+          <option value="Parker">Parker</option>
+          <option value="Henderson">Henderson</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Acres</label>
+        <input type="number" id="prop_acres" placeholder="5.2" step="0.1" min="0">
+      </div>
+    </div>
+
+    <!-- DEAL DETAILS -->
+    <div class="divider"></div>
+    <div class="section-label">Deal Details</div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Seller Asking ($)</label>
+        <input type="number" id="asking_price" placeholder="25000" min="0">
+      </div>
+      <div class="field">
+        <label>Our Offer ($)</label>
+        <input type="number" id="offer_price" placeholder="8500" min="0" id="offer_price">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Seller Timeline</label>
+      <select id="timeline">
+        <option value="">— select —</option>
+        <option value="ASAP">ASAP (motivated)</option>
+        <option value="1-3 months">1–3 months</option>
+        <option value="3-6 months">3–6 months</option>
+        <option value="Just exploring">Just exploring</option>
+        <option value="Not ready">Not ready yet</option>
+      </select>
+    </div>
+
+    <!-- MOTIVATION SIGNALS -->
+    <div class="divider"></div>
+    <div class="section-label">Motivation Signals</div>
+
+    <div class="chips">
+      <input class="chip" type="checkbox" id="m_taxes"   value="back_taxes">
+      <label for="m_taxes">Back taxes</label>
+
+      <input class="chip" type="checkbox" id="m_inherited" value="inherited">
+      <label for="m_inherited">Inherited land</label>
+
+      <input class="chip" type="checkbox" id="m_divorce" value="divorce">
+      <label for="m_divorce">Divorce / estate</label>
+
+      <input class="chip" type="checkbox" id="m_tired" value="tired_landlord">
+      <label for="m_tired">Tired owner</label>
+
+      <input class="chip" type="checkbox" id="m_outofstate" value="out_of_state">
+      <label for="m_outofstate">Out of state</label>
+
+      <input class="chip" type="checkbox" id="m_relocation" value="relocation">
+      <label for="m_relocation">Relocating</label>
+
+      <input class="chip" type="checkbox" id="m_financial" value="financial">
+      <label for="m_financial">Financial pressure</label>
+
+      <input class="chip" type="checkbox" id="m_longhold" value="long_hold">
+      <label for="m_longhold">Long hold (10+ yrs)</label>
+    </div>
+
+    <!-- LIVE SCORE -->
+    <div class="divider"></div>
+    <div class="score-preview">
+      <div>
+        <div style="font-size:11px;color:var(--dim);font-weight:600;letter-spacing:1px;margin-bottom:4px">MOTIVATION SCORE</div>
+        <div class="score-val score-cold" id="score-display">55</div>
+      </div>
+      <div class="score-meta">
+        <div class="score-tier" id="tier-display">COLD</div>
+        <div class="score-factors" id="factors-display">No signals selected</div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="field">
+      <label>Call Notes</label>
+      <textarea id="notes" placeholder="Key things said on the call..."></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">💾 Save Deal</button>
+    <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear</button>
+
+  </form>
+</div>
+
+<!-- SUCCESS VIEW -->
+<div class="success" id="success-view">
+  <div class="success-icon">✅</div>
+  <div class="success-title">Deal Logged</div>
+  <div class="success-sub" id="success-sub">Lead saved to pipeline.</div>
+
+  <div class="summary-card" id="summary-card"></div>
+
+  <button class="btn btn-primary" onclick="newDeal()">+ New Deal</button>
+  <button class="btn btn-secondary" onclick="downloadDeals()">⬇ Export All Deals</button>
+</div>
+
+<script>
+// ── Live clock ──────────────────────────────────────────────────
+function tick() {
+  const now = new Date();
+  document.getElementById('now').textContent =
+    now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+tick();
+setInterval(tick, 30000);
+
+// ── Deal storage ─────────────────────────────────────────────────
+const STORAGE_KEY = 'mathis_deals';
+function loadDeals() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveDeals(deals) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(deals));
+}
+
+// ── Live score calc ──────────────────────────────────────────────
+const SIGNALS = {
+  back_taxes:    { pts: 25, label: 'Back taxes' },
+  inherited:     { pts: 20, label: 'Inherited' },
+  divorce:       { pts: 18, label: 'Estate/divorce' },
+  tired_landlord:{ pts: 15, label: 'Tired owner' },
+  out_of_state:  { pts: 15, label: 'Out of state' },
+  relocation:    { pts: 12, label: 'Relocating' },
+  financial:     { pts: 22, label: 'Financial pressure' },
+  long_hold:     { pts: 10, label: 'Long hold' },
+};
+
+function updateScore() {
+  let score = 55;
+  const active = [];
+  document.querySelectorAll('.chip:checked').forEach(cb => {
+    const sig = SIGNALS[cb.value];
+    if (sig) { score += sig.pts; active.push(sig.label); }
+  });
+
+  const timeline = document.getElementById('timeline').value;
+  if (timeline === 'ASAP') { score += 10; active.push('ASAP timeline'); }
+  else if (timeline === '1-3 months') { score += 5; }
+
+  score = Math.min(score, 100);
+
+  const el = document.getElementById('score-display');
+  const tier = document.getElementById('tier-display');
+  const factors = document.getElementById('factors-display');
+
+  el.textContent = score;
+  el.className = 'score-val ' + (score >= 80 ? 'score-hot' : score >= 65 ? 'score-warm' : 'score-cold');
+
+  if (score >= 80)       { tier.textContent = 'HOT 🔥'; tier.style.color = 'var(--green)'; }
+  else if (score >= 65)  { tier.textContent = 'WARM'; tier.style.color = 'var(--amber)'; }
+  else                   { tier.textContent = 'COLD'; tier.style.color = 'var(--dim)'; }
+
+  factors.textContent = active.length ? active.join(' · ') : 'No signals selected';
+}
+
+document.querySelectorAll('.chip, #timeline').forEach(el => {
+  el.addEventListener('change', updateScore);
+});
+
+// ── Form submit ──────────────────────────────────────────────────
+document.getElementById('intake-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const score = parseInt(document.getElementById('score-display').textContent);
+  const tier  = score >= 80 ? 'HOT' : score >= 65 ? 'WARM' : 'COLD';
+
+  const signals = [];
+  document.querySelectorAll('.chip:checked').forEach(cb => signals.push(cb.value));
+
+  const deal = {
+    id:           Date.now().toString(36).toUpperCase(),
+    created_at:   new Date().toISOString(),
+    seller_first: document.getElementById('seller_first').value.trim(),
+    seller_last:  document.getElementById('seller_last').value.trim(),
+    seller_phone: document.getElementById('seller_phone').value.trim(),
+    seller_email: document.getElementById('seller_email').value.trim(),
+    prop_address: document.getElementById('prop_address').value.trim(),
+    prop_city:    document.getElementById('prop_city').value.trim(),
+    prop_county:  document.getElementById('prop_county').value,
+    prop_acres:   document.getElementById('prop_acres').value,
+    asking_price: document.getElementById('asking_price').value,
+    offer_price:  document.getElementById('offer_price').value,
+    timeline:     document.getElementById('timeline').value,
+    signals:      signals,
+    score:        score,
+    tier:         tier,
+    stage:        'CONTACTED',
+    notes:        document.getElementById('notes').value.trim(),
+  };
+
+  // Save
+  const deals = loadDeals();
+  deals.push(deal);
+  saveDeals(deals);
+
+  // Show success
+  const name = `${deal.seller_first} ${deal.seller_last}`.trim() || 'Unknown';
+  document.getElementById('success-sub').textContent =
+    `${name} · ${deal.prop_county} County · Score: ${score} (${tier})`;
+
+  const rows = [
+    ['Seller', name],
+    ['Phone', deal.seller_phone || '—'],
+    ['Property', deal.prop_address || '—'],
+    ['County', deal.prop_county],
+    ['Acres', deal.prop_acres || '—'],
+    ['Asking', deal.asking_price ? `$${parseInt(deal.asking_price).toLocaleString()}` : '—'],
+    ['Our Offer', deal.offer_price ? `$${parseInt(deal.offer_price).toLocaleString()}` : '—'],
+    ['Timeline', deal.timeline || '—'],
+    ['Score', `${score} — ${tier}`],
+    ['Signals', signals.length ? signals.join(', ') : 'none'],
+  ];
+
+  document.getElementById('summary-card').innerHTML = rows.map(([k,v]) =>
+    `<div class="summary-row"><span class="summary-key">${k}</span><span class="summary-val">${v}</span></div>`
+  ).join('');
+
+  document.getElementById('form-view').style.display = 'none';
+  document.getElementById('success-view').style.display = 'block';
+  window.scrollTo(0, 0);
+});
+
+function newDeal() {
+  document.getElementById('intake-form').reset();
+  updateScore();
+  document.getElementById('form-view').style.display = 'block';
+  document.getElementById('success-view').style.display = 'none';
+}
+
+function clearForm() {
+  document.getElementById('intake-form').reset();
+  updateScore();
+}
+
+function downloadDeals() {
+  const deals = loadDeals();
+  if (!deals.length) { alert('No deals saved yet.'); return; }
+  const keys = Object.keys(deals[0]);
+  const rows = [keys.join(',')];
+  deals.forEach(d => {
+    rows.push(keys.map(k => {
+      const v = Array.isArray(d[k]) ? d[k].join('|') : (d[k] ?? '');
+      return `"${String(v).replace(/"/g,'""')}"`;
+    }).join(','));
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `mathis-deals-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+</script>
+</body>
+</html>
