@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-09T20:19:07.708719",
+  "generated_at": "2026-03-09T21:19:20.039666",
   "date": "2026-03-09",
   "leads": {
     "kaufman_total": 9300,
@@ -18,8 +18,8 @@
   },
   "email": {
     "source": "Mailgun API (live)",
-    "accepted": 804,
-    "delivered": 675,
+    "accepted": 806,
+    "delivered": 676,
     "opened": 0,
     "failed_bounced": 132,
     "open_rate": "0.0%",
@@ -523,7 +523,7 @@
   },
   "projections": {
     "warning": "ESTIMATES ONLY \u2014 no historical data yet",
-    "emails_delivered": 675,
+    "emails_delivered": 676,
     "openers_so_far": 0,
     "est_responses": "7\u201320 (1\u20133% industry avg)",
     "est_closes": "0\u20135 (need buyer confirmed first)",
