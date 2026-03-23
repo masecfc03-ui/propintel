@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-23T08:01:31.329051",
+  "generated_at": "2026-03-23T09:02:03.613519",
   "date": "2026-03-23",
   "leads": {
     "kaufman_total": 9300,
@@ -19,9 +19,9 @@
   "email": {
     "source": "Mailgun API (live)",
     "accepted": -1,
-    "delivered": 0,
+    "delivered": -1,
     "opened": -1,
-    "failed_bounced": 0,
+    "failed_bounced": -1,
     "open_rate": "N/A",
     "bounce_rate": "N/A",
     "replied": 0,
