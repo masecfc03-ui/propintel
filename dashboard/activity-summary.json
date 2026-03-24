@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-24T08:06:43.403227",
+  "generated_at": "2026-03-24T09:06:54.457726",
   "date": "2026-03-24",
   "leads": {
     "kaufman_total": 9300,
@@ -18,12 +18,12 @@
   },
   "email": {
     "source": "Mailgun API (live)",
-    "accepted": 804,
-    "delivered": 676,
+    "accepted": 0,
+    "delivered": 52,
     "opened": 0,
-    "failed_bounced": 184,
+    "failed_bounced": 6,
     "open_rate": "0.0%",
-    "bounce_rate": "22.9%",
+    "bounce_rate": "N/A",
     "replied": 0,
     "note": "Seller outreach only (420 Kaufman leads). Buyer intros counted separately."
   },
@@ -523,10 +523,10 @@
   },
   "projections": {
     "warning": "ESTIMATES ONLY \u2014 no historical data yet",
-    "emails_delivered": 676,
+    "emails_delivered": 52,
     "openers_so_far": 0,
-    "est_responses": "7\u201320 (1\u20133% industry avg)",
-    "est_closes": "0\u20135 (need buyer confirmed first)",
+    "est_responses": "1\u20132 (1\u20133% industry avg)",
+    "est_closes": "0\u20130 (need buyer confirmed first)",
     "avg_fee_range": "$5,000\u2013$15,000 per deal",
     "sms_queued": "467 leads (A2P auth pending \u2014 0 sent yet)",
     "basis": "Email open rate benchmark: 2-5%. Motivated seller close rate: 10-25%."
