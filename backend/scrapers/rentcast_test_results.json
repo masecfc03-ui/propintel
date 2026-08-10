@@ -1,0 +1,15 @@
+{
+  "address": "1234 Main St, Dallas TX 75201",
+  "property_found": false,
+  "avm_found": false,
+  "value": null,
+  "value_range_low": null,
+  "value_range_high": null,
+  "rent_estimate": null,
+  "bedrooms": null,
+  "bathrooms": null,
+  "sqft": null,
+  "year_built": null,
+  "raw_property_data": null,
+  "raw_avm_data": null
+}

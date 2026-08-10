@@ -498,17 +498,153 @@ def run_outreach(zip_codes: list, limit: int = 20, dry_run: bool = True,
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
+BROKERAGE_ANGLES = {
+    "compass":          "Compass agents move fast — PropIntel gives you the data layer to back it up.",
+    "keller williams":  "KW's systems mindset + PropIntel's data depth = unfair advantage in client meetings.",
+    "kw":               "KW's systems mindset + PropIntel's data depth = unfair advantage in client meetings.",
+    "remax":            "Running independently means every edge counts. This is one most agents don't have yet.",
+    "re/max":           "Running independently means every edge counts. This is one most agents don't have yet.",
+    "coldwell banker":  "Your luxury clients expect white-glove prep. Branded reports deliver it.",
+    "ebby halliday":    "Ebby agents set the standard in DFW. PropIntel helps you stay ahead of it.",
+    "dave perry miller":"Your clients expect white-glove. Branded reports deliver it.",
+    "allie beth":       "Your clients expect white-glove. Branded reports deliver it.",
+    "berkshire":        "Premium service deserves premium data. PropIntel fills the gaps MLS can't.",
+}
+
+def build_agent_email(agent_name, brokerage=""):
+    """Build a short, tight cold email for a known agent (no listing needed)."""
+    first = agent_name.split()[0].title() if agent_name else "there"
+    brokerage_lower = (brokerage or "").lower()
+
+    angle = ""
+    for key, val in BROKERAGE_ANGLES.items():
+        if key in brokerage_lower:
+            angle = val
+            break
+
+    subject = "Quick question, {}".format(first)
+
+    html = """
+<div style="font-family:Arial,sans-serif;max-width:560px;color:#0f172a;font-size:15px;line-height:1.6">
+  <p>Hi {first},</p>
+
+  <p>Quick offer: send me any DFW address you're evaluating — listing, buyer prospect, or comp check —
+  and I'll run a full PropIntel property report on it for free.</p>
+
+  <p>What comes back in 60 seconds:</p>
+  <ul>
+    <li>Owner motivation score + hold duration</li>
+    <li>Equity position and financing history</li>
+    <li>Sold comps with price-per-sqft</li>
+    <li>Flood zone, liens, tax status</li>
+  </ul>
+
+  {angle_p}
+
+  <p>Worth trying? Just reply with an address.</p>
+
+  <p>Mason Mathis<br>
+  PropIntel —
+  <a href="https://propertyvalueintel.com" style="color:#2563eb">propertyvalueintel.com</a></p>
+
+  <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0">
+  <p style="font-size:11px;color:#94a3b8">
+    You're a licensed agent in DFW — that's why you're getting this.
+    Reply "unsubscribe" and I'll remove you immediately.
+  </p>
+</div>
+""".format(
+        first=first,
+        angle_p='<p><em>{}</em></p>'.format(angle) if angle else "",
+    )
+    return subject, html
+
+
+def run_outreach_from_csv(csv_path, dry_run=True, output_csv="outreach-csv-results.csv", limit=0):
+    """
+    Read agents from a CSV file and send cold outreach emails.
+    CSV columns expected: agent_name, brokerage, email, phone, website, source, scraped_at
+    email_guessed column optional (True/False).
+    """
+    import csv as _csv
+
+    results = []
+    with open(csv_path, newline="") as f:
+        reader = _csv.DictReader(f)
+        rows = list(reader)
+
+    if limit:
+        rows = rows[:limit]
+
+    log.info("Loaded %d agents from %s", len(rows), csv_path)
+
+    for row in rows:
+        agent_name  = row.get("agent_name", "").strip()
+        brokerage   = row.get("brokerage", "").strip()
+        email       = row.get("email", "").strip()
+        is_guessed  = row.get("email_guessed", "False").strip().lower() == "true"
+
+        if not email:
+            log.info("Skipping %s — no email", agent_name)
+            results.append({**row, "sent": False, "error": "no_email", "sent_at": ""})
+            continue
+
+        subject, html = build_agent_email(agent_name, brokerage)
+
+        result = {**row, "email_subject": subject, "sent": False, "sent_at": "", "error": ""}
+
+        if not dry_run:
+            log.info("Sending to %s <%s>%s", agent_name, email, " [GUESSED EMAIL]" if is_guessed else "")
+            ok = send_email(email, agent_name, subject, html)
+            result["sent"]    = ok
+            result["sent_at"] = datetime.utcnow().isoformat() if ok else ""
+            if not ok:
+                result["error"] = "mailgun_failed"
+            time.sleep(1.5)
+        else:
+            log.info("[DRY RUN] %s → %s | guessed=%s", agent_name, email, is_guessed)
+            log.info("  Subject: %s", subject)
+            result["sent"] = "dry_run"
+
+        results.append(result)
+
+    if results:
+        with open(output_csv, "w", newline="") as f:
+            writer = _csv.DictWriter(f, fieldnames=results[0].keys())
+            writer.writeheader()
+            writer.writerows(results)
+        log.info("Results saved → %s", output_csv)
+
+    total    = len(results)
+    sent_ok  = sum(1 for r in results if r["sent"] is True)
+    no_email = sum(1 for r in results if r.get("error") == "no_email")
+    log.info("Done. Total: %d | Sent: %d | No email: %d | Mode: %s",
+             total, sent_ok, no_email, "DRY RUN" if dry_run else "LIVE")
+    return results
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PropIntel Agent Outreach")
-    parser.add_argument("--zip",   nargs="+", default=["75204"], help="Zip codes to target")
-    parser.add_argument("--limit", type=int, default=20, help="Max listings per zip")
-    parser.add_argument("--send",  action="store_true", help="Actually send emails (default: dry run)")
+    parser.add_argument("--zip",   nargs="+", default=["75204"], help="Zip codes to target (Zillow mode)")
+    parser.add_argument("--csv",   default="",                   help="Path to agents CSV (CSV mode — bypasses Zillow)")
+    parser.add_argument("--limit", type=int, default=20,         help="Max agents/listings to process")
+    parser.add_argument("--send",  action="store_true",          help="Actually send emails (default: dry run)")
     parser.add_argument("--out",   default="outreach-results.csv", help="Output CSV path")
     args = parser.parse_args()
 
-    run_outreach(
-        zip_codes=args.zip,
-        limit=args.limit,
-        dry_run=not args.send,
-        output_csv=args.out,
-    )
+    if args.csv:
+        # CSV mode — read real agents from file, send direct outreach
+        run_outreach_from_csv(
+            csv_path=args.csv,
+            dry_run=not args.send,
+            output_csv=args.out,
+            limit=args.limit,
+        )
+    else:
+        # Zip mode — search Zillow listings, enrich, send
+        run_outreach(
+            zip_codes=args.zip,
+            limit=args.limit,
+            dry_run=not args.send,
+            output_csv=args.out,
+        )

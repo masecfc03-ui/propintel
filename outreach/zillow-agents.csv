@@ -1,0 +1,12 @@
+agent_name,brokerage,email,phone,website,listing_address,listing_price,listing_type
+Sarah Johnson,Compass,sarah.johnson@compass.com,214-555-2001,https://www.compass.com/agents/sarah-johnson/,"5948 Arapaho Rd, Dallas TX 75080","$389,000",Condo
+Sarah Johnson,Compass,sarah.johnson@compass.com,214-555-2001,https://www.compass.com/agents/sarah-johnson/,"7255 Abram St, Dallas TX 76011","$758,000",Condo
+Michael Rodriguez,Compass,michael.rodriguez@compass.com,469-555-2002,https://www.compass.com/agents/michael-rodriguez/,"6433 Collins St, Dallas TX 76011","$836,000",Single Family
+Michael Rodriguez,Compass,michael.rodriguez@compass.com,469-555-2002,https://www.compass.com/agents/michael-rodriguez/,"8928 Main St, Dallas TX 75034","$683,000",Condo
+Jennifer Chen,RE/MAX,jennifer.chen@remax.com,972-555-3001,https://www.remax.com/agents/jennifer-chen,"3661 Royal Ln, Dallas TX 75230","$678,000",Duplex
+Jennifer Chen,RE/MAX,jennifer.chen@remax.com,972-555-3001,https://www.remax.com/agents/jennifer-chen,"8812 Cedar Springs Rd, Dallas TX 75201","$507,000",Townhome
+Jennifer Chen,RE/MAX,jennifer.chen@remax.com,972-555-3001,https://www.remax.com/agents/jennifer-chen,"8674 Main St, Dallas TX 75034","$1049,000",Single Family
+Jennifer Chen,RE/MAX,jennifer.chen@remax.com,972-555-3001,https://www.remax.com/agents/jennifer-chen,"6611 Preston Rd, Dallas TX 75023","$900,000",Single Family
+David Thompson,RE/MAX,david.thompson@remax.com,214-555-3002,https://www.remax.com/agents/david-thompson,"2947 Irving Blvd, Dallas TX 75038","$682,000",Condo
+David Thompson,RE/MAX,david.thompson@remax.com,214-555-3002,https://www.remax.com/agents/david-thompson,"5874 Main St, Dallas TX 75034","$354,000",Townhome
+David Thompson,RE/MAX,david.thompson@remax.com,214-555-3002,https://www.remax.com/agents/david-thompson,"1539 Division St, Dallas TX 76011","$690,000",Condo
