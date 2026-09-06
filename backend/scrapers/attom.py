@@ -259,6 +259,109 @@ def get_sold_comps(address: str, zipcode: str = "",
     }
 
 
+def get_permits(address: str, zipcode: str = "") -> dict:
+    """
+    Pull permit history from ATTOM.
+    Returns: {
+        "available": bool,
+        "permits": [{"type", "date", "value", "contractor", "status", "description"}],
+        "summary": {"total", "total_value", "last_date"}
+    }
+    """
+    if not API_KEY:
+        return {"available": False, "permits": [], "summary": {}}
+
+    params = {"address": address}
+    if zipcode:
+        params["zipcode"] = zipcode
+
+    data = _get("/propertyapi/v1.0.0/permit/snapshot", params)
+    if data.get("error"):
+        return {"available": False, "permits": [], "summary": {}, "error": data["error"]}
+
+    try:
+        # Look for permits in the response - check common paths
+        raw_permits = []
+        if "property" in data and data["property"]:
+            prop = data["property"][0]
+            
+            # Try different possible paths for permit data
+            if "building" in prop and "permits" in prop["building"]:
+                raw_permits = prop["building"]["permits"]
+            elif "permits" in prop:
+                raw_permits = prop["permits"]
+            elif "permit" in prop:
+                raw_permits = prop["permit"] if isinstance(prop["permit"], list) else [prop["permit"]]
+                
+    except (KeyError, IndexError, TypeError) as e:
+        log.warning("ATTOM permit parse error: %s | raw: %s", e, str(data)[:300])
+        return {"available": False, "permits": [], "summary": {}}
+
+    if not raw_permits:
+        return {"available": False, "permits": [], "summary": {}}
+
+    permits = []
+    total_value = 0
+    last_date = None
+
+    for permit in raw_permits:
+        try:
+            # Parse permit data - field names may vary
+            permit_type = permit.get("permitType") or permit.get("type") or permit.get("permitTypeDescription") or "Unknown"
+            permit_date = permit.get("permitDate") or permit.get("date") or permit.get("issueDate")
+            permit_value = permit.get("permitValue") or permit.get("value") or permit.get("estimatedValue")
+            contractor = permit.get("contractor") or permit.get("contractorName") or ""
+            status = permit.get("status") or permit.get("permitStatus") or ""
+            description = permit.get("description") or permit.get("workDescription") or ""
+
+            # Convert permit value to float if it exists
+            if permit_value:
+                try:
+                    if isinstance(permit_value, str):
+                        # Remove any non-numeric characters except decimal point
+                        permit_value = float(''.join(c for c in permit_value if c.isdigit() or c == '.'))
+                    else:
+                        permit_value = float(permit_value)
+                    total_value += permit_value
+                except (ValueError, TypeError):
+                    permit_value = None
+
+            permits.append({
+                "type": permit_type,
+                "date": permit_date,
+                "value": permit_value,
+                "value_fmt": f"${permit_value:,.0f}" if permit_value else "",
+                "contractor": contractor,
+                "status": status,
+                "description": description,
+            })
+
+            # Track the most recent date
+            if permit_date and (not last_date or permit_date > last_date):
+                last_date = permit_date
+
+        except Exception as ex:
+            log.debug("ATTOM permit parse skip: %s", ex)
+            continue
+
+    # Sort permits by date (most recent first)
+    permits.sort(key=lambda x: x.get("date") or "", reverse=True)
+
+    summary = {
+        "total": len(permits),
+        "total_value": total_value if total_value > 0 else None,
+        "total_value_fmt": f"${total_value:,.0f}" if total_value > 0 else "",
+        "last_date": last_date,
+    }
+
+    return {
+        "available": len(permits) > 0,
+        "permits": permits,
+        "summary": summary,
+        "source": "ATTOM",
+    }
+
+
 def get_ownership_history(address: str, zipcode: str = "") -> dict:
     """
     Get deed/sale history — who bought it, when, for how much.

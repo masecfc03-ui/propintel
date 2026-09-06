@@ -131,7 +131,7 @@ def run(input_str: str, tier: str = "starter") -> dict:
         # ── ATTOM enrichment (activates when ATTOM_API_KEY env var is set) ────
         import os as _os
         if _os.environ.get("ATTOM_API_KEY"):
-            from scrapers.attom import get_avm, get_sold_comps, get_mortgage_lien, get_ownership_history
+            from scrapers.attom import get_avm, get_sold_comps, get_mortgage_lien, get_ownership_history, get_permits
             attom_addr  = address.split(",")[0].strip() if address else ""
             attom_zip   = zip_code
             tasks["attom_avm"]      = ex.submit(get_avm, attom_addr, attom_zip)
@@ -139,6 +139,7 @@ def run(input_str: str, tier: str = "starter") -> dict:
                                                  0.5, 12, 15)   # 0.5mi, 12mo, 15 comps
             tasks["attom_mortgage"] = ex.submit(get_mortgage_lien, attom_addr, attom_zip)
             tasks["attom_history"]  = ex.submit(get_ownership_history, attom_addr, attom_zip)
+            tasks["attom_permits"]  = ex.submit(get_permits, attom_addr, attom_zip)
 
         # ── Realie enrichment (activates when REALIE_API_KEY set; ATTOM takes priority) ──
         elif _os.environ.get("REALIE_API_KEY"):
@@ -190,6 +191,11 @@ def run(input_str: str, tier: str = "starter") -> dict:
 
     # ── Permits — free city open data portals (Dallas/Houston/Austin/San Antonio) ──
     report["permits"] = results.get("permits", {"available": False, "permits": [], "summary": {"total": 0}})
+    
+    # Override with ATTOM permit data if available (richer data)
+    attom_permits = results.get("attom_permits", {})
+    if attom_permits.get("available"):
+        report["permits"] = attom_permits
 
     # ── Property enrichment: ATTOM (priority) or Realie (fallback) ──────────
     attom_avm      = results.get("attom_avm", {})

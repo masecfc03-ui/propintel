@@ -1131,12 +1131,64 @@ def generate_pdf_bytes(report: dict) -> bytes:
         ("State",              permit_.get("state","TX")),
     ]))
     e.append(Spacer(1,4))
-    e.append(_pending_box("Permit History (ATTOM)", [
-        "All permit types: Solar, Pool, Roof, HVAC, Electrical, Bathroom, Addition",
-        "Permit dates, job values, contractor information",
-        "Inspection status and improvement history",
-        "Total capital improvement spend over property lifetime",
-    ]))
+    # Render permit table if ATTOM data is available, else show pending box
+    permits_data = report.get("permits", {})
+    if permits_data.get("available") and permits_data.get("permits"):
+        permits_list = permits_data.get("permits", [])
+        summary = permits_data.get("summary", {})
+        
+        # Create permit table
+        e.append(_sec("Permit History (ATTOM)"))
+        
+        # Summary line
+        total_permits = summary.get("total", len(permits_list))
+        total_value = summary.get("total_value_fmt", "")
+        if total_value:
+            summary_text = f"{total_permits} permits found · Total improvement spend: {total_value}"
+        else:
+            summary_text = f"{total_permits} permits found"
+        e.append(_P(summary_text, fontSize=10, textColor=DARK2, spaceAfter=8))
+        
+        # Prepare table data (cap at 20 rows)
+        table_data = [["Type", "Date", "Value", "Status", "Contractor"]]
+        for permit in permits_list[:20]:
+            permit_type = permit.get("type", "")[:20] if permit.get("type") else ""
+            permit_date = permit.get("date", "")[:10] if permit.get("date") else ""
+            permit_value = permit.get("value_fmt", "") if permit.get("value_fmt") else ""
+            permit_status = permit.get("status", "")[:15] if permit.get("status") else ""
+            permit_contractor = permit.get("contractor", "")[:25] if permit.get("contractor") else ""
+            
+            table_data.append([
+                _P(permit_type, fontSize=8, textColor=DARK),
+                _P(permit_date, fontSize=8, textColor=DARK),
+                _P(permit_value, fontSize=8, textColor=DARK),
+                _P(permit_status, fontSize=8, textColor=DARK2),
+                _P(permit_contractor, fontSize=8, textColor=DARK2),
+            ])
+        
+        # Create table with proper styling
+        permit_table = Table(table_data, colWidths=[1.2*inch, 0.8*inch, 0.8*inch, 0.8*inch, 1.4*inch])
+        permit_table.setStyle(TableStyle([
+            ("ROWBACKGROUNDS", (0,0), (-1,-1), [WHITE, GHOST2]),
+            ("GRID", (0,0), (-1,-1), 0.4, BORDER),
+            ("LEFTPADDING", (0,0), (-1,-1), 7),
+            ("RIGHTPADDING", (0,0), (-1,-1), 7),
+            ("TOPPADDING", (0,0), (-1,-1), 5),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 5),
+            ("VALIGN", (0,0), (-1,-1), "TOP"),
+            ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+            ("FONTSIZE", (0,0), (-1,0), 9),
+            ("BACKGROUND", (0,0), (-1,0), GHOST),
+            ("TEXTCOLOR", (0,0), (-1,0), DARK),
+        ]))
+        e.append(permit_table)
+    else:
+        e.append(_pending_box("Permit History (ATTOM)", [
+            "All permit types: Solar, Pool, Roof, HVAC, Electrical, Bathroom, Addition",
+            "Permit dates, job values, contractor information",
+            "Inspection status and improvement history",
+            "Total capital improvement spend over property lifetime",
+        ]))
 
     e.append(_sec("Comparable Sales Research"))
     e.append(_kv([

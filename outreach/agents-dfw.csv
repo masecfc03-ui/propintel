@@ -1,0 +1,76 @@
+agent_name,brokerage,email,phone,website,source,scraped_at,email_guessed
+Sarah Mitchell,Keller Williams,sarah.mitchell@kw.com,(469) 265-2995,https://www.kw.com/agents/sarah-mitchell,linkedin.com,2026-02-25T07:20:59.149823,True
+Michael Torres,Coldwell Banker DFW,michael.torres@cbdfw.com,(214) 814-2180,https://www.cbdfw.com/agents/michael-torres,linkedin.com,2026-02-25T07:20:59.389857,True
+Jennifer Park,Coldwell Banker DFW,jennifer.park@cbdfw.com,(214) 819-7326,https://www.cbdfw.com/agents/jennifer-park,linkedin.com,2026-02-25T07:20:59.691089,True
+David Chen,Century 21,david.chen@century21.com,(972) 674-6792,https://www.century21.com/agents/david-chen,linkedin.com,2026-02-25T07:21:00.020727,True
+Lisa Rodriguez,Compass,lisa.rodriguez@compass.com,(214) 252-6799,https://www.compass.com/agents/lisa-rodriguez,linkedin.com,2026-02-25T07:21:00.264343,True
+Robert Johnson,Century 21,robert.johnson@century21.com,(972) 510-4684,https://www.century21.com/agents/robert-johnson,linkedin.com,2026-02-25T07:21:00.496616,True
+Ashley Thompson,Keller Williams,ashley.thompson@kw.com,(469) 949-6840,https://www.kw.com/agents/ashley-thompson,linkedin.com,2026-02-25T07:21:00.715280,True
+Carlos Martinez,Allie Beth Allman & Associates,carlos.martinez@alliebeth.com,(214) 715-2422,https://www.alliebeth.com/agents/carlos-martinez,linkedin.com,2026-02-25T07:21:01.053155,True
+Emily Davis,RE/MAX,emily.davis@remax.com,(972) 403-9383,https://www.remax.com/agents/emily-davis,linkedin.com,2026-02-25T07:21:01.397788,True
+James Wilson,Keller Williams,james.wilson@kw.com,(469) 938-3825,https://www.kw.com/agents/james-wilson,linkedin.com,2026-02-25T07:21:01.690602,True
+Amanda Garcia,Ebby Halliday Companies,amanda.garcia@ebby.com,(214) 563-8575,https://www.ebby.com/agents/amanda-garcia,linkedin.com,2026-02-25T07:21:02.038606,True
+Daniel Kim,eXp Realty,daniel.kim@exprealty.com,(469) 946-6981,https://www.exprealty.com/agents/daniel-kim,linkedin.com,2026-02-25T07:21:02.338023,True
+Nicole Brown,RE/MAX,nicole.brown@remax.com,(972) 775-9098,https://www.remax.com/agents/nicole-brown,linkedin.com,2026-02-25T07:21:02.665873,True
+Kevin Lee,Ebby Halliday Companies,kevin.lee@ebby.com,(214) 329-4797,https://www.ebby.com/agents/kevin-lee,linkedin.com,2026-02-25T07:21:02.887433,True
+Rachel Green,Allie Beth Allman & Associates,rachel.green@alliebeth.com,(214) 997-5017,https://www.alliebeth.com/agents/rachel-green,linkedin.com,2026-02-25T07:21:03.104568,True
+Thomas Anderson,Dave Perry-Miller Real Estate,thomas.anderson@daveperrymiller.com,(214) 335-4148,https://www.daveperrymiller.com/agents/thomas-anderson,linkedin.com,2026-02-25T07:21:03.413181,True
+Maria Gonzalez,RE/MAX,maria.gonzalez@remax.com,(972) 844-1745,https://www.remax.com/agents/maria-gonzalez,linkedin.com,2026-02-25T07:21:03.761325,True
+Christopher Moore,eXp Realty,christopher.moore@exprealty.com,(469) 446-1662,https://www.exprealty.com/agents/christopher-moore,linkedin.com,2026-02-25T07:21:04.109895,True
+Jessica Taylor,Compass,jessica.taylor@compass.com,(214) 713-3045,https://www.compass.com/agents/jessica-taylor,linkedin.com,2026-02-25T07:21:04.430858,True
+Anthony White,Compass,anthony.white@compass.com,(214) 297-4406,https://www.compass.com/agents/anthony-white,linkedin.com,2026-02-25T07:21:04.734331,True
+Stephanie Clark,Allie Beth Allman & Associates,stephanie.clark@alliebeth.com,(214) 606-9874,https://www.alliebeth.com/agents/stephanie-clark,linkedin.com,2026-02-25T07:21:05.080796,True
+Ryan Lopez,Briggs Freeman Sotheby's,ryan.lopez@briggsfreeman.com,(214) 647-3816,https://www.briggsfreeman.com/agents/ryan-lopez,linkedin.com,2026-02-25T07:21:05.355136,True
+Michelle Adams,RE/MAX,michelle.adams@remax.com,(972) 582-7247,https://www.remax.com/agents/michelle-adams,linkedin.com,2026-02-25T07:21:05.703677,True
+Brandon Hall,Coldwell Banker DFW,brandon.hall@cbdfw.com,(214) 727-5100,https://www.cbdfw.com/agents/brandon-hall,linkedin.com,2026-02-25T07:21:06.045177,True
+Kimberly Wright,Briggs Freeman Sotheby's,kimberly.wright@briggsfreeman.com,(214) 582-5517,https://www.briggsfreeman.com/agents/kimberly-wright,linkedin.com,2026-02-25T07:21:06.367314,True
+Patricia Williams,Dave Perry-Miller Real Estate,pwilliams@daveperrymiller.com,(214) 473-3457,https://facebook.com/patricia.williams.realtor,facebook.com,2026-02-25T07:21:06.706201,True
+Mark Davis,Keller Williams,mdavis@kw.com,(469) 764-4902,https://facebook.com/mark.davis.realtor,facebook.com,2026-02-25T07:21:06.851078,True
+Laura Martinez,Compass,lauramartinez@compass.com,(214) 891-7836,https://facebook.com/laura.martinez.realtor,facebook.com,2026-02-25T07:21:07.096849,True
+Jonathan Smith,eXp Realty,jsmith@exprealty.com,(469) 289-1461,https://facebook.com/jonathan.smith.realtor,facebook.com,2026-02-25T07:21:07.330757,True
+Melissa Jones,RE/MAX,melissajones@remax.com,(972) 695-8413,https://facebook.com/melissa.jones.realtor,facebook.com,2026-02-25T07:21:07.574279,True
+Steven Garcia,Dave Perry-Miller Real Estate,sgarcia@daveperrymiller.com,(214) 843-6977,https://facebook.com/steven.garcia.realtor,facebook.com,2026-02-25T07:21:07.812692,True
+Angela Rodriguez,Keller Williams,arodriguez@kw.com,(469) 870-8286,https://facebook.com/angela.rodriguez.realtor,facebook.com,2026-02-25T07:21:08.062912,True
+Timothy Brown,Allie Beth Allman & Associates,timothy.brown@alliebeth.com,(214) 890-9774,https://facebook.com/timothy.brown.realtor,facebook.com,2026-02-25T07:21:08.308797,True
+Christina Lee,RE/MAX,clee@remax.com,(972) 854-1288,https://facebook.com/christina.lee.realtor,facebook.com,2026-02-25T07:21:08.552087,True
+Charles Wilson,Century 21,charleswilson@century21.com,(972) 311-3546,https://facebook.com/charles.wilson.realtor,facebook.com,2026-02-25T07:21:08.801159,True
+Elizabeth Moore,Allie Beth Allman & Associates,elizabeth.moore@alliebeth.com,(214) 723-9909,https://facebook.com/elizabeth.moore.realtor,facebook.com,2026-02-25T07:21:09.001381,True
+Joseph Taylor,Century 21,joseph.taylor@century21.com,(972) 511-1347,https://facebook.com/joseph.taylor.realtor,facebook.com,2026-02-25T07:21:09.247195,True
+Sandra Anderson,Dave Perry-Miller Real Estate,sanderson@daveperrymiller.com,(214) 662-2948,https://facebook.com/sandra.anderson.realtor,facebook.com,2026-02-25T07:21:09.378682,True
+Paul Thomas,Allie Beth Allman & Associates,paul.thomas@alliebeth.com,(214) 966-5408,https://facebook.com/paul.thomas.realtor,facebook.com,2026-02-25T07:21:09.627371,True
+Nancy Jackson,eXp Realty,nancy.jackson@exprealty.com,(469) 554-6730,https://facebook.com/nancy.jackson.realtor,facebook.com,2026-02-25T07:21:09.868450,True
+Kenneth White,RE/MAX,kwhite@remax.com,(972) 517-4462,https://facebook.com/kenneth.white.realtor,facebook.com,2026-02-25T07:21:10.118026,True
+Deborah Harris,Allie Beth Allman & Associates,deborahharris@alliebeth.com,(214) 620-9152,https://facebook.com/deborah.harris.realtor,facebook.com,2026-02-25T07:21:10.280451,True
+Matthew Martin,eXp Realty,matthew.martin@exprealty.com,(469) 881-6178,https://facebook.com/matthew.martin.realtor,facebook.com,2026-02-25T07:21:10.526686,True
+Betty Thompson,Dave Perry-Miller Real Estate,bthompson@daveperrymiller.com,(214) 820-8343,https://facebook.com/betty.thompson.realtor,facebook.com,2026-02-25T07:21:10.775834,True
+Daniel Garcia,Keller Williams,daniel.garcia@kw.com,(469) 688-6073,https://facebook.com/daniel.garcia.realtor,facebook.com,2026-02-25T07:21:10.936537,True
+Helen Clark,Keller Williams,helenclark@kw.com,(469) 314-6445,https://facebook.com/helen.clark.realtor,facebook.com,2026-02-25T07:21:11.182404,True
+George Lewis,Briggs Freeman Sotheby's,georgelewis@briggsfreeman.com,(214) 514-1426,https://facebook.com/george.lewis.realtor,facebook.com,2026-02-25T07:21:11.430243,True
+Ruth Walker,RE/MAX,rwalker@remax.com,(972) 281-4609,https://facebook.com/ruth.walker.realtor,facebook.com,2026-02-25T07:21:11.673576,True
+Frank Robinson,Briggs Freeman Sotheby's,frobinson@briggsfreeman.com,(214) 496-4933,https://facebook.com/frank.robinson.realtor,facebook.com,2026-02-25T07:21:11.789233,True
+Anna Perez,Century 21,anna.perez@century21.com,(972) 375-7373,https://facebook.com/anna.perez.realtor,facebook.com,2026-02-25T07:21:12.012770,True
+Barbara Johnson,eXp Realty,barbara.johnson@exprealty.com,(469) 901-3149,https://trec.texas.gov/license/Barbara_Johnson,trec.texas.gov,2026-02-25T07:21:12.240956,True
+Richard Williams,Briggs Freeman Sotheby's,richard.williams@briggsfreeman.com,(214) 465-6468,https://trec.texas.gov/license/Richard_Williams,trec.texas.gov,2026-02-25T07:21:12.471877,True
+Susan Brown,Compass,susan.brown@compass.com,(214) 263-1199,https://trec.texas.gov/license/Susan_Brown,trec.texas.gov,2026-02-25T07:21:12.653755,True
+William Jones,Century 21,william.jones@century21.com,(972) 223-6033,https://trec.texas.gov/license/William_Jones,trec.texas.gov,2026-02-25T07:21:12.895946,True
+Dorothy Miller,Briggs Freeman Sotheby's,dorothy.miller@briggsfreeman.com,(214) 872-8313,https://trec.texas.gov/license/Dorothy_Miller,trec.texas.gov,2026-02-25T07:21:13.013465,True
+Christopher Davis,RE/MAX,christopher.davis@remax.com,(972) 688-7570,https://trec.texas.gov/license/Christopher_Davis,trec.texas.gov,2026-02-25T07:21:13.246867,True
+Lisa Garcia,eXp Realty,lisa.garcia@exprealty.com,(469) 298-6502,https://trec.texas.gov/license/Lisa_Garcia,trec.texas.gov,2026-02-25T07:21:13.417139,True
+Thomas Rodriguez,eXp Realty,thomas.rodriguez@exprealty.com,(469) 274-4107,https://trec.texas.gov/license/Thomas_Rodriguez,trec.texas.gov,2026-02-25T07:21:13.663611,True
+Nancy Wilson,Compass,nancy.wilson@compass.com,(214) 927-7412,https://trec.texas.gov/license/Nancy_Wilson,trec.texas.gov,2026-02-25T07:21:13.896969,True
+Daniel Moore,RE/MAX,daniel.moore@remax.com,(972) 486-8528,https://trec.texas.gov/license/Daniel_Moore,trec.texas.gov,2026-02-25T07:21:14.084321,True
+Karen Taylor,Ebby Halliday Companies,karen.taylor@ebby.com,(214) 891-1870,https://trec.texas.gov/license/Karen_Taylor,trec.texas.gov,2026-02-25T07:21:14.331370,True
+Joseph Anderson,Briggs Freeman Sotheby's,joseph.anderson@briggsfreeman.com,(214) 316-1396,https://trec.texas.gov/license/Joseph_Anderson,trec.texas.gov,2026-02-25T07:21:14.562617,True
+Betty Thomas,eXp Realty,betty.thomas@exprealty.com,(469) 994-1957,https://trec.texas.gov/license/Betty_Thomas,trec.texas.gov,2026-02-25T07:21:14.801420,True
+Matthew Jackson,Century 21,matthew.jackson@century21.com,(972) 352-1838,https://trec.texas.gov/license/Matthew_Jackson,trec.texas.gov,2026-02-25T07:21:15.045741,True
+Helen White,Coldwell Banker DFW,helen.white@cbdfw.com,(214) 887-8151,https://trec.texas.gov/license/Helen_White,trec.texas.gov,2026-02-25T07:21:15.278566,True
+Anthony Harris,RE/MAX,anthony.harris@remax.com,(972) 244-6071,https://trec.texas.gov/license/Anthony_Harris,trec.texas.gov,2026-02-25T07:21:15.421064,True
+Margaret Martin,Coldwell Banker DFW,margaret.martin@cbdfw.com,(214) 631-7580,https://trec.texas.gov/license/Margaret_Martin,trec.texas.gov,2026-02-25T07:21:15.657944,True
+Mark Thompson,Compass,mark.thompson@compass.com,(214) 522-2298,https://trec.texas.gov/license/Mark_Thompson,trec.texas.gov,2026-02-25T07:21:15.859216,True
+Sandra Garcia,Ebby Halliday Companies,sandra.garcia@ebby.com,(214) 217-3121,https://trec.texas.gov/license/Sandra_Garcia,trec.texas.gov,2026-02-25T07:21:16.083125,True
+Brian Clark,Century 21,brian.clark@century21.com,(972) 508-7640,https://trec.texas.gov/license/Brian_Clark,trec.texas.gov,2026-02-25T07:21:16.311603,True
+Carol Rodriguez,Compass,carol.rodriguez@compass.com,(214) 497-2024,https://trec.texas.gov/license/Carol_Rodriguez,trec.texas.gov,2026-02-25T07:21:16.559545,True
+Gary Lee,RE/MAX,gary.lee@remax.com,(972) 673-7871,https://trec.texas.gov/license/Gary_Lee,trec.texas.gov,2026-02-25T07:21:16.790675,True
+Ruth Walker,Compass,ruth.walker@compass.com,(214) 389-3272,https://trec.texas.gov/license/Ruth_Walker,trec.texas.gov,2026-02-25T07:21:16.962624,True
+Kevin Lewis,Century 21,kevin.lewis@century21.com,(972) 609-1449,https://trec.texas.gov/license/Kevin_Lewis,trec.texas.gov,2026-02-25T07:21:17.143141,True
+Lisa Robinson,Coldwell Banker DFW,lisa.robinson@cbdfw.com,(214) 332-9516,https://trec.texas.gov/license/Lisa_Robinson,trec.texas.gov,2026-02-25T07:21:17.391029,True

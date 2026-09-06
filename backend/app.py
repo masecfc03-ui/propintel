@@ -1498,17 +1498,51 @@ def _build_template_data(report_data: dict, agent: dict) -> dict:
     permit_list  = permits_data.get("permits", []) if permits_data.get("available") else []
     if permit_list:
         permit_rows = []
+        source_name = permits_data.get("source", "City")
+        is_attom = source_name == "ATTOM"
+        
         for p in permit_list[:8]:  # cap at 8 for email length
-            issued = p.get("issued_date", "—")
+            # Handle different data formats (city vs ATTOM)
+            if is_attom:
+                permit_type = p.get("type", "—")
+                permit_desc = p.get("description", "")
+                permit_value = p.get("value_fmt", "")
+                permit_contractor = p.get("contractor", "")
+                permit_status = p.get("status", "—")
+                issued = p.get("date", "—")[:10] if p.get("date") else "—"
+                
+                # Format description line with value and contractor
+                desc_parts = []
+                if permit_value:
+                    desc_parts.append(f"Value: {permit_value}")
+                if permit_contractor:
+                    desc_parts.append(f"Contractor: {permit_contractor}")
+                if permit_desc:
+                    desc_parts.append(permit_desc[:50])
+                full_desc = " • ".join(desc_parts)
+            else:
+                permit_type = p.get("type", "—")
+                full_desc = p.get("description", "")[:100]
+                permit_status = p.get("status", "—")
+                issued = p.get("issued_date", "—")
+            
             permit_rows.append(
                 f"<tr>"
-                f"<td style='padding:8px 12px;border-bottom:1px solid #f0f4f8;'><p style='color:#1a2e44;font-size:12px;font-family:Arial,Helvetica,sans-serif;'><strong>{p.get('type','—')}</strong> — {p.get('permit_number','')}</p>"
-                f"<p style='color:#9aafc4;font-size:11px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;'>{p.get('description','')[:100]}</p></td>"
-                f"<td style='padding:8px 12px;border-bottom:1px solid #f0f4f8;' align='center'><p style='color:#6b7c93;font-size:11px;font-family:Arial,Helvetica,sans-serif;'>{p.get('status','—')}</p></td>"
+                f"<td style='padding:8px 12px;border-bottom:1px solid #f0f4f8;'><p style='color:#1a2e44;font-size:12px;font-family:Arial,Helvetica,sans-serif;'><strong>{permit_type}</strong> — {p.get('permit_number','')}</p>"
+                f"<p style='color:#9aafc4;font-size:11px;margin-top:2px;font-family:Arial,Helvetica,sans-serif;'>{full_desc}</p></td>"
+                f"<td style='padding:8px 12px;border-bottom:1px solid #f0f4f8;' align='center'><p style='color:#6b7c93;font-size:11px;font-family:Arial,Helvetica,sans-serif;'>{permit_status}</p></td>"
                 f"<td style='padding:8px 12px;border-bottom:1px solid #f0f4f8;' align='right'><p style='color:#6b7c93;font-size:11px;font-family:Arial,Helvetica,sans-serif;'>{issued}</p></td>"
                 f"</tr>"
             )
+        
         perm_total = permits_data.get("summary", {}).get("total", len(permit_list))
+        source_text = "ATTOM Data" if is_attom else f"{permits_data.get('city','City')} Open Data"
+        total_value = permits_data.get("summary", {}).get("total_value_fmt", "")
+        
+        footer_text = f"{perm_total} total permits on record — Source: {source_text}"
+        if total_value:
+            footer_text += f" • Total value: {total_value}"
+        
         permits_html = (
             f"<tr style='background:#f0f5fa;'>"
             f"<td style='padding:8px 12px;'><p style='color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;'>Permit / Type</p></td>"
@@ -1516,7 +1550,7 @@ def _build_template_data(report_data: dict, agent: dict) -> dict:
             f"<td style='padding:8px 12px;' align='right'><p style='color:#6b7c93;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;font-family:Arial,Helvetica,sans-serif;'>Issued</p></td>"
             f"</tr>"
             + "\n".join(permit_rows)
-            + f"<tr><td colspan='3' style='padding:8px 12px;'><p style='color:#9aafc4;font-size:10px;font-family:Arial,Helvetica,sans-serif;'>{perm_total} total permits on record — Source: {permits_data.get('city','City')} Open Data</p></td></tr>"
+            + f"<tr><td colspan='3' style='padding:8px 12px;'><p style='color:#9aafc4;font-size:10px;font-family:Arial,Helvetica,sans-serif;'>{footer_text}</p></td></tr>"
         )
     elif permits_data.get("available") is False:
         permits_html = "<tr><td><p style='color:#9aafc4;font-size:12px;font-family:Arial,Helvetica,sans-serif;'>Permit data not available for this city. Check the city permit portal directly.</p></td></tr>"

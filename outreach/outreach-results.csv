@@ -1,0 +1,4 @@
+agent_name,brokerage,email,phone,website,listing_address,listing_price,listing_type,email_subject,sent,sent_at,error
+Sarah Johnson,Compass,sarah.johnson@compass.com,214-555-2001,https://www.compass.com/agents/sarah-johnson/,"5948 Arapaho Rd, Dallas TX 75080","$389,000",Condo,"Quick question, Sarah",dry_run,,
+Sarah Johnson,Compass,sarah.johnson@compass.com,214-555-2001,https://www.compass.com/agents/sarah-johnson/,"7255 Abram St, Dallas TX 76011","$758,000",Condo,"Quick question, Sarah",dry_run,,
+Michael Rodriguez,Compass,michael.rodriguez@compass.com,469-555-2002,https://www.compass.com/agents/michael-rodriguez/,"6433 Collins St, Dallas TX 76011","$836,000",Single Family,"Quick question, Michael",dry_run,,
